@@ -23,28 +23,28 @@ const Dashboard = () => {
     const seen = new Set();
     certificationPaths.forEach(path => {
       path.certifications.forEach(cert => {
-        if (!isCertIgnored(cert.id) && getStatus(cert.id) === CERT_STATUS.IN_PROGRESS && !seen.has(cert.id)) {
+        if (getStatus(cert.id) === CERT_STATUS.IN_PROGRESS && !seen.has(cert.id)) {
           certs.push({ ...cert, pathName: path.shortName, pathColor: path.color, pathId: path.id });
           seen.add(cert.id);
         }
       });
     });
     return certs;
-  }, [isCertIgnored, getStatus]);
+  }, [getStatus]);
 
   const needsRenewalCerts = useMemo(() => {
     const certs = [];
     const seen = new Set();
     certificationPaths.forEach(path => {
       path.certifications.forEach(cert => {
-        if (!isCertIgnored(cert.id) && getStatus(cert.id) === CERT_STATUS.NEEDS_RENEWAL && !seen.has(cert.id)) {
+        if (getStatus(cert.id) === CERT_STATUS.NEEDS_RENEWAL && !seen.has(cert.id)) {
           certs.push({ ...cert, pathName: path.shortName, pathColor: path.color, pathId: path.id });
           seen.add(cert.id);
         }
       });
     });
     return certs;
-  }, [isCertIgnored, getStatus]);
+  }, [getStatus]);
 
   const trackedPaths = useMemo(() => certificationPaths.filter(p => !isPathIgnored(p.id)), [isPathIgnored]);
   const ignoredPaths = useMemo(() => certificationPaths.filter(p => isPathIgnored(p.id)), [isPathIgnored]);
@@ -63,18 +63,30 @@ const Dashboard = () => {
 
     certificationPaths.forEach(path => {
       path.certifications.forEach(cert => {
-        // Must be tracked, NOT in a tracked path, and NOT seen yet
-        if (!isCertIgnored(cert.id) && !certsInTrackedPaths.has(cert.id) && !seen.has(cert.id)) {
+        const isIndividuallyTracked = !isCertIgnored(cert.id);
+        const stat = getStatus(cert.id);
+        const hasProgress = stat === CERT_STATUS.COMPLETED || stat === CERT_STATUS.IN_PROGRESS || stat === CERT_STATUS.NEEDS_RENEWAL;
+
+        // Must be tracked or have progress, NOT in a tracked path, and NOT seen yet
+        if ((isIndividuallyTracked || hasProgress) && !certsInTrackedPaths.has(cert.id) && !seen.has(cert.id)) {
           certs.push({ ...cert, pathName: path.shortName, pathColor: path.color, pathId: path.id });
           seen.add(cert.id);
         }
       });
     });
     return certs;
-  }, [isPathIgnored, isCertIgnored]);
+  }, [isPathIgnored, isCertIgnored, getStatus]);
   
-  const activeIgnoredPaths = useMemo(() => ignoredPaths.filter(p => p.pillar !== PILLARS.RETIRED), [ignoredPaths]);
-  const retiredIgnoredPaths = useMemo(() => ignoredPaths.filter(p => p.pillar === PILLARS.RETIRED), [ignoredPaths]);
+  const activeIgnoredPaths = useMemo(() => 
+    [...ignoredPaths.filter(p => p.pillar !== PILLARS.RETIRED)]
+      .sort((a, b) => (a.shortName || a.name).localeCompare(b.shortName || b.name)),
+    [ignoredPaths]
+  );
+  const retiredIgnoredPaths = useMemo(() => 
+    [...ignoredPaths.filter(p => p.pillar === PILLARS.RETIRED)]
+      .sort((a, b) => (a.shortName || a.name).localeCompare(b.shortName || b.name)),
+    [ignoredPaths]
+  );
 
   const renderPathCard = (path, isIgnored, idx) => {
     const prog = getPathProgress(path.id);
@@ -99,10 +111,11 @@ const Dashboard = () => {
             <div className="dashboard__path-title-group">
               <div className="dashboard__path-badge-stats">
                 <Badge color={path.color} small>{path.pillar}</Badge>
-                {!isIgnored && path.id !== 'retired-exams' && (
+                {path.id !== 'retired-exams' && (
                   <div className="dashboard__path-stats-mini">
-                    <span title="Completed"><Icons.CheckCircle2 size={12} /> {prog.completed}</span>
-                    <span title="In Progress"><Icons.Clock size={12} /> {prog.inProgress}</span>
+                    <span title="Total Available Certifications"><Icons.Award size={12} /> {prog.total} exams</span>
+                    {prog.completed > 0 && <span title="Completed"><Icons.CheckCircle2 size={12} /> {prog.completed}</span>}
+                    {prog.inProgress > 0 && <span title="In Progress"><Icons.Clock size={12} /> {prog.inProgress}</span>}
                   </div>
                 )}
               </div>
@@ -116,7 +129,7 @@ const Dashboard = () => {
                 e.stopPropagation();
                 togglePathIgnored(path.id);
               }}
-              title={isIgnored ? "Add to tracked paths" : "Remove from tracked paths"}
+              title={isIgnored ? "Track this path in My Learning" : "Remove path from My Learning"}
             >
               {isIgnored ? <Icons.Plus size={16} /> : <Icons.Minus size={16} />}
               <span className="sr-only">{isIgnored ? "Track" : "Remove"}</span>
@@ -231,8 +244,8 @@ const Dashboard = () => {
                       <Icons.AlertTriangle size={16} />
                     </div>
                     <div className="dashboard__activity-item-content">
-                      <span className="dashboard__activity-item-code">{cert.examCode}</span>
                       <span className="dashboard__activity-item-name">{cert.name}</span>
+                      <span className="dashboard__activity-item-code">{cert.examCode}</span>
                     </div>
                     <Badge color={cert.pathColor} small>{cert.pathName}</Badge>
                     <Icons.ChevronRight size={16} className="dashboard__activity-item-chevron" />
@@ -261,8 +274,8 @@ const Dashboard = () => {
                       <Icons.BookOpen size={16} />
                     </div>
                     <div className="dashboard__activity-item-content">
-                      <span className="dashboard__activity-item-code">{cert.examCode}</span>
                       <span className="dashboard__activity-item-name">{cert.name}</span>
+                      <span className="dashboard__activity-item-code">{cert.examCode}</span>
                     </div>
                     <Badge color={cert.pathColor} small>{cert.pathName}</Badge>
                     <Icons.ChevronRight size={16} className="dashboard__activity-item-chevron" />
@@ -333,8 +346,8 @@ const Dashboard = () => {
                         <Icons.Award size={16} />
                       </div>
                       <div className="dashboard__activity-item-content">
-                        <span className="dashboard__activity-item-code">{cert.examCode}</span>
                         <span className="dashboard__activity-item-name">{cert.name}</span>
+                        <span className="dashboard__activity-item-code">{cert.examCode}</span>
                       </div>
                       <Badge color={cert.pathColor} small>{cert.pathName}</Badge>
                       <Icons.ChevronRight size={16} className="dashboard__activity-item-chevron" />

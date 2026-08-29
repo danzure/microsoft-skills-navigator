@@ -113,8 +113,8 @@ const SearchBar = ({ onClose }) => {
             >
               <span className="search-bar__result-dot" style={{ background: cert.pathColor }} />
               <div className="search-bar__result-info">
-                <span className="search-bar__result-code">{cert.examCode}</span>
                 <span className="search-bar__result-name">{cert.name}</span>
+                <span className="search-bar__result-code">{cert.examCode}</span>
               </div>
               <span className="search-bar__result-path">{cert.pathName}</span>
             </button>

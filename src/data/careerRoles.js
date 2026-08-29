@@ -13,7 +13,7 @@ export const careerRoles = [
     description: 'Implement, manage, and monitor identity, governance, storage, compute, and virtual networks in a cloud environment.',
     icon: 'Cloud',
     color: 'var(--line-azure)',
-    certs: ['az-900', 'az-104', 'az-800', 'az-802', 'az-700', 'az-120', 'az-140', 'ms-102', 'md-102', 'ms-700', 'ms-721', 'ms-900', 'ms-203', 'dp-300', 'sc-300', 'ab-900', 'ab-650']
+    certs: ['az-900', 'az-104', 'az-800', 'az-802', 'az-700', 'az-120', 'az-140', 'ms-102', 'md-102', 'ms-700', 'ms-721', 'ms-900', 'dp-300', 'sc-300', 'ab-900', 'ab-650']
   },
   {
     id: 'developer',
@@ -53,7 +53,7 @@ export const careerRoles = [
     description: 'Integrate, transform, and consolidate data from various systems into structures suitable for building analytics solutions.',
     icon: 'Database',
     color: 'var(--line-data)',
-    certs: ['dp-900', 'dp-203', 'dp-700', 'dp-750', 'dp-800']
+    certs: ['dp-900', 'dp-700', 'dp-750', 'dp-800']
   },
   {
     id: 'data-scientist',
@@ -77,7 +77,7 @@ export const careerRoles = [
     description: 'Build custom business applications and automate workflows with low-code techniques to simplify and transform tasks.',
     icon: 'Zap',
     color: 'var(--line-power)',
-    certs: ['pl-900', 'pl-100', 'pl-500', 'ab-620']
+    certs: ['pl-900', 'pl-500', 'ab-620']
   },
   {
     id: 'functional-consultant',

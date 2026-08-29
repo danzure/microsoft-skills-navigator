@@ -67,12 +67,12 @@ export const CareerPathCertCard = ({ certInfo, customPlaylist, onAdd, onRemove }
             )}
           </div>
           <div className="cert-node__title-group">
-            <div className="cert-node__badge-stats">
-              <span className="cert-node__exam-code">{certInfo.examCode}</span>
-            </div>
             <h3 className="cert-node__name">
               {certInfo.name.startsWith('Microsoft') ? certInfo.name : `Microsoft Certified: ${certInfo.name}`}
             </h3>
+            <div className="cert-node__badge-stats">
+              <span className="cert-node__exam-code">{certInfo.examCode}</span>
+            </div>
           </div>
         </div>
       </div>

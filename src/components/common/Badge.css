@@ -62,6 +62,12 @@
   border-color: var(--badge-new-border);
 }
 
+.badge--updated {
+  background: var(--badge-updated-bg);
+  color: var(--badge-updated-fg);
+  border-color: var(--badge-updated-border);
+}
+
 .badge--beta {
   background: var(--badge-beta-bg);
   color: var(--badge-beta-fg);

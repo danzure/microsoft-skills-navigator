@@ -95,8 +95,8 @@ const CertDetail = ({ cert, path, onClose }) => {
           <div className="cert-detail__header-content">
             <div className="cert-detail__title-row">
               <div className="cert-detail__title-text">
-                <span className="cert-detail__exam-code">{cert.examCode}</span>
                 <h2 className="cert-detail__name">{cert.name}</h2>
+                <span className="cert-detail__exam-code">{cert.examCode}</span>
               </div>
               {getBadgeUrl(cert.level, cert.id) && (
                 <img 
@@ -131,6 +131,11 @@ const CertDetail = ({ cert, path, onClose }) => {
               {cert.isNew && (
                 <Badge variant="new">
                   New
+                </Badge>
+              )}
+              {cert.isUpdated && (
+                <Badge variant="updated">
+                  Updated
                 </Badge>
               )}
               {cert.isBeta && (
@@ -245,8 +250,8 @@ const CertDetail = ({ cert, path, onClose }) => {
                           if (!preCert) return null;
                           return (
                             <div key={subId} className="cert-detail__prereq" style={{ '--prereq-color': prePath?.color || path.color }}>
-                              <span className="cert-detail__prereq-code">{preCert.examCode}</span>
                               <span className="cert-detail__prereq-name">{preCert.name}</span>
+                              <span className="cert-detail__prereq-code">{preCert.examCode}</span>
                             </div>
                           );
                         })}
@@ -260,8 +265,8 @@ const CertDetail = ({ cert, path, onClose }) => {
                   if (!preCert) return null;
                   return (
                     <div key={preItem} className="cert-detail__prereq" style={{ '--prereq-color': prePath?.color || path.color }}>
-                      <span className="cert-detail__prereq-code">{preCert.examCode}</span>
                       <span className="cert-detail__prereq-name">{preCert.name}</span>
+                      <span className="cert-detail__prereq-code">{preCert.examCode}</span>
                     </div>
                   );
                 })}
@@ -280,8 +285,8 @@ const CertDetail = ({ cert, path, onClose }) => {
                   if (!preCert) return null;
                   return (
                     <div key={preId} className="cert-detail__prereq" style={{ '--prereq-color': prePath?.color || path.color }}>
-                      <span className="cert-detail__prereq-code">{preCert.examCode}</span>
                       <span className="cert-detail__prereq-name">{preCert.name}</span>
+                      <span className="cert-detail__prereq-code">{preCert.examCode}</span>
                     </div>
                   );
                 })}
@@ -296,8 +301,8 @@ const CertDetail = ({ cert, path, onClose }) => {
                 {prerequisiteFor.map((preCert) => {
                   return (
                     <div key={preCert.id} className="cert-detail__prereq" style={{ '--prereq-color': preCert.pathColor || path.color }}>
-                      <span className="cert-detail__prereq-code">{preCert.examCode}</span>
                       <span className="cert-detail__prereq-name">{preCert.name}</span>
+                      <span className="cert-detail__prereq-code">{preCert.examCode}</span>
                     </div>
                   );
                 })}
@@ -311,27 +316,34 @@ const CertDetail = ({ cert, path, onClose }) => {
                 Tracking <span style={{fontSize: '10px', fontWeight: 'normal', opacity: 0.6, marginLeft: '6px'}}>(Press E)</span>
               </h3>
               <button
-                className={`cert-detail__track-btn ${certIgnored ? 'cert-detail__track-btn--untracked' : 'cert-detail__track-btn--tracked'}`}
+                className={`cert-detail__track-btn ${!isCertIgnored(cert.id) ? 'cert-detail__track-btn--tracked' : 'cert-detail__track-btn--untracked'}`}
                 onClick={() => {
+                  const wasTracked = !isCertIgnored(cert.id);
                   toggleCertIgnored(cert.id);
-                  if (certIgnored) {
-                    addToast(`${cert.examCode} added to tracked learning`);
+                  if (!wasTracked) {
+                    addToast(`${cert.examCode} added to tracked learning`, 'success');
                   } else {
-                    addToast(`${cert.examCode} removed from tracked learning`);
+                    addToast(`${cert.examCode} removed from tracked learning`, 'info');
                   }
                 }}
               >
-                {certIgnored ? <EyeOff size={16} /> : <Eye size={16} />}
-                <span>{certIgnored ? 'Excluded from learning' : 'Tracked in learning'}</span>
+                {!isCertIgnored(cert.id) ? <Eye size={16} /> : <EyeOff size={16} />}
+                <span>
+                  {!isPathExcluded
+                    ? (!isCertIgnored(cert.id) ? 'Tracked with Path' : 'Excluded from Path')
+                    : (!isCertIgnored(cert.id) ? 'Tracked Individually' : 'Not Tracked')}
+                </span>
               </button>
-            {certIgnored && (
               <p className="cert-detail__ignore-hint">
-                {isPathExcluded 
-                  ? `The ${path.shortName} path is excluded, but you can track this certification individually.`
-                  : "This certification won't count towards your overall or path progress until tracked."}
+                {!isPathExcluded
+                  ? (!isCertIgnored(cert.id)
+                      ? `Included in your learning journey as part of ${path.shortName}. Click to exclude.`
+                      : `Excluded from your learning journey. Click to include.`)
+                  : (!isCertIgnored(cert.id)
+                      ? `Tracked individually in your learning dashboard. Click to untrack.`
+                      : `Not currently tracked. Click to track individually in your learning dashboard, or set status below.`)}
               </p>
-            )}
-          </div>
+            </div>
           )}
 
           <div className="cert-detail__section">

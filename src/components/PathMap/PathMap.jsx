@@ -1,6 +1,7 @@
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { getPathById, CERT_LEVELS, CERT_STATUS } from '../../data/certificationPaths';
 import { useProgressContext } from '../../context/ProgressContext';
+import { useToast } from '../../context/ToastContext';
 import CertNode from './CertNode';
 import CertDetail from '../CertDetail/CertDetail';
 import ProgressRing from '../common/ProgressRing';
@@ -332,7 +333,8 @@ const PathMap = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const path = getPathById(pathId);
-  const { getPathProgress } = useProgressContext();
+  const { getPathProgress, togglePathIgnored, isPathIgnored } = useProgressContext();
+  const { addToast } = useToast();
   
   const [selectedCertId, setSelectedCertId] = useState(() => searchParams.get('cert') || null);
 
@@ -349,6 +351,8 @@ const PathMap = () => {
     if (!path) return { total: 0, completed: 0, inProgress: 0, percent: 0 };
     return getPathProgress(path.id);
   }, [path, getPathProgress]);
+
+  const isPathTracked = path ? !isPathIgnored(path.id) : false;
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -382,6 +386,25 @@ const PathMap = () => {
           <h1 className="path-map__header-title">{path.name}</h1>
           <p className="path-map__header-desc">{path.description}</p>
         </div>
+        <div className="path-map__header-actions">
+          {path.id !== 'retired-exams' && (
+            <button
+              className={`path-map__track-btn ${isPathTracked ? 'path-map__track-btn--tracked' : 'path-map__track-btn--untracked'}`}
+              onClick={() => {
+                togglePathIgnored(path.id);
+                if (isPathTracked) {
+                  addToast(`Removed ${path.shortName} from tracked learning`, 'info');
+                } else {
+                  addToast(`Added ${path.shortName} to tracked learning`, 'success');
+                }
+              }}
+              title={isPathTracked ? "Remove from My Tracked Learning" : "Track this entire path in My Learning"}
+            >
+              {isPathTracked ? <Icons.CheckCircle2 size={16} /> : <Icons.Plus size={16} />}
+              <span>{isPathTracked ? 'Tracked in Learning' : 'Track This Path'}</span>
+            </button>
+          )}
+        </div>
         <div className="path-map__header-stats">
           <div className="path-map__header-progress">
             <ProgressRing percent={pathProgress.percent} size={48} strokeWidth={4} color={path.color} />
@@ -397,7 +420,7 @@ const PathMap = () => {
             </span>
             <span className="path-map__header-stat">
               <Icons.Circle size={14} />
-              <strong>{pathProgress.total - pathProgress.completed - pathProgress.inProgress}</strong> remaining
+              <strong>{Math.max(0, pathProgress.total - pathProgress.completed - pathProgress.inProgress)}</strong> remaining
             </span>
           </div>
         </div>

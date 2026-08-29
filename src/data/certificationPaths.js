@@ -352,6 +352,7 @@ export const certificationPaths = [
         recommendedPrereqs: ['dp-900'],
         learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/azure-databricks-data-engineer-associate/',
         retirementDate: null,
+        isNew: true,
         skillsMeasured: [
         'Set up and configure an Azure Databricks environment (15–20%)',
         'Secure and govern Unity Catalog objects (15–20%)',
@@ -370,6 +371,7 @@ export const certificationPaths = [
         recommendedPrereqs: ['dp-900'],
         learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/sql-ai-developer-associate/',
         retirementDate: null,
+        isNew: true,
         skillsMeasured: [
         'Design and develop database solutions (35–40%)',
         'Secure, optimize, and deploy database solutions (35–40%)',
@@ -1387,62 +1389,6 @@ export const certificationPaths = [
         'Describe Microsoft 365 apps and services (45–50%)',
         'Describe security, compliance, privacy, and trust in Microsoft 365 (25–30%)',
         'Describe Microsoft 365 pricing, licensing, and support (10–15%)'
-        ],
-        isIndependent: true,
-      },
-      {
-        id: 'dp-203',
-        examCode: 'DP-203',
-        name: 'Azure Data Engineer Associate',
-        level: CERT_LEVELS.ASSOCIATE,
-        branch: 'retired',
-        description: 'Demonstrate understanding of common data engineering tasks to implement and manage data engineering workloads on Microsoft Azure, using a number of Azure services.',
-        prerequisites: [],
-        recommendedPrereqs: ['dp-900'],
-        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/exams/dp-203/',
-        retirementDate: '2025-03-31',
-        skillsMeasured: [
-        'Design and implement data storage (15–20%)',
-        'Develop data processing (40–45%)',
-        'Secure, monitor, and optimize data storage and data processing (30–35%)'
-        ],
-        isIndependent: true,
-      },
-      {
-        id: 'ms-203',
-        examCode: 'MS-203',
-        name: 'Messaging Administrator Associate',
-        level: CERT_LEVELS.ASSOCIATE,
-        branch: 'retired',
-        description: 'Microsoft 365 messaging administrators are responsible for managing recipients, mailboxes, transport, mail flow, administrative roles, threat protection, compliance, migrations, and client connectivity.',
-        prerequisites: [],
-        recommendedPrereqs: ['ab-900'],
-        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/m365-messaging-administrator/',
-        retirementDate: '2023-12-31',
-        skillsMeasured: [
-        'Understand core concepts of MS-203',
-        'Implement and manage MS-203 workloads',
-        'Optimize and monitor MS-203 environments',
-        'Secure MS-203 solutions'
-        ],
-        isIndependent: true,
-      },
-
-      {
-        id: 'pl-100',
-        examCode: 'PL-100',
-        name: 'Power Platform App Maker Associate',
-        level: CERT_LEVELS.ASSOCIATE,
-        branch: 'retired',
-        description: 'Build apps with low-code techniques to simplify, automate, and transform business tasks and processes.',
-        prerequisites: [],
-        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/exams/pl-100/',
-        retirementDate: '2024-06-30',
-        skillsMeasured: [
-        'Design business solutions (20–25%)',
-        'Create solutions (45–50%)',
-        'Analyze and visualize data (15–20%)',
-        'Implement and manage solutions (15–20%)'
         ],
         isIndependent: true,
       },

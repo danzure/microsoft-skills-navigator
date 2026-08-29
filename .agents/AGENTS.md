@@ -1,225 +1,310 @@
-# Agent Rules
+# Antigravity Agent Guidelines & Rules
 
-## 1. Git Workflows & Quality Verification
+This document governs the architecture, data structures, design standards, lifecycle management, and development workflows for the **Microsoft Certification Tracker & Career Roadmap Tool** (`atozazure-mscertification-tool`). All automated agents and contributors must strictly adhere to these instructions.
 
-Whenever you are asked to commit and sync changes, you **must** automatically bump the version in `package.json` before creating the commit. **Exception:** Do not bump the version in `package.json` if you are only updating non-application files (e.g., `README.md`, documentation, `.agents/AGENTS.md`, `api/README.md`).
+---
 
-1. **Pre-Commit Quality Gate**:
-   - Run `npm run lint` and resolve any ESLint errors or warnings.
-   - Run `npm run build` to verify that Vite bundles successfully without JSX, import, or type resolution issues.
-2. **Version Bump Significance**:
-   - Evaluate the significance of your changes and increment the version in `package.json` accordingly:
-     - **Patch**: For small bug fixes, minor tweaks, routine data updates, or exam retirement dates.
-     - **Minor**: For significant new features, substantial UI changes, builder logic, new currencies, or export features.
-     - **Major**: For complete architectural overhauls or major breaking changes.
-3. **Commit Messages**:
-   - Use Conventional Commit format (e.g., `feat: add custom playlist export`, `fix: correct prerequisite id in az-305`, `data: update dp-700 retirement date`, `chore: bump version to 1.9.1`).
-4. **Staging & Sync**:
-   - Stage `package.json` along with the other modified files.
-   - Proceed with the commit and push/sync process.
+## Table of Contents
+1. [Project Overview & Core Technology Stack](#1-project-overview--core-technology-stack)
+2. [Data Model, Schemas & Central Helpers](#2-data-model-schemas--central-helpers)
+3. [Certification Lifecycle & Intelligence Management](#3-certification-lifecycle--intelligence-management)
+4. [UI Design System & Component Standards (Fluent 2)](#4-ui-design-system--component-standards-fluent-2)
+5. [Application State, Persistence & Multi-Currency](#5-application-state-persistence--multi-currency)
+6. [Interactive Features, Graph Layouts & Routing](#6-interactive-features-graph-layouts--routing)
+7. [Git Workflows & Pre-Commit Quality Gate](#7-git-workflows--pre-commit-quality-gate)
 
-## 2. Certification Information Sources & Lifecycle Management
+---
 
-- **Primary News Source**: When looking for or updating information about changes to Microsoft certifications, always use the following as the primary information source: https://techcommunity.microsoft.com/category/skills-hub/blog/skills-hub-blog. This is the official Microsoft certification news channel.
-- **Lifecycle States & Attributes**:
-  - **Active (GA)**: Normal general-availability exams located in their respective pillar track in `src/data/certificationPaths.js`.
-  - **Beta Exams**:
-    - Set `isBeta: true` or `isBeta: 'Beta from Month YYYY'` (e.g., `'Beta from July 2026'`).
-    - When an exam transitions from Beta to GA, remove `isBeta` and add `isNew: true`.
-  - **New Certifications**:
-    - When a new certification is added to the application, add `isNew: true` to highlight it with `<Badge variant="new">New</Badge>`.
-    - **Rule of Recency**: Whenever certification updates are applied, actively scan the codebase for any certifications that previously had `isNew: true` applied and remove it from them so only the most recent certifications are highlighted as "New".
-  - **Coming Soon Exams**:
-    - Set `isComingSoon: true` for newly announced certifications prior to registration or beta availability.
-  - **Retiring Exams**:
-    - When an exam is announced as retiring, add `retirementDate: 'YYYY-MM-DD'` and set its state badge to `"Retiring"`.
-    - The certification remains in its active pillar path while retiring.
-  - **Retired Exams**:
-    - When an exam reaches its retirement date, move the certification entry to `PILLARS.RETIRED` under the retired track in `src/data/certificationPaths.js`.
-    - Set its status to `"Retired"` and clean up or update any corresponding references in `src/data/careerRoles.js`.
-- **Certification Expiration & 1-Year Renewal Lifecycle**:
-  - `doesCertExpire(level)` returns `true` for `Associate`, `Expert`, and `Specialty` exams (which have a 1-year validity window). `Fundamentals` exams do not expire.
-  - When an expiring cert was completed more than 1 year ago (tracked in `completionDates[certId]`), `getStatus(certId)` automatically returns `CERT_STATUS.NEEDS_RENEWAL`.
-  - Status cycling or renewing on a `needs_renewal` certification sets the status back to `CERT_STATUS.COMPLETED` with an updated completion timestamp.
+## 1. Project Overview & Core Technology Stack
 
-## 3. Data Model, Schemas & Helper Functions
+- **Framework & Build**: React 18+ with Vite.
+- **Styling Architecture**: Vanilla CSS with BEM methodology (strictly **no Tailwind CSS**).
+- **Design Language**: Microsoft Fluent 2 Design System tokens, typography, and dark/light themes.
+- **Graph Layout & Visualization**: React Flow paired with the Dagre graph layout engine.
+- **Drag-and-Drop**: `@dnd-kit/core` and `@dnd-kit/sortable`.
+- **Icons**: Centralized abstraction via `@fluentui/react-icons` and custom SVG product icons.
+- **Key Directory Structure**:
+  - `src/data/`: Static sources of truth (`certificationPaths.js`, `careerRoles.js`).
+  - `src/components/`: Modular UI components organized by domain (`Dashboard/`, `PathMap/`, `CareerPathBuilder/`, `CertDetail/`, `Layout/`, `common/`).
+  - `src/context/`: React Context providers (`ProgressContext`, `ThemeContext`, `CurrencyContext`, `ToastContext`).
+  - `src/hooks/`: Custom state hooks (`useProgress.js`).
+  - `src/utils/`: Shared utilities, badge resolvers, date formatters, and pricing engines (`helpers.js`, `pricing.js`).
 
-When modifying `src/data/certificationPaths.js` or `src/data/careerRoles.js`:
+---
 
-- **Certification Object Schema (`certificationPaths.js`)**:
-  - Mandatory fields:
-    - `id`: Lowercase kebab-case string (e.g., `'az-104'`, `'ai-102'`, `'sc-900'`).
-    - `examCode`: Uppercase string (e.g., `'AZ-104'`, `'AI-102'`, `'SC-900'`).
-    - `name`: Full title string (e.g., `'Azure Administrator Associate'`).
-    - `level`: One of `CERT_LEVELS` (`FUNDAMENTALS`, `ASSOCIATE`, `EXPERT`, `SPECIALTY`).
-    - `description`: Concise summary of the certification scope.
-    - `prerequisites`: Array of lowercase kebab-case cert IDs (e.g., `['az-104']`) OR nested arrays for "1 of N" choice requirements (e.g., `[['az-104', 'az-204']]`).
-    - `learnUrl`: Verified, active Microsoft Learn URL.
-    - `retirementDate`: `'YYYY-MM-DD'` string or `null`.
-    - `skillsMeasured`: Array of strings detailing objective domains and percentage weightings.
-  - Optional fields:
-    - `recommendedPrereqs`: Array of cert IDs (e.g., `['az-900']`) recommended for learning order but not required for credential award.
-    - `branch`: Lowercase string matching a defined branch `id` in the parent path's `branches` array.
-    - `isBeta`: `true` or `'Beta from <Month> <Year>'`.
-    - `isNew`: `true`.
-    - `isComingSoon`: `true`.
-- **Path Track Schema (`certificationPaths.js`)**:
-  - Fields: `id` (kebab-case), `name` (full title), `shortName` (compact display name), `code` (uppercase 2-letter prefix e.g., `'AZ'`), `pillar` (`PILLARS.*`), `color` (CSS var e.g., `'var(--line-azure)'`), `glowColor` (CSS var e.g., `'var(--glow-azure)'`), `cssVar`, `icon` (key in `IconMap.jsx`), `description`, `branches` (`[{ id, name, description }]`), and `certifications` (array of certification objects).
-- **Career Roles Schema (`src/data/careerRoles.js`)**:
-  - Fields: `id` (kebab-case), `title`, `description`, `icon` (key in `IconMap.jsx`), `color` (CSS var), `certs` (array of valid certification IDs).
-  - **Career Roles Synchronization**: Whenever a certification ID is added, renamed, or retired in `certificationPaths.js`, you **must** review and update `src/data/careerRoles.js` to ensure the `certs: [...]` array in each role has no dangling or broken IDs.
-- **Central Data Helper Functions**:
-  - Always leverage and maintain centralized helper functions in `certificationPaths.js`:
-    - `getCertById(id)`: Returns `{ cert, path }` or `null`.
-    - `getAllCertifications()`: Returns flattened array of all certifications with path metadata.
-    - `getPathById(pathId)`: Returns the path object or `undefined`.
-    - `getCertificationsRequiring(certId)`: Returns array of certifications that have `certId` as a prerequisite.
-    - `doesCertExpire(level)`: Returns boolean indicating if the level requires annual renewal.
+## 2. Data Model, Schemas & Central Helpers
 
-## 4. Pricing & Multi-Currency System
+All certification and career path data reside in `src/data/certificationPaths.js` and `src/data/careerRoles.js`.
 
-- **Central Pricing Source of Truth (`src/utils/pricing.js`)**:
-  - Supported currencies: `GBP` (£), `USD` ($), `EUR` (€). Default currency is `GBP`.
-  - Base pricing tiers:
-    - `Fundamentals`: GBP 69, USD 99, EUR 99.
-    - `Associate`, `Expert`, `Specialty`: GBP 132, USD 165, EUR 165.
-- **Helper Functions**:
-  - Use `getExamCost(level, currency)` for numeric calculation and `getFormattedExamCost(level, currency)` (e.g., `"£132"`) for display.
-  - Never hardcode currency symbols or exam prices directly into component JSX or styles.
-- **Currency Context**:
-  - Currency selection is globally managed via `CurrencyProvider` / `useCurrency()` and persisted under `localStorage` key `atozazure_currency`.
+### 2.1 Pillars Enum (`PILLARS`)
+```javascript
+export const PILLARS = {
+  CLOUD_AI: 'Cloud & AI Platforms',
+  BIZ_SOLUTIONS: 'AI Business Solutions',
+  SECURITY: 'Security',
+  RETIRED: 'Retired & Archived',
+};
+```
 
-## 5. State Persistence, Storage Keys & Backup Integrity
+### 2.2 Path Track Schema (`src/data/certificationPaths.js`)
+Each track object represents an exam category or domain:
+| Field | Type | Description |
+|---|---|---|
+| `id` | `string` (kebab-case) | Unique track identifier (e.g. `'azure-infrastructure'`, `'security'`). |
+| `name` | `string` | Full path track title. |
+| `shortName` | `string` | Compact title used in badges and navigation cards. |
+| `code` | `string` | Uppercase 2-letter prefix (e.g. `'AZ'`, `'SC'`, `'AI'`). |
+| `pillar` | `PILLARS.*` | Pillar category mapping. |
+| `color` | `string` | CSS variable for path line (e.g. `'var(--line-azure)'`). |
+| `glowColor` | `string` | CSS variable for path glow highlight. |
+| `cssVar` | `string` | Raw CSS variable name without `var()`. |
+| `icon` | `string` | Key mapped in `src/components/common/IconMap.jsx`. |
+| `description` | `string` | Concise overview of the track scope. |
+| `branches` | `Array<Object>` | Array of branch tracks: `[{ id: 'admin', name: 'Admin', description: '...' }]`. |
+| `certifications`| `Array<Object>` | List of certification objects belonging to this path track. |
 
-- **Complete Storage Key Inventory**:
-  - `ms-cert-tracker-progress`: Object mapping `{ [certId]: CERT_STATUS }`.
-  - `ms-cert-tracker-tracked-paths`: Array of active path IDs included in the user roadmap.
-  - `ms-cert-tracker-tracked-certs`: Array of active cert IDs included in learning/progress metrics.
-  - `ms-cert-tracker-dismissed-certs`: Array of dismissed cert IDs.
-  - `ms-cert-tracker-dates`: Object mapping `{ [certId]: ISOString }` recording completion timestamps.
-  - `ms-cert-tracker-custom-playlist`: Array of ordered cert IDs representing the custom career timeline.
-  - `atozazure_currency`: Selected currency code (`'GBP'`, `'USD'`, `'EUR'`).
-  - `atozazure_theme`: Selected theme preference (`'light'`, `'dark'`, `'system'`).
-- **Safe Parsing**: Always wrap `localStorage` access and JSON parsing in `try/catch` blocks with safe default fallbacks in `src/hooks/useProgress.js` and context providers.
-- **Export, Import & Reset Parity**:
-  - Any new persistent state or user preference **must** be wired into:
-    1. `exportProgressJSON()` — included in the backup JSON payload.
-    2. `importProgressJSON()` — safely validated, type-checked, and merged on restoration.
-    3. `resetAll()` — completely cleared from state and `localStorage` upon user confirmation.
+### 2.3 Certification Object Schema (`src/data/certificationPaths.js`)
+#### Mandatory Fields:
+- `id`: Lowercase kebab-case string matching the exam ID (e.g. `'az-104'`, `'ai-102'`).
+- `examCode`: Uppercase official exam code string (e.g. `'AZ-104'`, `'AI-102'`).
+- `name`: Full certification credential title (e.g. `'Azure Administrator Associate'`).
+- `level`: One of `CERT_LEVELS` (`'Fundamentals'`, `'Associate'`, `'Expert'`, `'Specialty'`).
+- `description`: Comprehensive summary of the certification scope and target persona.
+- `prerequisites`: Array of prerequisite cert IDs (e.g. `['az-104']`) OR nested arrays for "1 of N" choice requirements (e.g. `[['az-104', 'az-204']]`). Use `[]` if none.
+- `learnUrl`: Verified, active Microsoft Learn exam page URL.
+- `retirementDate`: `'YYYY-MM-DD'` string if announced, otherwise `null`.
+- `skillsMeasured`: Array of strings detailing objective domains and percentage weightings.
 
-## 6. Interactive Architecture, Layouts & Routing
+#### Optional Fields:
+- `recommendedPrereqs`: Array of cert IDs (e.g. `['az-900']`) recommended for foundational learning but not strictly required.
+- `branch`: Lowercase string matching one of the parent path's `branches[].id` values.
+- `isBeta`: `true` or `'Beta from <Month> <Year>'` (e.g. `'Beta from July 2026'`).
+- `isNew`: `true` (renders `<Badge variant="new">New</Badge>`).
+- `isUpdated`: `true` (renders `<Badge variant="updated">Updated</Badge>`).
+- `isComingSoon`: `true` (renders `<Badge variant="default">Coming soon</Badge>`).
+- `isIndependent`: `true` (marks standalone, disconnected, or retired certs in Dagre/React Flow graph layout).
 
-- **React Flow + Dagre Graph Layout (`PathMap.jsx` & `CertNode.jsx`)**:
-  - Graph layout is calculated using Dagre with `nodesep: 40`, `ranksep: 80` and `direction: 'TB'`.
-  - Node dimensions are fixed at `400px` width x `230px` height.
-  - Custom nodes (`CertNode.jsx`) must contain handles (`Position.Top` target, `Position.Bottom` source with `opacity: 0`) and fit within the fixed dimensions without scrollbars or text overflow.
-  - Viewport preservation: Leverage the `lastFittedPath` pattern to avoid jarring canvas re-centering when toggling node statuses within the same path.
-- **Drag-and-Drop Reordering (`CareerPathBuilder.jsx` & `SortableCertItem.jsx`)**:
-  - Custom track sorting utilizes `@dnd-kit/core` and `@dnd-kit/sortable` with `verticalListSortingStrategy`.
-  - Accessibility: Must bind both `PointerSensor` and `KeyboardSensor` (`sortableKeyboardCoordinates`).
-  - Reordering invokes `arrayMove` and persists immediately to `customPlaylist`.
-  - Custom tracks must support Markdown export (`# My Custom Career`).
-- **Global Search & Keyboard Shortcuts**:
-  - `SearchBar.jsx`: Debounced (250ms), searches across name, code, path name, and description.
-  - Global shortcuts:
-    - `Ctrl+K` / `Cmd+K`: Focus global search input.
-    - `Ctrl+B` / `Cmd+B`: Toggle navigation sidebar.
-    - In `CertDetail`: `Escape` closes panel, `S` cycles status, `E` toggles tracked state, `Enter` opens official Learn link.
-  - Shortcut collision guard: Always check `if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.isContentEditable) return;` before executing single-key shortcuts.
-- **Routing & Code Splitting (`App.jsx`)**:
-  - Routes: `/` (Dashboard), `/career-paths` (CareerPathBuilder), `/path/:pathId` (PathMap), `*` (Redirect to `/`).
-  - Query parameters: Support deep linking via `?cert=<certId>` on `/path/:pathId` and `?role=<roleId>` on `/career-paths`.
-  - Suspense fallback: Use `.loading-skeleton` with Fluent shimmer for lazy route components.
+> [!IMPORTANT]
+> **Dynamic Runtime Properties**: Do **NOT** hardcode `role`, `roles`, or `roleData` on certification objects in `certificationPaths.js`. These are computed and attached automatically at runtime by matching against `src/data/careerRoles.js`.
 
-## 7. UI Design Language & Component Standards
+### 2.4 Career Roles Schema (`src/data/careerRoles.js`)
+Each role object defines a job profile:
+- `id`: Lowercase kebab-case string (e.g. `'ai-engineer'`, `'solutions-architect'`).
+- `title`: Display name of the career role.
+- `description`: Role responsibilities summary.
+- `icon`: Key mapped in `IconMap.jsx`.
+- `color`: CSS variable for role theme accent.
+- `certs`: Array of valid certification IDs mapped to this career role.
 
-### 🚨 CSS Architecture & Methodology
-To maintain a unified Fluent 2 design language, the following rules are **STRICTLY FORBIDDEN**:
-- **Tailwind CSS**: Do not use Tailwind classes (e.g., `bg-white`, `flex`, `p-4`). The project uses Vanilla CSS with BEM (Block Element Modifier) methodology.
-- **Hardcoded & Generic Colors**: Do not use raw hex colors in component CSS. Always use the corresponding CSS variables defined in `src/index.css`.
-- **Inline Styles**: Avoid direct inline styles for theming (e.g., `style={{ color: '#fff' }}`). However, **passing dynamic CSS variables via inline styles** (e.g., `style={{ '--card-color': path.color }}`) is explicitly permitted and encouraged for components that require dynamic theming from props or data.
+> [!WARNING]
+> **Data Synchronization Requirement**: Whenever a certification ID is added, renamed, or retired in `certificationPaths.js`, you **must** review `src/data/careerRoles.js` to ensure the `certs: [...]` arrays contain no dangling or broken IDs.
 
-When creating or modifying UI components, you **must** adhere to the following conventions:
+### 2.5 Central Data Helpers (`certificationPaths.js`)
+Always leverage existing central helper functions:
+- `getCertById(id)`: Returns `{ cert, path }` or `null`.
+- `getAllCertifications()`: Returns a flattened array of all certifications with path metadata.
+- `getPathById(pathId)`: Returns the track object or `undefined`.
+- `getCertificationsRequiring(certId)`: Returns array of certifications listing `certId` as a prerequisite.
+- `doesCertExpire(level)`: Returns boolean indicating if the level requires annual renewal (`Associate`, `Expert`, `Specialty`).
 
-### 1. BEM Methodology
-- Structure component classes using BEM format: `.Block__Element--Modifier` (e.g., `.dashboard`, `.dashboard__hero`, `.dashboard__update-btn--active`).
-- Create dedicated `.css` files for each component (e.g., `Dashboard.css`) and import them directly into the `.jsx` file.
+---
 
-### 2. Fluent 2 Design Tokens (CSS Variables)
-Always use the variables defined in `src/index.css` to ensure consistent theming across light and dark modes:
-- **Backgrounds/Surfaces**: Use `--colorNeutralBackground1` (cards), `--colorNeutralBackground2` (app background), or semantic aliases like `--bg-app`, `--bg-surface-1`, `--bg-surface-hover`.
-- **Text/Foreground**: Use `--colorNeutralForeground1` (primary text), `--colorNeutralForeground2` (secondary/subtitle text), `--colorNeutralForeground3` (tertiary text). Aliases available: `--text-primary`, `--text-secondary`.
-- **Borders**: Use `--colorNeutralStroke1` (strong), `--colorNeutralStroke2` (default), `--colorNeutralStroke3` (subtle).
-- **Brand Accents**: Use `--colorBrandBackground` and `--colorBrandForeground1` for primary actions.
-- **Path Colors & Glows**: Use `--line-<track>` (e.g., `--line-azure`, `--line-ai`, `--line-security`) and `--glow-<track>` for ambient highlights.
-- **Shadows**: Use standard Fluent elevation: `--shadow-2` (soft), `--shadow-4` (medium), `--shadow-8` (flyout/modal).
+## 3. Certification Lifecycle & Intelligence Management
 
-### 3. Spacing & Typography
-- **Spacing**: Use Fluent 2 base-4 spacing variables for padding, margins, and gaps: `--space-1` (4px), `--space-2` (8px), `--space-3` (12px), `--space-4` (16px), `--space-6` (24px), `--space-8` (32px).
-- **Corner Radii**: Use `--radius-sm` (2px), `--radius-md` (4px for buttons/inputs), `--radius-lg` (8px for cards), `--radius-xl` (12px).
-- **Typography**: Use standard font size variables: `--fs-body1` (14px), `--fs-body2` (16px), `--fs-subtitle2` (18px), `--fs-title3` (24px). Font weight variables: `--fw-regular`, `--fw-medium`, `--fw-semibold`.
+### 3.1 Primary Information Source
+- When researching, adding, or modifying Microsoft certifications, the **official primary source of truth** is the Microsoft Tech Community Skills Hub:
+  **https://techcommunity.microsoft.com/category/skills-hub/blog/skills-hub-blog**
 
-### 4. Theming & Dark Mode Validation
-- **Automatic Theme Switching**: The CSS variables automatically adapt when the `[data-theme="dark"]` attribute is toggled on the root element.
-- **No Media Queries for Theme**: Do not use `@media (prefers-color-scheme: dark)` in component CSS. Rely purely on the CSS variables to handle the color switch.
-- **Opacity**: Use CSS `color-mix` or `rgba()` with variables carefully. Native CSS variables with hex values do not support opacity directly unless pre-defined. Use the dedicated hover/active variables (e.g., `--colorNeutralBackground1Hover`).
+### 3.2 State Transitions & Attribute Management
+```mermaid
+graph TD
+  ComingSoon["Coming Soon (isComingSoon: true)"] -->|"Registration Opens"| Beta["Beta (isBeta: true)"]
+  Beta -->|"GA Launch"| NewCert["Active GA (isNew: true)"]
+  NewCert -->|"Subsequent Updates"| UpdatedCert["Active GA (isUpdated: true)"]
+  ActiveGA["Active GA"] -->|"Retirement Announced"| Retiring["Retiring (retirementDate: YYYY-MM-DD)"]
+  Retiring -->|"Retirement Date Reached"| Retired["Retired (Moved to PILLARS.RETIRED)"]
+  Retired -->|"> 12 Months Retired"| Pruned["Permanently Removed / Pruned"]
+```
 
-### 5. Layout, Animations, Z-Index & Accessibility
-- **Transitions**: Use the standard snappy Fluent timing: `transition: all var(--duration-normal) var(--curve-easy-ease);`.
-- **Animations**: Use the pre-defined keyframes in `index.css` such as `fadeIn`, `fadeInUp`, `slideInFromRight`, or `pulse` for loading states.
-- **Z-Index Management**: Never use hardcoded arbitrary z-indexes (e.g., `z-index: 9999`). Always use the standardized z-index tokens defined in `index.css` (e.g., `--z-dropdown`, `--z-sidebar`, `--z-header`, `--z-overlay`, `--z-modal`, `--z-toast`).
-- **Focus Rings**: Ensure keyboard accessibility by leveraging the global `:focus-visible` styles, or manually applying `outline: 2px solid var(--border-focus); outline-offset: 2px; border-radius: var(--radius-md);`.
-- **Semantic HTML**: Always use appropriate semantic elements (`<button>`, `<nav>`, `<main>`).
+1. **Coming Soon Certifications**:
+   - Set `isComingSoon: true` for newly announced certifications prior to registration or beta availability.
+2. **Transition to Beta**:
+   - When registration opens, remove `isComingSoon` and set `isBeta: true` or `isBeta: 'Beta from Month YYYY'`.
+3. **Transition from Beta to GA**:
+   - When an exam transitions from Beta to GA, remove `isBeta` and add `isNew: true`.
+4. **New & Updated Certifications (Rule of Recency)**:
+   - **New Certifications**: When a new certification is added, set `isNew: true`.
+   - **Updated Certifications**: When an existing certification is modified (e.g. skills measured, title, requirements), set `isUpdated: true`.
+   - **Rule of Recency**: Whenever certification additions or updates are applied, actively scan `src/data/certificationPaths.js` and remove any previous `isNew: true` or `isUpdated: true` flags from older certifications so only the most recently added or modified credentials are highlighted.
+5. **Retiring Certifications**:
+   - When Microsoft announces an exam retirement, add `retirementDate: 'YYYY-MM-DD'` and display the `"Retiring"` badge.
+   - The certification remains in its active pillar path while retiring.
+6. **Retired Certifications & Prerequisite Succession**:
+   - When an exam passes its retirement date, move the certification entry to `PILLARS.RETIRED` under the retired track (`id: 'retired'`) in `src/data/certificationPaths.js`.
+   - Set its `branch: 'retired'` and `isIndependent: true`.
+   - Update `src/data/careerRoles.js` to remove or replace the retired exam ID.
+   - **Prerequisite Succession**: Check all active certifications that listed the retired exam in their `prerequisites` array and update them to point to the official successor certification (e.g. replacing `dp-203` with `dp-700`).
+7. **Automated Pruning of Long-Retired Certifications (>12 Months)**:
+   - When a certification has been retired for **more than 12 months** (i.e. `retirementDate` is more than 1 year in the past from the current date), automatically and permanently remove the certification entry from `PILLARS.RETIRED` in `src/data/certificationPaths.js`.
+   - Clean up any residual references in `src/data/careerRoles.js` and badge mappings to keep the application lean and free of stale, obsolete exam data.
 
-### 6. Interactive Micro-animations (Push Effect)
-- **Buttons & Cards**: To make the UI feel alive, apply a "push" effect to interactive elements when clicked. In your CSS, use the `:active` pseudo-class with `transform: scale(0.96);`.
-- **Consistency**: Combine this with the standard Fluent transition so the push effect is smooth but snappy.
+### 3.3 Certification Expiration & 1-Year Renewal Lifecycle
+- `doesCertExpire(level)` returns `true` for `Associate`, `Expert`, and `Specialty` exams (valid for 1 year). `Fundamentals` exams do not expire.
+- When an expiring cert was completed more than 1 year ago (recorded in `completionDates[certId]`), `getStatus(certId)` automatically returns `CERT_STATUS.NEEDS_RENEWAL`.
+- Cycling or renewing a `needs_renewal` certification sets the status back to `CERT_STATUS.COMPLETED` with an updated completion timestamp.
 
-### 7. Responsive Design & Breakpoints
-- **Media Queries**: Do not use Tailwind prefixes. Use standard CSS media queries for responsive layouts.
-- **Standard Breakpoints**: Use `@media (max-width: 768px)` for mobile/tablet adjustments and `@media (min-width: 1024px)` for desktop-specific layouts.
+### 3.4 Verification Quality Gate (Links & Badges)
+- **Link Verification**: Every Microsoft Learn link added or updated **must** be verified to ensure it resolves to an active, valid page without 404s or broken redirects.
+- **Badge URL Resolution (`src/utils/helpers.js`)**:
+  - `getBadgeUrl(level, certId)` maps credentials to official Microsoft Learn SVG badge assets.
+  - If Microsoft introduces non-standard badge filenames (e.g. `ab-730`, `ab-731`, `ab-700`, `ab-701`), register the explicit mapping in `getBadgeUrl()`.
+  - Always include `loading="lazy"` on badge `<img>` elements, with fallback to `IconMap.Award`.
 
-### 8. Standard Component Sizing & Geometry
-- **Heights**: Maintain consistent heights for standard interactive elements. Buttons, text inputs, and selects should generally have a height of `32px`. Compact icon buttons can be `26px`.
-- **Corner Radii Constraints**: Badges, status tags, toggles, and segmented controls must use standard rounded corners (e.g., `var(--radius-md)` or `var(--radius-sm)`). **Strictly avoid fully rounded pill shapes** (`var(--radius-full)`) unless they are small indicator dots.
+---
 
-### 9. Common States (Disabled, Success, Error, Warning)
-- **Disabled State**: Apply `opacity: 0.5`, `cursor: not-allowed`, and `pointer-events: none` for inactive interactive elements.
-- **Semantic Colors**: Use the specific state variables from `index.css`:
-  - **Success**: `--status-completed` or `--badge-completed-fg`.
-  - **Warning/In-Progress**: `--status-in-progress` or `--badge-inprogress-fg`.
-  - **Danger/Error**: `--line-security` or `--badge-retiring-fg` depending on context.
+## 4. UI Design System & Component Standards (Fluent 2)
 
-### 10. Icons & Imagery (IconMap vs ProductIcons)
-- **Standardisation & IconMap**: Prioritize official Microsoft icons or Fluent UI System Icons where possible to maintain alignment with the Azure portal experience. Do not import `@fluentui/react-icons` directly into random components. Instead, always use the central abstraction `src/components/common/IconMap.jsx`. If a new icon is needed, import the `...Regular` variant from `@fluentui/react-icons` and wrap it with `withSize(...)` in `IconMap.jsx`.
-- **Microsoft Product Icons (`ProductIcons.jsx`)**: Full-color product or service icons (e.g., Azure services, Copilot, GitHub, Power Platform) must be defined as SVG components in `src/components/common/ProductIcons.jsx` and mapped in `IconMap.jsx`.
-- **Icon Backgrounds**: When displaying full-color product or service icons, set the container background to `transparent` so the icon stands on its own. Solid category backgrounds are reserved for monochrome structural icons.
-- **Consistent Usage**: Ensure that the same icon is used consistently for the same function or meaning across the entire application (e.g., always use `AlertTriangle` for warnings or retiring elements, `CheckCircle2` for completions).
+### 🚨 Strict CSS Architecture Rules
+- **NO Tailwind CSS**: Do not use Tailwind classes (`flex`, `bg-white`, `p-4`, etc.). Use Vanilla CSS with BEM methodology (`.block__element--modifier`).
+- **NO Hardcoded Colors**: Raw hex or rgb values in component CSS files are strictly forbidden. Always use CSS variables from `src/index.css`.
+- **Inline Styles**: Avoid inline styles for general styling. **Passing dynamic CSS variables via inline styles** (e.g., `style={{ '--card-color': path.color }}`) is explicitly permitted and encouraged for data-driven theming.
 
-### 11. Microsoft Certification Badges & Links
-- **Official Assets**: Always use official Microsoft certification badge images when representing certifications (e.g., Azure Fundamentals, Azure Administrator Associate).
-- **Badge URL Resolution (`src/utils/helpers.js`)**: Use `getBadgeUrl(level, certId)` which points to official Microsoft Learn SVG badge assets, falling back gracefully to `IconMap.Award` when no image exists. Include `loading="lazy"` on all badge `<img>` elements.
-- **Badge Verification Step**: Before adding or updating a certification badge, you **must** verify that it is the most current, accurate representation of the badge as provided by Microsoft. Check the official Microsoft Learn documentation or training portal to ensure the badge design, title, and visual status are completely up-to-date and accurate.
-- **Link Verification Step**: When adding or updating Microsoft Learn links for exams or certifications, you **must** always look for the correct link and perform a verification step to ensure the link is correct, active, and successfully resolves to the intended Microsoft page without broken redirects or a 404 error.
-- **Badge Placement Strategy**: On certification overview cards, specific badges must be placed in specific locations to maintain a clean hierarchy:
-  - **Header (Next to Exam Code)**: Only display state-based informational badges such as "Beta", "Retiring", "Retired", "Optional", "New", or "Coming soon".
-  - **Footer (Bottom of Card)**: Display structural and requirement badges, such as the Certification Level (e.g., "Expert") and any Prerequisite requirements (e.g., "Prereq: AZ-104", "Prereq: AZ-104 OR AZ-204"). Do not place prerequisite badges in the header.
+### 4.1 Design Tokens & Theme Symmetry
+Every CSS variable introduced in `src/index.css` must have dual definitions in both `:root` (light) and `[data-theme="dark"]` (dark):
+- **Surfaces**: `--colorNeutralBackground1` (cards), `--colorNeutralBackground2` (app background), `--bg-surface-1`, `--bg-surface-hover`.
+- **Typography/Foreground**: `--colorNeutralForeground1` (primary), `--colorNeutralForeground2` (secondary), `--colorNeutralForeground3` (tertiary).
+- **Borders**: `--colorNeutralStroke1` (strong), `--colorNeutralStroke2` (default), `--colorNeutralStroke3` (subtle).
+- **Theme Accents & Glows**: `--line-<track>` (e.g. `--line-azure`, `--line-ai`, `--line-security`) and `--glow-<track>`.
+- **Elevation**: `--shadow-2` (soft), `--shadow-4` (medium), `--shadow-8` (flyout/modal).
+- **Standard Z-Index**: `--z-dropdown`, `--z-sidebar`, `--z-header`, `--z-overlay`, `--z-modal`, `--z-toast`. Never use arbitrary values like `9999`.
 
-### 12. Fixed-Height Node Overflow Prevention
-- **Line Clamping & Dynamic Text**: When building or modifying UI components that sit inside strict, fixed-dimension layout nodes (such as React Flow nodes sized by Dagre at `400px` x `230px`), you must ensure that variable-length text (like long certification titles or descriptions) does not push footer content out of bounds or cause clipping.
-- **Validation Constraints**: If you increase line limits (e.g., via `-webkit-line-clamp`), always mathematically or visually validate that the worst-case scenario (e.g., a 3-line title combined with maximum description lines) will comfortably fit within the fixed height without overflowing. Keep clamps conservative if the parent height cannot scale automatically.
+### 4.2 Base Spacing, Sizing & Geometry
+- **Spacing**: Base-4 scale: `--space-1` (4px), `--space-2` (8px), `--space-3` (12px), `--space-4` (16px), `--space-6` (24px), `--space-8` (32px).
+- **Heights**: Standard interactive elements (buttons, inputs, selects) should be `32px`. Compact icon buttons should be `26px`.
+- **Corner Radii**: Cards use `--radius-lg` (8px), inputs/buttons use `--radius-md` (4px), small tags use `--radius-sm` (2px).
+- **Anti-Pill Rule**: Badges, status tags, and segmented controls must use standard rounded corners (`--radius-md` or `--radius-sm`). **Avoid fully rounded pill shapes** (`--radius-full`) except for small circular status dots.
 
-### 13. Modals, Drawers & Overlays UX
-- **Escape Key Dismissal**: Modals and slide-over drawers (e.g., `DataModal.jsx`, `CertDetail.jsx`) must listen for the `Escape` key and invoke `onClose()`.
-- **Backdrop Click**: Clicking the overlay/backdrop outside the modal container must dismiss the view.
-- **Scroll Locking**: Modals and full drawers should prevent background body scrolling while active.
+### 4.3 Badge Variants & Card Placement Hierarchy
+#### Supported Badge Variants (`src/components/common/Badge.jsx`):
+| Variant | Color Token | Usage |
+|---|---|---|
+| `variant="default"` | `--badge-default-*` | Neutral secondary info, prerequisites, optional tags. |
+| `variant="fundamentals"` | `--badge-fundamentals-*` | Fundamentals level credentials. |
+| `variant="associate"` | `--badge-associate-*` | Associate level credentials. |
+| `variant="expert"` | `--badge-expert-*` | Expert level credentials. |
+| `variant="retiring"` | `--badge-retiring-*` | Retiring / Retired exam warnings. |
+| `variant="completed"` | `--badge-completed-*` | Completed certs. |
+| `variant="in-progress"` | `--badge-inprogress-*` | Currently studying certs. |
+| `variant="new"` | `--badge-new-*` | Newly added certifications. |
+| `variant="updated"` | `--badge-updated-*` | Recently updated certifications. |
+| `variant="beta"` | `--badge-beta-*` | Beta exams. |
 
-### 14. Toast Notifications & User Feedback
-- **Feedback on Actions**: Use the central `useToast()` hook (`addToast(message, type)`) to provide clear visual feedback whenever a user performs explicit actions:
-  - Successful or failed progress backup export (`exportProgressJSON`).
-  - Successful or failed backup restoration (`importProgressJSON`).
-  - Progress reset confirmation (`resetAll`).
-  - Including or excluding certifications from tracked learning.
-  - Cycling or setting certification progress status.
-  - Copying shareable links or path URLs to clipboard.
-- **Toast Types**: Use `'success'`, `'error'`, `'info'`, or `'warning'` appropriately.
+#### Placement Hierarchy on Certification Cards:
+- **Card Header (Next to Exam Code)**: Only place state-based informational badges (`Beta`, `Retiring`, `Retired`, `Optional`, `New`, `Updated`, `Coming soon`).
+- **Card Footer (Bottom of Card)**: Only place structural badges (`Level` e.g. "Associate", and prerequisite requirements e.g. "Prereq: AZ-104").
+
+### 4.4 Icons: IconMap vs ProductIcons
+- **Central Icon Abstraction (`IconMap.jsx`)**: Do not import `@fluentui/react-icons` directly into feature components. Import the `...Regular` variant into `src/components/common/IconMap.jsx`, wrap with `withSize(...)`, and export as a named key.
+- **Product Icons (`ProductIcons.jsx`)**: Full-color product/service SVGs (Azure, Copilot, GitHub, Power Platform) are maintained in `ProductIcons.jsx`. Their container background must be set to `transparent`.
+
+### 4.5 Micro-interactions, Modals & Toast Feedback
+- **Push Effect**: Apply active micro-animations to interactive buttons and cards: `:active { transform: scale(0.96); }` paired with standard Fluent transitions.
+- **Modal Accessibility**: All modals/drawers (`DataModal.jsx`, `CertDetail.jsx`) must support `Escape` key dismissal, backdrop click dismissal, and background scroll locking.
+- **Toast Notifications**: Always invoke `addToast(message, type)` (`'success'`, `'error'`, `'info'`, `'warning'`) when users perform actions (exporting/importing data, resetting progress, toggling tracks, cycling status, copying links).
+
+---
+
+## 5. Application State, Persistence & Multi-Currency
+
+### 5.1 Storage Keys Inventory
+State is persisted to `localStorage` with safe `try/catch` fallbacks in `src/hooks/useProgress.js`:
+- `ms-cert-tracker-progress`: Object mapping `{ [certId]: CERT_STATUS }`.
+- `ms-cert-tracker-tracked-paths`: Array of active path IDs. (Migrates automatically from legacy `ms-cert-tracker-ignored`).
+- `ms-cert-tracker-tracked-certs`: Array of active cert IDs.
+- `ms-cert-tracker-dismissed-certs`: Array of dismissed cert IDs.
+- `ms-cert-tracker-dates`: Object mapping `{ [certId]: ISOString }` completion timestamps.
+- `ms-cert-tracker-custom-playlist`: Array of ordered cert IDs representing the custom career timeline.
+- `atozazure_currency`: Selected currency code (`'GBP'`, `'USD'`, `'EUR'`).
+- `atozazure_theme`: Selected theme preference (`'light'`, `'dark'`, `'system'`).
+
+### 5.2 Backup & Reset Parity
+Any new persistent property added to state **must** be wired into:
+1. `exportProgressJSON()` — included in the backup JSON schema.
+2. `importProgressJSON()` — validated, safely parsed, and merged.
+3. `resetAll()` — completely cleared from state and `localStorage`.
+
+### 5.3 Multi-Currency Pricing Engine (`src/utils/pricing.js`)
+- Supported currencies: `GBP` (£, default), `USD` ($), `EUR` (€).
+- Pricing Tiers:
+  - `Fundamentals`: £69 / $99 / €99.
+  - `Associate` / `Expert` / `Specialty`: £132 / $165 / €165.
+- Helper functions: `getExamCost(level, currency)` for calculations and `getFormattedExamCost(level, currency)` (e.g. `"£132"`) for UI presentation. Never hardcode currency symbols.
+
+---
+
+## 6. Interactive Features, Graph Layouts & Routing
+
+### 6.1 React Flow + Dagre Graph Engine (`PathMap.jsx` & `CertNode.jsx`)
+- Graph coordinates are generated via Dagre (`nodesep: 40`, `ranksep: 80`, `direction: 'TB'`).
+- Node dimensions are fixed at `400px` width x `230px` height. Custom nodes (`CertNode.jsx`) must fit within these dimensions without overflow or clipping.
+- Handles: Top target handle and bottom source handle with `opacity: 0`.
+- Viewport preservation: Use the `lastFittedPath` pattern to avoid unwanted canvas re-centering on node status changes within the same path.
+
+### 6.2 Career Path Builder (`CareerPathBuilder.jsx`)
+- Reordering utilizes `@dnd-kit/core` and `@dnd-kit/sortable` with `verticalListSortingStrategy`.
+- Bind both `PointerSensor` and `KeyboardSensor` (`sortableKeyboardCoordinates`).
+- Support Markdown timeline export (`# My Custom Career Roadmap`).
+
+### 6.3 Global Search & Keyboard Shortcuts
+- Search is debounced (250ms) across cert name, code, path name, and description.
+- Shortcut Guard: Always check `if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.isContentEditable) return;` before processing single-key shortcuts.
+- Global Hotkeys: `Ctrl+K` / `Cmd+K` (Search), `Ctrl+B` / `Cmd+B` (Sidebar toggle).
+- In `CertDetail`: `Escape` (Close), `S` (Cycle status), `E` (Toggle tracking), `Enter` (Open Learn link).
+
+### 6.4 Routing & Code Splitting (`src/App.jsx`)
+- Routes: `/` (Dashboard), `/career-paths` (CareerPathBuilder), `/path/:pathId` (PathMap), `*` (Redirect).
+- Query params: Deep linking via `?cert=<certId>` on `/path/:pathId` and `?role=<roleId>` on `/career-paths`.
+- Lazy routes must render Fluent shimmer loading skeletons (`.loading-skeleton`).
+
+---
+
+## 7. Git Workflows & Pre-Commit Quality Gate
+
+Whenever you are asked to commit and synchronize changes, you **must** follow this strict quality gate sequence:
+
+```mermaid
+graph LR
+  A["1. Code & Data Changes"] --> B["2. Version Bump (package.json)"]
+  B --> C["3. npm run lint"]
+  C --> D["4. npm run build"]
+  D --> E["5. git add & git commit"]
+  E --> F["6. git push / sync"]
+```
+
+### 1. Apply & Verify Code Changes
+Ensure all data schemas, component logic, styles, and unit features are complete and error-free.
+
+### 2. Version Bump Significance in `package.json`
+Increment the version in `package.json` according to semantic change impact:
+- **Patch** (e.g. `1.9.3` $\rightarrow$ `1.9.4`): Bug fixes, minor tweaks, routine data/lifecycle updates, exam retirement dates.
+- **Minor** (e.g. `1.9.3` $\rightarrow$ `1.10.0`): Substantial UI additions, builder features, new tracks, export tools, currency additions.
+- **Major** (e.g. `1.9.3` $\rightarrow$ `2.0.0`): Architectural overhauls or major breaking changes.
+
+> [!NOTE]
+> **Version Bump Exception**: Do **not** bump the version in `package.json` if only updating non-application documentation files (e.g. `README.md`, `.agents/AGENTS.md`, `api/README.md`).
+
+### 3. Run Quality Verification Checks
+- Run `npm run lint` and resolve any ESLint errors or warnings.
+- Run `npm run build` to verify Vite compiles and bundles with zero syntax, JSX, import, or CSS errors.
+
+### 4. Staging & Conventional Commit
+- Stage all modified files (including `package.json` if bumped).
+- Write commit messages following Conventional Commits format:
+  - `feat: add custom playlist export`
+  - `fix: correct prerequisite id in az-305`
+  - `data: update dp-700 retirement date`
+  - `style: refine badge variant colors in dark mode`
+  - `chore: bump version to 1.9.4`
+
+### 5. Remote Synchronization
+- Push and synchronize commits to the remote repository.

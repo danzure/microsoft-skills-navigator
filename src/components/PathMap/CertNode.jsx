@@ -1,8 +1,8 @@
 import { Handle, Position } from '@xyflow/react';
-import { CERT_STATUS, CERT_LEVELS, getCertById, getCertificationsRequiring } from '../../data/certificationPaths';
+import { CERT_STATUS, getCertById, getCertificationsRequiring } from '../../data/certificationPaths';
 import { useProgressContext } from '../../context/ProgressContext';
 import { useToast } from '../../context/ToastContext';
-import { isRetiring, isRetired, formatDate, getBadgeUrl } from '../../utils/helpers';
+import { isRetiring, isRetired, getBadgeUrl } from '../../utils/helpers';
 import Badge from '../common/Badge';
 import { IconMap } from '../common/IconMap';
 const { AlertTriangle, Link, ArchiveX, Eye, EyeOff } = IconMap;
@@ -17,14 +17,15 @@ import './CertNode.css';
  * @param {Object} props.data - The data injected by React Flow
  */
 const CertNode = ({ data }) => {
-  const { cert, pathColor, onSelect, index, isUnlocked } = data;
+  const { cert, pathColor, onSelect, index, isUnlocked, isPathIgnored } = data;
   const { getStatus, setStatus, isCertIgnored, toggleCertIgnored } = useProgressContext();
   const { addToast } = useToast();
   const status = getStatus(cert.id);
   const retiring = isRetiring(cert);
   const retired = isRetired(cert);
   const isRetiredExam = retiring || retired;
-  const certIgnored = !isRetiredExam && isCertIgnored(cert.id);
+  const isTracked = !isCertIgnored(cert.id);
+  const isExplicitlyExcluded = !isRetiredExam && !isPathIgnored && !isTracked;
 
   const statusClass = {
     [CERT_STATUS.NOT_STARTED]: 'cert-node--not-started',
@@ -60,24 +61,31 @@ const CertNode = ({ data }) => {
               label: 'Start it',
               onClick: () => {
                 setStatus(nextCert.id, CERT_STATUS.IN_PROGRESS);
-                addToast(`${nextCert.examCode} marked as In Progress`);
+                addToast(`${nextCert.examCode} marked as In Progress`, 'info');
               }
             }
           });
           return;
         }
       }
-      addToast(`${cert.examCode} marked as Passed`);
+      addToast(`${cert.examCode} marked as Passed`, 'success');
     } else if (newStatus === CERT_STATUS.IN_PROGRESS) {
-      addToast(`${cert.examCode} marked as In Progress`);
+      addToast(`${cert.examCode} marked as In Progress`, 'info');
     } else if (newStatus === CERT_STATUS.NOT_STARTED) {
-      addToast(`${cert.examCode} marked as Not Started`);
+      addToast(`${cert.examCode} marked as Not Started`, 'info');
     }
+  };
+
+  const getTrackTooltip = () => {
+    if (!isPathIgnored) {
+      return isTracked ? "Tracked with path • Click to exclude" : "Excluded from path • Click to track";
+    }
+    return isTracked ? "Tracked individually • Click to untrack" : "Track individual exam in My Learning";
   };
 
   return (
     <div
-      className={`cert-node ${statusClass} ${isUnlocked ? 'cert-node--unlocked' : ''} ${certIgnored ? 'cert-node--ignored' : ''}`}
+      className={`cert-node ${statusClass} ${isUnlocked ? 'cert-node--unlocked' : ''} ${isExplicitlyExcluded ? 'cert-node--ignored' : ''}`}
       style={{
         '--cert-node-color': pathColor,
         '--cert-node-index': index,
@@ -103,8 +111,8 @@ const CertNode = ({ data }) => {
               {getBadgeUrl(cert.level, cert.id) ? (
                 <img 
                   src={getBadgeUrl(cert.level, cert.id)} 
-                  alt={`${cert.level} Badge`} 
-                  className="cert-node__badge-image" 
+                  alt={`${cert.examCode} Badge`} 
+                  className="cert-node__badge-image"
                   loading="lazy"
                 />
               ) : (
@@ -112,28 +120,29 @@ const CertNode = ({ data }) => {
               )}
             </div>
             <div className="cert-node__title-group">
+              <h3 className="cert-node__name">{cert.name}</h3>
               <div className="cert-node__badge-stats">
                 <span className="cert-node__exam-code">{cert.examCode}</span>
-                {cert.level === CERT_LEVELS.FUNDAMENTALS && (
-                  <Badge variant="default" small>Optional</Badge>
-                )}
-
                 {retiring && (
                   <Badge variant="retiring" small>
                     <AlertTriangle size={9} />
-                    Retiring {formatDate(cert.retirementDate)}
+                    Retiring
                   </Badge>
                 )}
                 {retired && (
-                  <Badge variant="retiring" small outline>
+                  <Badge variant="retiring" small>
                     <ArchiveX size={9} />
-                    Retired {formatDate(cert.retirementDate)}
+                    Retired
                   </Badge>
-
                 )}
                 {cert.isNew && (
                   <Badge variant="new" small>
                     New
+                  </Badge>
+                )}
+                {cert.isUpdated && (
+                  <Badge variant="updated" small>
+                    Updated
                   </Badge>
                 )}
                 {cert.isBeta && (
@@ -147,27 +156,26 @@ const CertNode = ({ data }) => {
                   </Badge>
                 )}
               </div>
-              <h3 className="cert-node__name">{cert.name}</h3>
             </div>
           </div>
           
           {!isRetiredExam && (
             <button
-              className={`cert-node__track-btn ${certIgnored ? 'cert-node__track-btn--untracked' : 'cert-node__track-btn--tracked'}`}
+              className={`cert-node__track-btn ${isTracked ? 'cert-node__track-btn--tracked' : 'cert-node__track-btn--untracked'}`}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 toggleCertIgnored(cert.id);
-                if (certIgnored) {
-                  addToast(`${cert.examCode} added to tracked learning`);
+                if (!isTracked) {
+                  addToast(`${cert.examCode} added to tracked learning`, 'success');
                 } else {
-                  addToast(`${cert.examCode} removed from tracked learning`);
+                  addToast(`${cert.examCode} removed from tracked learning`, 'info');
                 }
               }}
-              title={certIgnored ? "Excluded from learning • Click to track" : "Tracked in learning • Click to exclude"}
-              aria-label={certIgnored ? "Include in tracked learning" : "Exclude from tracked learning"}
+              title={getTrackTooltip()}
+              aria-label={isTracked ? "Untrack exam" : "Track exam"}
             >
-              {certIgnored ? <EyeOff size={16} /> : <Eye size={16} />}
+              {isTracked ? <Eye size={16} /> : <EyeOff size={16} />}
             </button>
           )}
         </div>

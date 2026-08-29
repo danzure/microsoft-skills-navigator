@@ -260,17 +260,17 @@
   margin-bottom: 0.75rem;
 }
 
-.cpb-timeline-cert-code {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--card-color);
-  margin-bottom: 0.25rem;
-}
-
 .cpb-timeline-cert-name {
   font-size: 1.2rem;
   font-weight: 600;
   color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.cpb-timeline-cert-code {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--card-color);
 }
 
 .cpb-timeline-cert-desc {

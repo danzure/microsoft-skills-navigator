@@ -58,8 +58,8 @@ export const SortableCertItem = ({ id, index, certInfo, status, statusText, node
       >
         <div className="cpb-timeline-card-header">
           <div>
-            <div className="cpb-timeline-cert-code">{certInfo.examCode}</div>
             <div className="cpb-timeline-cert-name">{certInfo.name}</div>
+            <div className="cpb-timeline-cert-code">{certInfo.examCode}</div>
             <div style={{ display: 'flex', gap: '8px', marginTop: '8px', flexWrap: 'wrap' }}>
               <Badge variant={certInfo.level === 'Fundamentals' ? 'fundamentals' : certInfo.level === 'Associate' ? 'associate' : certInfo.level === 'Expert' ? 'expert' : 'default'} small>
                 {certInfo.level}
