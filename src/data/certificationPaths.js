@@ -315,7 +315,7 @@ export const certificationPaths = [
         level: CERT_LEVELS.FUNDAMENTALS,
         description: 'Demonstrate foundational knowledge of core data concepts related to Microsoft Azure data services.',
         prerequisites: [],
-        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/exams/dp-900/',
+        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/azure-data-fundamentals/',
         retirementDate: null,
         skillsMeasured: [
         'Describe core data concepts (25–30%)',
@@ -350,7 +350,7 @@ export const certificationPaths = [
         description: 'Build scalable, secure data pipelines for AI and analytics using Azure Databricks.',
         prerequisites: [],
         recommendedPrereqs: ['dp-900'],
-        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/',
+        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/azure-databricks-data-engineer-associate/',
         retirementDate: null,
         skillsMeasured: [
         'Set up and configure an Azure Databricks environment (15–20%)',
@@ -362,13 +362,13 @@ export const certificationPaths = [
       {
         id: 'dp-800',
         examCode: 'DP-800',
-        name: 'Data Security Engineer Associate',
+        name: 'SQL AI Developer Associate',
         level: CERT_LEVELS.ASSOCIATE,
         branch: 'engineering',
-        description: 'Implement and manage security for data in Azure.',
+        description: 'Design and develop AI-integrated database solutions across Microsoft SQL platforms, including SQL Server, Azure SQL, and databases in Microsoft Fabric.',
         prerequisites: [],
-        recommendedPrereqs: ['dp-700'],
-        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/',
+        recommendedPrereqs: ['dp-900'],
+        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/sql-ai-developer-associate/',
         retirementDate: null,
         skillsMeasured: [
         'Design and develop database solutions (35–40%)',
@@ -449,7 +449,6 @@ export const certificationPaths = [
       { id: 'operations', name: 'SecOps', description: 'Security operations and threat hunting' },
       { id: 'identity', name: 'Identity', description: 'Identity and access management' },
       { id: 'info-sec', name: 'Info Security', description: 'Information protection and compliance' },
-      { id: 'business', name: 'Business', description: 'Cybersecurity for business professionals' },
     ],
     certifications: [
       {
@@ -487,24 +486,6 @@ export const certificationPaths = [
         'Securing compute.',
         'Securing AI solutions.',
         'Managing and monitoring security posture.'
-        ],
-      },
-      {
-        id: 'sc-730',
-        examCode: 'SC-730',
-        name: 'Cybersecurity Business Professional',
-        level: CERT_LEVELS.ASSOCIATE,
-        branch: 'business',
-        description: 'Develop and integrate advanced, scalable AI agents using Microsoft Copilot Studio, Power Platform, and enterprise technologies to deliver robust solutions for organizations.',
-        prerequisites: [],
-        recommendedPrereqs: ['sc-900'],
-        learnUrl: 'https://learn.microsoft.com/en-gb/credentials/certifications/cybersecurity-business-professional/',
-        retirementDate: null,
-        skillsMeasured: [
-        'Digital reliance, and you frequently use computers, mobile devices, cloud services, and collaboration platforms to access, share, and store information.',
-        'A non-technical background and limited formal training in cybersecurity. Your expertise lies in business processes rather than in IT or security operations.',
-        'High exposure to cyber risks because you regularly handle sensitive data and communicate across networks, but you might not always be aware of potential risks.',
-        'Responsibility for privacy and accountability for safeguarding personal and organizational information in compliance with company policies.'
         ],
       },
       {
@@ -792,7 +773,7 @@ export const certificationPaths = [
         description: 'Design, build, and deploy custom AI agents using Microsoft Copilot Studio and Power Platform.',
         prerequisites: [],
         recommendedPrereqs: ['ab-900'],
-        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/',
+        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/ai-agent-builder-associate/',
         retirementDate: null,
         skillsMeasured: [
         'Design an AI agent solution',
@@ -854,13 +835,13 @@ export const certificationPaths = [
       {
         id: 'ab-250',
         examCode: 'AB-250',
-        name: 'AI Contact Center Specialist',
+        name: 'Dynamics 365 Contact Center AI Engineer Associate',
         level: CERT_LEVELS.ASSOCIATE,
         branch: 'contact-center',
         description: 'Design and deploy AI-powered contact center solutions with autonomous agents.',
         prerequisites: [],
         recommendedPrereqs: ['ab-900'],
-        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/',
+        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/dynamics-365-contact-center-ai-engineer-associate/',
         retirementDate: null,
         skillsMeasured: [
         'Configuring workstreams and engagement channels.',
@@ -894,37 +875,35 @@ export const certificationPaths = [
         ],
       },
       {
-        id: 'ab-700',
-        examCode: 'AB-700',
+        id: 'ab-730',
+        examCode: 'AB-730',
         name: 'AI Business Professional',
         level: CERT_LEVELS.FUNDAMENTALS,
         isIndependent: true,
-        description: 'Candidates for this Microsoft Certification should be adept at using generative AI productivity tools and core Microsoft 365 apps to enhance business outcomes and decision-making, without requiring coding or app development skills.',
+        description: 'Use generative AI productivity tools and Microsoft 365 applications to enhance business outcomes, drafting, and decision-making.',
         prerequisites: [],
-        learnUrl: 'https://learn.microsoft.com/en-gb/credentials/certifications/ai-business-professional/?practice-assessment-type=certification',
+        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/ai-business-professional/',
         retirementDate: null,
         skillsMeasured: [
-        'Understand core concepts of AB-700',
-        'Implement and manage AB-700 workloads',
-        'Optimize and monitor AB-700 environments',
-        'Secure AB-700 solutions'
+        'Understand generative AI fundamentals (25–30%)',
+        'Manage prompts and conversations by using AI (35–40%)',
+        'Draft and analyze business content by using AI (25–30%)'
         ],
       },
       {
-        id: 'ab-701',
-        examCode: 'AB-701',
+        id: 'ab-731',
+        examCode: 'AB-731',
         name: 'AI Transformation Leader',
         level: CERT_LEVELS.FUNDAMENTALS,
         isIndependent: true,
-        description: 'This Microsoft Certification is for business decision-makers who guide AI transformation and innovation with Microsoft 365 Copilot, Azure AI, and Microsoft Foundry, without requiring coding skills.',
+        description: 'Guide AI transformation, adoption, and strategic innovation with Microsoft 365 Copilot, Azure AI, and Microsoft Foundry.',
         prerequisites: [],
-        learnUrl: 'https://learn.microsoft.com/en-gb/credentials/certifications/ai-transformation-leader/?practice-assessment-type=certification',
+        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/ai-transformation-leader/',
         retirementDate: null,
         skillsMeasured: [
-        'Understand core concepts of AB-701',
-        'Implement and manage AB-701 workloads',
-        'Optimize and monitor AB-701 environments',
-        'Secure AB-701 solutions'
+        'Evaluate AI opportunities and align investments with business goals (30–35%)',
+        'Champion responsible AI practices (25–30%)',
+        'Lead adoption, innovation, and change management (35–40%)'
         ],
       },
       {
@@ -1341,7 +1320,7 @@ export const certificationPaths = [
         examCode: 'AZ-204',
         name: 'Azure Developer Associate',
         level: CERT_LEVELS.ASSOCIATE,
-        branch: 'retiring',
+        branch: 'retired',
         description: 'Build end-to-end solutions in Microsoft Azure to create Azure Functions, implement and manage web apps, develop solutions utilizing Azure storage, and more.',
         prerequisites: [],
         recommendedPrereqs: ['az-900'],
@@ -1459,7 +1438,12 @@ export const certificationPaths = [
         prerequisites: [],
         learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/exams/pl-100/',
         retirementDate: '2024-06-30',
-        skillsMeasured: [],
+        skillsMeasured: [
+        'Design business solutions (20–25%)',
+        'Create solutions (45–50%)',
+        'Analyze and visualize data (15–20%)',
+        'Implement and manage solutions (15–20%)'
+        ],
         isIndependent: true,
       },
       {
@@ -1472,7 +1456,12 @@ export const certificationPaths = [
         prerequisites: [],
         learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/exams/dp-100/',
         retirementDate: '2026-06-30',
-        skillsMeasured: [],
+        skillsMeasured: [
+        'Design and prepare a machine learning solution (20–25%)',
+        'Explore data and train models (35–40%)',
+        'Prepare a model for deployment (20–25%)',
+        'Deploy and retrain a model (10–15%)'
+        ],
         isIndependent: true,
       },
       {
@@ -1485,7 +1474,12 @@ export const certificationPaths = [
         prerequisites: [],
         learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/exams/az-500/',
         retirementDate: '2026-08-31',
-        skillsMeasured: [],
+        skillsMeasured: [
+        'Manage identity and access (25–30%)',
+        'Secure networking (20–25%)',
+        'Secure compute, storage, and databases (20–25%)',
+        'Manage security operations (25–30%)'
+        ],
         isIndependent: true,
       },
       {
@@ -1497,6 +1491,24 @@ export const certificationPaths = [
         description: 'Advise stakeholders and translate business requirements into secure, scalable, and reliable solutions.',
         prerequisites: [],
         learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/exams/mb-700/',
+        retirementDate: '2026-06-30',
+        skillsMeasured: [
+        'Architect solutions (25–30%)',
+        'Define solution data and process patterns (25–30%)',
+        'Plan implementations (25–30%)',
+        'Manage implementations (15–20%)'
+        ],
+        isIndependent: true,
+      },
+      {
+        id: 'sc-730',
+        examCode: 'SC-730',
+        name: 'Cybersecurity Business Professional',
+        level: CERT_LEVELS.ASSOCIATE,
+        branch: 'retired',
+        description: 'Credential cancelled and withdrawn by Microsoft following beta evaluation.',
+        prerequisites: [],
+        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/',
         retirementDate: '2026-06-30',
         skillsMeasured: [],
         isIndependent: true,

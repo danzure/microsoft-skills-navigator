@@ -43,8 +43,8 @@ export const formatDate = (dateStr) => {
  * @returns {string|null} The URL of the badge SVG, or null if not found.
  */
 export const getBadgeUrl = (level, certId) => {
-  if (certId === 'ab-700') return 'https://learn.microsoft.com/en-us/media/learn/certification/badges/ai-business-professional.svg';
-  if (certId === 'ab-701') return 'https://learn.microsoft.com/en-us/media/learn/certification/badges/ai-transformation-leader.svg';
+  if (certId === 'ab-730' || certId === 'ab-700') return 'https://learn.microsoft.com/en-us/media/learn/certification/badges/ai-business-professional.svg';
+  if (certId === 'ab-731' || certId === 'ab-701') return 'https://learn.microsoft.com/en-us/media/learn/certification/badges/ai-transformation-leader.svg';
 
   const base = 'https://learn.microsoft.com/en-us/media/learn/certification/badges/microsoft-certified-';
   switch (level) {

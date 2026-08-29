@@ -69,7 +69,7 @@ export const careerRoles = [
     description: 'Use Microsoft applications to increase efficiency, productivity, and collaboration in your daily business tasks.',
     icon: 'Microsoft',
     color: 'var(--line-m365)',
-    certs: ['ms-900', 'sc-730', 'ab-900', 'ab-700', 'ab-701']
+    certs: ['ms-900', 'sc-730', 'ab-900', 'ab-730', 'ab-731']
   },
   {
     id: 'app-maker',
