@@ -53,8 +53,14 @@
 
   /* ── Fluent 2 Neutral Surfaces (Light) ── */
   --colorNeutralBackground1: #ffffff;
+  --colorNeutralBackground1Hover: #f5f5f5;
+  --colorNeutralBackground1Pressed: #e0e0e0;
+  --colorNeutralBackground1Selected: #ebebeb;
   --colorNeutralBackground2: #fafafa;
+  --colorNeutralBackground2Hover: #f0f0f0;
+  --colorNeutralBackground2Pressed: #ebebeb;
   --colorNeutralBackground3: #f5f5f5;
+  --colorNeutralBackground3Hover: #ebebeb;
   --colorNeutralBackground4: #f0f0f0;
   --colorNeutralBackground5: #e8e8e8;
   --colorNeutralBackgroundHover: #f5f5f5;
@@ -62,6 +68,7 @@
   --colorNeutralBackgroundSelected: #ebebeb;
   --colorSubtleBackgroundHover: rgba(0, 0, 0, 0.04);
   --colorSubtleBackgroundActive: rgba(0, 0, 0, 0.06);
+  --colorSubtleBackgroundPressed: rgba(0, 0, 0, 0.07);
 
   /* Semantic surface aliases */
   --bg-app: var(--colorNeutralBackground2);
@@ -70,6 +77,9 @@
   --bg-surface-3: var(--colorNeutralBackground4);
   --bg-surface-hover: var(--colorNeutralBackgroundHover);
   --bg-surface-active: var(--colorNeutralBackgroundSelected);
+  --bg-card: var(--colorNeutralBackground1);
+  --bg-secondary: var(--colorNeutralBackground3);
+  --bg-hover: var(--colorSubtleBackgroundHover);
   --bg-overlay: rgba(0, 0, 0, 0.4);
   --bg-glass: rgba(255, 255, 255, 0.78);
 
@@ -95,15 +105,23 @@
   --border-subtle: var(--colorNeutralStroke3);
   --border-default: var(--colorNeutralStroke2);
   --border-strong: var(--colorNeutralStroke1);
+  --border-color: var(--colorNeutralStroke2);
   --border-focus: #0f6cbd;
 
   /* ── Fluent 2 Brand Colors ── */
   --colorBrandBackground: #0f6cbd;
   --colorBrandBackgroundHover: #115ea3;
   --colorBrandBackgroundActive: #0c3b5e;
+  --colorBrandBackgroundPressed: #0c3b5e;
+  --colorBrandBackground2: #ebf3fc;
+  --colorBrandBackground2Hover: #cfe4fa;
+  --colorBrandBackground2Pressed: #96c6fa;
+  --colorBrandBackgroundInverted: #ffffff;
   --colorBrandForeground1: #0f6cbd;
   --colorBrandForeground2: #115ea3;
+  --colorBrandForegroundInverted: #ffffff;
   --colorBrandStroke1: #0f6cbd;
+  --colorBrandStroke2: #ebf3fc;
 
   /* ── Path Map Colors ── */
   --line-azure: #0078D4;
@@ -244,8 +262,14 @@
 [data-theme="dark"] {
   /* Neutral surfaces */
   --colorNeutralBackground1: #292929;
+  --colorNeutralBackground1Hover: #383838;
+  --colorNeutralBackground1Pressed: #242424;
+  --colorNeutralBackground1Selected: #383838;
   --colorNeutralBackground2: #1f1f1f;
+  --colorNeutralBackground2Hover: #2e2e2e;
+  --colorNeutralBackground2Pressed: #1a1a1a;
   --colorNeutralBackground3: #141414;
+  --colorNeutralBackground3Hover: #242424;
   --colorNeutralBackground4: #0a0a0a;
   --colorNeutralBackground5: #000000;
   --colorNeutralBackgroundHover: #383838;
@@ -253,6 +277,7 @@
   --colorNeutralBackgroundSelected: #383838;
   --colorSubtleBackgroundHover: rgba(255, 255, 255, 0.06);
   --colorSubtleBackgroundActive: rgba(255, 255, 255, 0.08);
+  --colorSubtleBackgroundPressed: rgba(255, 255, 255, 0.09);
 
   --bg-app: var(--colorNeutralBackground3);
   --bg-surface-1: var(--colorNeutralBackground1);
@@ -260,6 +285,9 @@
   --bg-surface-3: #333333;
   --bg-surface-hover: var(--colorNeutralBackgroundHover);
   --bg-surface-active: var(--colorNeutralBackgroundSelected);
+  --bg-card: var(--colorNeutralBackground1);
+  --bg-secondary: var(--colorNeutralBackground2);
+  --bg-hover: var(--colorSubtleBackgroundHover);
   --bg-overlay: rgba(0, 0, 0, 0.6);
   --bg-glass: rgba(31, 31, 31, 0.82);
 
@@ -285,15 +313,23 @@
   --border-subtle: var(--colorNeutralStroke3);
   --border-default: var(--colorNeutralStroke2);
   --border-strong: var(--colorNeutralStroke1);
+  --border-color: var(--colorNeutralStroke2);
   --border-focus: #479ef5;
 
   /* Brand */
   --colorBrandBackground: #479ef5;
   --colorBrandBackgroundHover: #62abf5;
   --colorBrandBackgroundActive: #2886de;
+  --colorBrandBackgroundPressed: #2886de;
+  --colorBrandBackground2: #082338;
+  --colorBrandBackground2Hover: #0c314f;
+  --colorBrandBackground2Pressed: #061c2e;
+  --colorBrandBackgroundInverted: #0f6cbd;
   --colorBrandForeground1: #479ef5;
   --colorBrandForeground2: #62abf5;
+  --colorBrandForegroundInverted: #ffffff;
   --colorBrandStroke1: #479ef5;
+  --colorBrandStroke2: #082338;
 
   /* Path Map Colors (brighter for dark bg) */
   --line-azure: #2899F5;

@@ -146,7 +146,7 @@
 }
 
 .header__data-btn:active {
-  transform: scale(0.95);
+  transform: scale(0.96);
 }
 
 .header__data-btn:focus-visible {
@@ -158,35 +158,42 @@
   display: flex;
   align-items: center;
   padding: 2px;
-  border-radius: var(--radius-lg);
-  background: var(--colorNeutralBackground1);
-  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: var(--shadow-2);
   flex-shrink: 0;
 }
 
 [data-theme="dark"] .header__theme-group {
   background: var(--colorNeutralBackground3);
+  border-color: var(--colorNeutralStroke2);
+  box-shadow: var(--shadow-2);
 }
 
 .header__theme-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 28px;
+  width: 28px;
+  height: 26px;
   border-radius: var(--radius-sm);
   transition: all var(--duration-fast) var(--curve-easy-ease);
-  color: var(--colorNeutralForeground2);
-  opacity: 0.7;
+  color: inherit;
+  opacity: 0.85;
   background-color: transparent;
   outline: none;
   border: none;
+  cursor: pointer;
 }
 
 .header__theme-btn:hover {
   opacity: 1;
-  background-color: var(--colorNeutralBackground1Hover);
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .header__theme-btn:hover {
+  background-color: var(--colorSubtleBackgroundHover);
   color: var(--colorNeutralForeground1);
 }
 
@@ -195,11 +202,11 @@
 }
 
 .header__theme-btn:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--border-focus);
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
 }
 
-/* Light Mode Active */
+/* Light Mode Active (over Brand header) */
 .header__theme-btn--active {
   background-color: var(--colorNeutralBackground1);
   color: var(--colorBrandForeground1);
@@ -213,28 +220,17 @@
   opacity: 1;
 }
 
-/* Dark Mode Inactive specific hover */
-[data-theme="dark"] .header__theme-btn {
-  opacity: 0.5;
-}
-
-[data-theme="dark"] .header__theme-btn:hover {
-  opacity: 1;
-  background-color: var(--colorNeutralBackground1);
-  color: var(--colorNeutralForeground1);
-}
-
 /* Dark Mode Active */
 [data-theme="dark"] .header__theme-btn--active {
-  background-color: var(--colorNeutralForeground4);
-  color: var(--colorNeutralForeground1);
+  background-color: var(--colorNeutralBackground1);
+  color: var(--colorBrandForeground1);
   opacity: 1;
-  box-shadow: none;
+  box-shadow: var(--shadow-2);
 }
 
 [data-theme="dark"] .header__theme-btn--active:hover {
-  background-color: var(--colorNeutralForeground4);
-  color: var(--colorNeutralForeground1);
+  background-color: var(--colorNeutralBackground1Hover);
+  color: var(--colorBrandForeground1);
   opacity: 1;
 }
 

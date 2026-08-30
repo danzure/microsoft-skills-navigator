@@ -11,7 +11,7 @@
 
 .progress-ring__bg {
   fill: none;
-  stroke: var(--border-subtle);
+  stroke: var(--colorNeutralStroke2);
 }
 
 .progress-ring__fill {

@@ -1,113 +1,116 @@
 .career-path-builder {
-  padding: 2rem;
+  padding: var(--space-8) var(--space-6);
   max-width: 1500px;
   margin: 0 auto;
-  animation: fadeIn 0.4s ease-out forwards;
+  animation: fadeIn var(--duration-normal) var(--curve-easy-ease) forwards;
 }
 
 .cpb-header {
-  margin-bottom: 2.5rem;
+  margin-bottom: var(--space-8);
 }
 
 .cpb-title {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: var(--fs-title1);
+  font-weight: var(--fw-bold);
   color: var(--text-primary);
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-2);
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 .cpb-subtitle {
-  font-size: 1rem;
+  font-size: var(--fs-body2);
   color: var(--text-secondary);
-  line-height: 1.5;
-  max-width: 800px;
+  line-height: var(--lh-normal);
+  max-width: 820px;
 }
 
 .cpb-roles-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 3rem;
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
 }
 
 .cpb-role-card {
-  background: var(--bg-glass, var(--colorNeutralBackground1));
-  backdrop-filter: blur(16px) saturate(1.2);
-  -webkit-backdrop-filter: blur(16px) saturate(1.2);
-  border: 1px solid color-mix(in srgb, var(--card-color) 30%, var(--border-subtle, var(--colorNeutralStroke1)));
-  border-radius: 16px;
-  padding: 1.5rem;
+  background: var(--colorNeutralBackground1);
+  border: 1px solid var(--colorNeutralStroke1);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
   cursor: pointer;
   transition: all var(--duration-normal) var(--curve-easy-ease);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 0 16px color-mix(in srgb, var(--card-color) 10%, transparent);
+  box-shadow: var(--shadow-2);
   z-index: 1;
+}
+
+[data-theme="dark"] .cpb-role-card {
+  background: var(--colorNeutralBackground2);
+  border-color: var(--colorNeutralStroke2);
 }
 
 .cpb-role-card::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--card-color) 15%, transparent) 0%, transparent 100%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--card-color) 10%, transparent) 0%, transparent 100%);
   opacity: 0.8;
   z-index: -1;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--duration-fast) var(--curve-easy-ease);
 }
 
 .cpb-role-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 0 24px color-mix(in srgb, var(--card-color) 20%, transparent);
-  border-color: color-mix(in srgb, var(--card-color) 50%, var(--border-subtle, var(--colorNeutralStroke1)));
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-8), 0 0 16px color-mix(in srgb, var(--card-color) 15%, transparent);
+  border-color: color-mix(in srgb, var(--card-color) 40%, var(--colorNeutralStroke1));
 }
 
 .cpb-role-card:active {
-  transform: scale(0.96);
+  transform: scale(0.98);
 }
 
 .cpb-role-card:hover::after {
   opacity: 1;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--card-color) 25%, transparent) 0%, transparent 100%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--card-color) 18%, transparent) 0%, transparent 100%);
 }
 
 .cpb-role-card--active {
   border-color: var(--card-color);
-  box-shadow: 0 0 0 1px var(--card-color), 0 12px 28px rgba(0, 0, 0, 0.12), 0 0 24px color-mix(in srgb, var(--card-color) 30%, transparent);
-  transform: translateY(-4px);
+  box-shadow: 0 0 0 1px var(--card-color), var(--shadow-8), 0 0 16px color-mix(in srgb, var(--card-color) 25%, transparent);
+  transform: translateY(-2px);
 }
 
 .cpb-role-card--active::after {
   opacity: 1;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--card-color) 35%, transparent) 0%, transparent 100%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--card-color) 25%, transparent) 0%, transparent 100%);
 }
-
 
 .cpb-role-card-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
   overflow: hidden;
 }
 
 .cpb-role-icon {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: color-mix(in srgb, var(--card-color) 10%, var(--colorNeutralBackground3, var(--bg-secondary)));
+  background: color-mix(in srgb, var(--card-color) 12%, var(--colorNeutralBackground3));
   color: var(--card-color);
 }
 
 .cpb-role-title {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: var(--fs-body2);
+  font-weight: var(--fw-semibold);
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -115,7 +118,7 @@
 }
 
 .cpb-role-desc {
-  font-size: 0.85rem;
+  font-size: var(--fs-caption1);
   color: var(--text-secondary);
   line-height: 1.4;
   display: -webkit-box;
@@ -127,28 +130,34 @@
 }
 
 .cpb-path-container {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 2.5rem;
+  background: var(--colorNeutralBackground1);
+  border: 1px solid var(--colorNeutralStroke1);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
   position: relative;
 }
 
+[data-theme="dark"] .cpb-path-container {
+  background: var(--colorNeutralBackground2);
+  border-color: var(--colorNeutralStroke2);
+}
+
 .cpb-path-title {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: var(--fs-title3);
+  font-weight: var(--fw-semibold);
   color: var(--text-primary);
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border-color);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--colorNeutralStroke2);
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 .cpb-timeline {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--space-5);
   position: relative;
-  margin-top: 2rem;
+  margin-top: var(--space-5);
 }
 
 .cpb-timeline::before {
@@ -158,13 +167,13 @@
   bottom: 0;
   left: 35px;
   width: 2px;
-  background: var(--border-color);
+  background: var(--colorNeutralStroke2);
   z-index: 0;
 }
 
 .cpb-timeline-step {
   display: flex;
-  gap: 1.5rem;
+  gap: var(--space-5);
   position: relative;
   z-index: 1;
 }
@@ -179,34 +188,36 @@
 }
 
 .cpb-timeline-node {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--bg-secondary);
-  border: 2px solid var(--border-color);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--colorNeutralBackground2);
+  border: 2px solid var(--colorNeutralStroke1);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
-  transition: all 0.3s ease;
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-body1);
+  transition: all var(--duration-fast) var(--curve-easy-ease);
 }
 
 .cpb-timeline-node--completed {
   background: var(--status-completed);
   border-color: var(--status-completed);
-  color: white;
+  color: #ffffff;
   box-shadow: 0 0 10px color-mix(in srgb, var(--status-completed) 40%, transparent);
 }
 
 .cpb-timeline-node--in-progress {
-  background: var(--bg-card);
+  background: var(--colorNeutralBackground1);
   border-color: var(--status-in-progress);
   color: var(--status-in-progress);
   box-shadow: 0 0 10px color-mix(in srgb, var(--status-in-progress) 40%, transparent);
 }
 
 .cpb-timeline-node--needs-renewal {
-  background: var(--bg-card);
+  background: var(--colorNeutralBackground1);
   border-color: var(--line-security);
   color: var(--line-security);
   box-shadow: 0 0 10px color-mix(in srgb, var(--line-security) 40%, transparent);
@@ -214,139 +225,160 @@
 
 .cpb-timeline-card {
   flex: 1;
-  background: var(--bg-glass, var(--colorNeutralBackground1));
-  backdrop-filter: blur(16px) saturate(1.2);
-  -webkit-backdrop-filter: blur(16px) saturate(1.2);
-  border: 1px solid color-mix(in srgb, var(--card-color) 30%, var(--border-subtle, var(--colorNeutralStroke1)));
-  border-radius: var(--radius-2xl);
-  padding: 1.5rem;
+  background: var(--colorNeutralBackground1);
+  border: 1px solid var(--colorNeutralStroke1);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
   cursor: pointer;
   transition: all var(--duration-normal) var(--curve-easy-ease);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 0 16px color-mix(in srgb, var(--card-color) 10%, transparent);
+  box-shadow: var(--shadow-2);
   z-index: 1;
+}
+
+[data-theme="dark"] .cpb-timeline-card {
+  background: var(--colorNeutralBackground1);
+  border-color: var(--colorNeutralStroke2);
 }
 
 .cpb-timeline-card::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--card-color) 15%, transparent) 0%, transparent 100%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--card-color) 10%, transparent) 0%, transparent 100%);
   opacity: 0.8;
   z-index: -1;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--duration-fast) var(--curve-easy-ease);
 }
 
 .cpb-timeline-card:hover {
   transform: translateX(4px) translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 0 24px color-mix(in srgb, var(--card-color) 20%, transparent);
-  border-color: color-mix(in srgb, var(--card-color) 50%, var(--border-subtle, var(--colorNeutralStroke1)));
+  box-shadow: var(--shadow-8);
+  border-color: color-mix(in srgb, var(--card-color) 40%, var(--colorNeutralStroke1));
 }
 
 .cpb-timeline-card:active {
-  transform: scale(0.96);
+  transform: scale(0.98);
 }
 
 .cpb-timeline-card:hover::after {
   opacity: 1;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--card-color) 25%, transparent) 0%, transparent 100%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--card-color) 18%, transparent) 0%, transparent 100%);
 }
 
 .cpb-timeline-card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--space-2);
 }
 
 .cpb-timeline-cert-name {
-  font-size: 1.2rem;
-  font-weight: 600;
+  font-size: var(--fs-body2);
+  font-weight: var(--fw-semibold);
   color: var(--text-primary);
-  margin-bottom: 0.25rem;
+  margin-bottom: 2px;
 }
 
 .cpb-timeline-cert-code {
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption1);
+  font-weight: var(--fw-bold);
   color: var(--card-color);
 }
 
 .cpb-timeline-cert-desc {
-  font-size: 0.95rem;
+  font-size: var(--fs-body1);
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .cpb-timeline-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.25rem 0.6rem;
+  gap: var(--space-1);
+  padding: 2px 8px;
   border-radius: var(--radius-md);
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: var(--bg-card);
+  font-size: var(--fs-caption2);
+  font-weight: var(--fw-semibold);
+  background: var(--colorNeutralBackground2);
 }
 
 .cpb-timeline-badge--completed {
   color: var(--status-completed);
-  border: 1px solid color-mix(in srgb, var(--status-completed) 30%, transparent);
+  background: var(--badge-completed-bg);
+  border: 1px solid var(--badge-completed-border);
 }
 
 .cpb-timeline-badge--in-progress {
   color: var(--status-in-progress);
-  border: 1px solid color-mix(in srgb, var(--status-in-progress) 30%, transparent);
+  background: var(--badge-inprogress-bg);
+  border: 1px solid var(--badge-inprogress-border);
 }
 
 .cpb-timeline-badge--not-started {
   color: var(--text-secondary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--colorNeutralStroke2);
 }
 
 .cpb-timeline-badge--needs-renewal {
   color: var(--line-security);
+  background: color-mix(in srgb, var(--line-security) 10%, transparent);
   border: 1px solid color-mix(in srgb, var(--line-security) 30%, transparent);
 }
 
 /* Custom Career Styles */
 .cpb-custom-add-section {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .cpb-custom-select {
   flex: 1;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-card);
+  min-width: 260px;
+  height: 32px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--colorNeutralStroke1);
+  background: var(--colorNeutralBackground1);
   color: var(--text-primary);
-  font-size: 1rem;
+  font-size: var(--fs-body1);
+  font-family: var(--font-primary);
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color var(--duration-fast) var(--curve-easy-ease);
+}
+
+[data-theme="dark"] .cpb-custom-select {
+  background: var(--colorNeutralBackground2);
+  border-color: var(--colorNeutralStroke2);
 }
 
 .cpb-custom-select:focus {
-  border-color: var(--colorBrandForeground1);
+  border-color: var(--border-focus);
 }
 
 .cpb-custom-add-btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  background: var(--colorBrandForeground1);
-  color: white;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--colorBrandBackground);
+  color: var(--text-inverse);
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-body1);
   border: none;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--duration-fast) var(--curve-easy-ease);
 }
 
 .cpb-custom-add-btn:hover:not(:disabled) {
-  background: var(--colorBrandForeground2, color-mix(in srgb, var(--colorBrandForeground1) 80%, black));
+  background: var(--colorBrandBackgroundHover);
 }
 
 .cpb-custom-add-btn:active:not(:disabled) {
@@ -354,26 +386,34 @@
 }
 
 .cpb-custom-add-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 .cpb-custom-export-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  background: var(--bg-secondary, rgba(0,0,0,0.05));
+  gap: var(--space-2);
+  height: 32px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--colorNeutralBackground1);
   color: var(--text-primary);
-  font-weight: 600;
-  border: 1px solid var(--border-color);
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-body1);
+  border: 1px solid var(--colorNeutralStroke1);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--duration-fast) var(--curve-easy-ease);
+}
+
+[data-theme="dark"] .cpb-custom-export-btn {
+  background: var(--colorNeutralBackground2);
+  border-color: var(--colorNeutralStroke2);
 }
 
 .cpb-custom-export-btn:hover:not(:disabled) {
-  background: var(--bg-hover, rgba(0,0,0,0.1));
+  background: var(--colorNeutralBackgroundHover);
+  border-color: var(--colorNeutralStrokeAccessible);
 }
 
 .cpb-custom-export-btn:active:not(:disabled) {
@@ -381,7 +421,7 @@
 }
 
 .cpb-custom-export-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -390,44 +430,45 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  padding: 3rem;
+  gap: var(--space-3);
+  padding: var(--space-8);
   text-align: center;
   color: var(--text-secondary);
-  background: var(--bg-glass);
-  border-radius: 16px;
-  border: 1px dashed var(--border-color);
+  background: var(--colorNeutralBackground2);
+  border-radius: var(--radius-xl);
+  border: 1px dashed var(--colorNeutralStroke1);
 }
 
 .cpb-timeline-empty--enhanced {
-  background: var(--bg-card);
-  border: 2px dashed var(--border-subtle, var(--border-color));
-  padding: 4rem 2rem;
+  background: var(--colorNeutralBackground2);
+  border: 2px dashed var(--colorNeutralStroke2);
+  padding: var(--space-12) var(--space-6);
   max-width: 600px;
   margin: 0 auto;
 }
 
 .cpb-timeline-empty-icon-wrapper {
   color: var(--colorBrandForeground1);
-  background: color-mix(in srgb, var(--colorBrandForeground1) 10%, transparent);
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
+  background: var(--colorBrandBackground2);
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-2);
 }
 
 .cpb-timeline-empty-title {
-  font-size: 1.5rem;
+  font-size: var(--fs-title3);
+  font-weight: var(--fw-semibold);
   color: var(--text-primary);
   margin: 0;
 }
 
 .cpb-timeline-empty-desc {
-  font-size: 1rem;
-  line-height: 1.5;
+  font-size: var(--fs-body1);
+  line-height: var(--lh-normal);
   color: var(--text-secondary);
   margin: 0;
 }
@@ -435,7 +476,7 @@
 .cpb-timeline-card-actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .cpb-timeline-action-btn {
@@ -444,16 +485,16 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: transparent;
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--duration-fast) var(--curve-easy-ease);
 }
 
 .cpb-timeline-remove-btn:hover {
-  background: color-mix(in srgb, var(--line-security) 10%, transparent);
+  background: color-mix(in srgb, var(--line-security) 12%, transparent);
   color: var(--line-security);
 }
 
@@ -470,7 +511,7 @@
 }
 
 .cpb-timeline-drag-handle:hover {
-  background: var(--bg-secondary);
+  background: var(--colorSubtleBackgroundHover);
   color: var(--text-primary);
 }
 
@@ -480,12 +521,12 @@
 
 @media (max-width: 768px) {
   .career-path-builder {
-    padding: 1rem;
-    padding-bottom: 3rem;
+    padding: var(--space-4);
+    padding-bottom: var(--space-8);
   }
   
   .cpb-path-container {
-    padding: 1.5rem;
+    padding: var(--space-4);
   }
   
   .cpb-timeline::before {
@@ -502,13 +543,13 @@
   }
   
   .cpb-timeline-step {
-    gap: 1rem;
+    gap: var(--space-3);
   }
 }
 
 .cpb-cert-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-top: 2rem;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
 }

@@ -4,8 +4,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
+  background-color: var(--bg-overlay);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: var(--z-modal);
   display: flex;
   align-items: center;
@@ -18,13 +19,13 @@
   width: 100%;
   max-width: 520px;
   background-color: var(--colorNeutralBackground1);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--colorNeutralStroke1);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-8);
+  box-shadow: var(--shadow-28);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: scaleUp var(--duration-fast) var(--curve-easy-ease);
+  animation: scaleIn var(--duration-fast) var(--curve-easy-ease);
 }
 
 .data-modal__header {
@@ -32,7 +33,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-4) var(--space-6);
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--colorNeutralStroke2);
 }
 
 .data-modal__title-group {
@@ -74,7 +75,7 @@
 }
 
 .data-modal__close-btn:hover {
-  background-color: var(--colorNeutralBackground1Hover);
+  background-color: var(--colorSubtleBackgroundHover);
   color: var(--text-primary);
 }
 
@@ -121,11 +122,11 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  height: 36px;
+  height: 32px;
   padding: 0 var(--space-4);
   border-radius: var(--radius-md);
   font-size: var(--fs-body1);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-semibold);
   cursor: pointer;
   transition: all var(--duration-fast) var(--curve-easy-ease);
   border: 1px solid transparent;
@@ -145,14 +146,14 @@
 }
 
 .data-modal__btn--secondary {
-  background-color: var(--bg-surface-2);
-  border-color: var(--border-default);
+  background-color: var(--colorNeutralBackground1);
+  border-color: var(--colorNeutralStroke1);
   color: var(--text-primary);
 }
 
 .data-modal__btn--secondary:hover {
-  background-color: var(--colorNeutralBackground1Hover);
-  border-color: var(--border-focus);
+  background-color: var(--colorNeutralBackgroundHover);
+  border-color: var(--colorNeutralStrokeAccessible);
 }
 
 .data-modal__btn--subtle-danger {
@@ -186,11 +187,11 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  height: 36px;
+  height: 32px;
   padding: 0 var(--space-3);
   border-radius: var(--radius-md);
-  border: 1px solid var(--border-default);
-  background-color: var(--bg-surface-2);
+  border: 1px solid var(--colorNeutralStroke2);
+  background-color: var(--colorNeutralBackground2);
   color: var(--text-secondary);
   font-size: var(--fs-body1);
   cursor: pointer;
@@ -198,7 +199,7 @@
 }
 
 .data-modal__currency-btn:hover {
-  background-color: var(--colorNeutralBackground1Hover);
+  background-color: var(--colorNeutralBackgroundHover);
   color: var(--text-primary);
 }
 

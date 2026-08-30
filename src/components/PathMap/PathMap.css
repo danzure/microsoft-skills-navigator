@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
-  animation: fadeIn 400ms ease-out;
+  animation: fadeIn var(--duration-normal) var(--curve-easy-ease);
   padding-bottom: var(--space-8);
   height: 100%;
 }
@@ -13,23 +13,24 @@
   align-items: center;
   gap: var(--space-5);
   padding: var(--space-5) var(--space-6);
-  background: var(--bg-surface-1);
-  border: 1px solid var(--border-subtle);
+  background: var(--colorNeutralBackground1);
+  border: 1px solid var(--colorNeutralStroke1);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-2);
   margin: var(--space-4) var(--space-4) 0;
-  animation: slideUp 400ms ease-out both;
+  animation: slideUp var(--duration-gentle) var(--curve-easy-ease) both;
 }
 
 [data-theme="dark"] .path-map__header {
-  background: var(--colorNeutralBackground3);
+  background: var(--colorNeutralBackground2);
+  border-color: var(--colorNeutralStroke2);
   box-shadow: none;
 }
 
 .path-map__header-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-lg);
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -68,14 +69,14 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  height: 36px;
+  height: 32px;
   padding: 0 var(--space-4);
   border-radius: var(--radius-md);
   font-size: var(--fs-body1);
   font-weight: var(--fw-semibold);
   font-family: inherit;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: all var(--duration-fast) var(--curve-easy-ease);
   border: 1px solid transparent;
 }
 
@@ -176,7 +177,6 @@
 
 /* Mobile Adjustments */
 @media (max-width: 768px) {
-  /* Removed 1fr overrides to allow horizontal scrolling of the tree on mobile */
   .path-map__viewport {
     scroll-snap-type: x mandatory;
     scroll-padding: var(--space-4);
@@ -224,7 +224,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    border-top: 1px solid var(--border-subtle);
+    border-top: 1px solid var(--colorNeutralStroke2);
     padding-top: var(--space-2);
   }
 
@@ -244,17 +244,23 @@
 
 /* ─── React Flow Controls Override ─── */
 .react-flow__controls {
-  background: var(--bg-surface-1);
-  border: 1px solid var(--border-subtle);
+  background: var(--colorNeutralBackground1);
+  border: 1px solid var(--colorNeutralStroke1);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-4);
   overflow: hidden;
 }
 
+[data-theme="dark"] .react-flow__controls {
+  background: var(--colorNeutralBackground2);
+  border-color: var(--colorNeutralStroke2);
+}
+
 .react-flow__controls-button {
-  background: var(--bg-surface-1);
-  border-bottom: 1px solid var(--border-subtle);
+  background: transparent;
+  border-bottom: 1px solid var(--colorNeutralStroke2);
   color: var(--text-secondary);
+  transition: background var(--duration-fast) var(--curve-easy-ease), color var(--duration-fast) var(--curve-easy-ease);
 }
 
 .react-flow__controls-button:last-child {
@@ -262,11 +268,10 @@
 }
 
 .react-flow__controls-button:hover {
-  background: var(--bg-surface-hover);
+  background: var(--colorSubtleBackgroundHover);
   color: var(--text-primary);
 }
 
-/* Ensure SVG icons inside controls inherit color properly */
 .react-flow__controls-button svg {
   fill: currentColor;
 }
