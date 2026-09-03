@@ -350,6 +350,8 @@
     transform: translateX(-100%);
     width: 280px;
     transition: transform 300ms ease-in-out;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: max(var(--space-8), calc(var(--space-6) + var(--safe-area-bottom)));
   }
 
   .sidebar--open {
@@ -373,6 +375,17 @@
 
   .sidebar__toggle-mobile {
     display: flex;
+    width: 38px;
+    height: 38px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .sidebar__link {
+    min-height: 44px;
+    padding: 10px 12px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .sidebar__header--collapsed {

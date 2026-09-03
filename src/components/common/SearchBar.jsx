@@ -12,13 +12,35 @@ import './SearchBar.css';
  * @param {Object} props
  * @param {Function} [props.onClose] - Optional callback triggered when a search result is selected
  */
-const SearchBar = ({ onClose }) => {
+const SearchBar = ({ onClose, autoFocus = false, isMobile = false }) => {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef(null);
+  const containerRef = useRef(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (autoFocus && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [autoFocus]);
+
+  // Close dropdown on click or touch outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -81,7 +103,7 @@ const SearchBar = ({ onClose }) => {
   };
 
   return (
-    <div className="search-bar">
+    <div ref={containerRef} className={`search-bar ${isMobile ? 'search-bar--mobile' : ''}`}>
       <div className="search-bar__input-wrapper">
         <Search size={16} className="search-bar__icon" />
         <input
@@ -94,7 +116,7 @@ const SearchBar = ({ onClose }) => {
           onFocus={() => query && setIsOpen(true)}
           id="search-certifications"
         />
-        {!query && (
+        {!query && !isMobile && (
           <span className="search-bar__shortcut">Ctrl K</span>
         )}
         {query && isSearching && (

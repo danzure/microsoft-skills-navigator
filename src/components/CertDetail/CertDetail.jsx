@@ -313,7 +313,7 @@ const CertDetail = ({ cert, path, onClose }) => {
           {!isRetiredExam && (
             <div className="cert-detail__section">
               <h3 className="cert-detail__section-title">
-                Tracking <span style={{fontSize: '10px', fontWeight: 'normal', opacity: 0.6, marginLeft: '6px'}}>(Press E)</span>
+                Tracking <span className="cert-detail__shortcut-hint">(Press E)</span>
               </h3>
               <button
                 className={`cert-detail__track-btn ${!isCertIgnored(cert.id) ? 'cert-detail__track-btn--tracked' : 'cert-detail__track-btn--untracked'}`}
@@ -348,7 +348,7 @@ const CertDetail = ({ cert, path, onClose }) => {
 
           <div className="cert-detail__section">
             <h3 className="cert-detail__section-title">
-              Your Status <span style={{fontSize: '10px', fontWeight: 'normal', opacity: 0.6, marginLeft: '6px'}}>(Press S to cycle)</span>
+              Your Status <span className="cert-detail__shortcut-hint">(Press S to cycle)</span>
             </h3>
             <div className={`cert-detail__status-options`}>
               {statusOptions.map((opt) => (

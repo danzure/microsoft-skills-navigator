@@ -5,6 +5,8 @@
   position: relative;
   width: 400px;
   height: 230px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Not Started (Locked) */
@@ -239,21 +241,34 @@
   border: 1px solid var(--colorNeutralStroke2);
   border-radius: var(--radius-md);
   padding: 2px;
-  gap: 2px;
+  gap: 3px;
 }
 
 .cert-node__toggle-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 24px;
   border: none;
   background: transparent;
   border-radius: var(--radius-sm);
   color: var(--text-secondary);
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: all var(--duration-fast) var(--curve-easy-ease);
+}
+
+@media (pointer: coarse) {
+  .cert-node__status-toggle {
+    padding: 3px;
+    gap: 4px;
+  }
+  .cert-node__toggle-btn {
+    width: 30px;
+    height: 28px;
+  }
 }
 
 .cert-node__toggle-btn:hover {
@@ -298,16 +313,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
   background: transparent;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: all var(--duration-fast) var(--curve-easy-ease);
   z-index: 2;
   flex-shrink: 0;
   padding: 0;
+}
+
+@media (pointer: coarse) {
+  .cert-node__track-btn {
+    width: 36px;
+    height: 36px;
+  }
 }
 
 .cert-node__track-btn--tracked {

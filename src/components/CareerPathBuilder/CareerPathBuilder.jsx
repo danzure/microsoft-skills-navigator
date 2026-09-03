@@ -33,7 +33,11 @@ const CareerPathBuilder = () => {
   const [certToAdd, setCertToAdd] = useState('');
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -90,6 +94,18 @@ const CareerPathBuilder = () => {
 
   const handleRemoveCert = (idToRemove) => {
     setCustomPlaylist(customPlaylist.filter(id => id !== idToRemove));
+  };
+
+  const handleMoveUp = (index) => {
+    if (index > 0) {
+      setCustomPlaylist((items) => arrayMove(items, index, index - 1));
+    }
+  };
+
+  const handleMoveDown = (index) => {
+    if (index < customPlaylist.length - 1) {
+      setCustomPlaylist((items) => arrayMove(items, index, index + 1));
+    }
   };
 
   const handleExportPlaylist = () => {
@@ -278,6 +294,8 @@ const CareerPathBuilder = () => {
                         key={certId}
                         id={certId}
                         index={index}
+                        isFirst={index === 0}
+                        isLast={index === customPlaylist.length - 1}
                         certInfo={certInfo}
                         status={status}
                         statusText={statusText}
@@ -286,6 +304,8 @@ const CareerPathBuilder = () => {
                         StatusIcon={StatusIcon}
                         onNavigate={navigate}
                         onRemove={handleRemoveCert}
+                        onMoveUp={handleMoveUp}
+                        onMoveDown={handleMoveDown}
                       />
                     );
                   })}

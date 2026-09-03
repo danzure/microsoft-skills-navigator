@@ -1,7 +1,9 @@
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { getPathById, CERT_LEVELS, CERT_STATUS } from '../../data/certificationPaths';
+import { getPathById, getCertById, getCertificationsRequiring, CERT_LEVELS, CERT_STATUS } from '../../data/certificationPaths';
 import { useProgressContext } from '../../context/ProgressContext';
 import { useToast } from '../../context/ToastContext';
+import { isRetiring, isRetired, getBadgeUrl } from '../../utils/helpers';
+import Badge from '../common/Badge';
 import CertNode from './CertNode';
 import CertDetail from '../CertDetail/CertDetail';
 import ProgressRing from '../common/ProgressRing';
@@ -158,26 +160,18 @@ const computePathLayout = (path, branchColumns, trunkFundamentals, trunkBottom, 
 };
 
 const CustomControls = () => {
-  const { setViewport, getViewport } = useReactFlow();
-
-  const handlePan = (dx, dy) => {
-    const { x, y, zoom } = getViewport();
-    setViewport({ x: x + dx, y: y + dy, zoom }, { duration: 300 });
-  };
+  const { zoomIn, zoomOut, fitView } = useReactFlow();
 
   return (
-    <Controls showInteractive={false}>
-      <ControlButton onClick={() => handlePan(0, 100)} title="Pan Up" aria-label="Pan Up">
-        <Icons.ArrowUp size={16} />
+    <Controls showZoom={false} showFitView={false} showInteractive={false} className="path-map__flow-controls">
+      <ControlButton onClick={() => zoomIn({ duration: 300 })} title="Zoom In" aria-label="Zoom In">
+        <Icons.Plus size={16} />
       </ControlButton>
-      <ControlButton onClick={() => handlePan(0, -100)} title="Pan Down" aria-label="Pan Down">
-        <Icons.ArrowDown size={16} />
+      <ControlButton onClick={() => zoomOut({ duration: 300 })} title="Zoom Out" aria-label="Zoom Out">
+        <Icons.Minus size={16} />
       </ControlButton>
-      <ControlButton onClick={() => handlePan(100, 0)} title="Pan Left" aria-label="Pan Left">
-        <Icons.ArrowLeft size={16} />
-      </ControlButton>
-      <ControlButton onClick={() => handlePan(-100, 0)} title="Pan Right" aria-label="Pan Right">
-        <Icons.ArrowRight size={16} />
+      <ControlButton onClick={() => fitView({ duration: 500, padding: 0.15 })} title="Fit View" aria-label="Fit View">
+        <Icons.Compass size={16} />
       </ControlButton>
     </Controls>
   );
@@ -301,14 +295,23 @@ const PathMapFlow = ({ path, setSelectedCert }) => {
     if (lastFittedPath !== path.id) {
       lastFittedPath = path.id;
       setTimeout(() => {
-        fitView({ duration: 600, padding: 0.1 });
+        const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+        if (isMobile) {
+          fitView({ duration: 600, padding: 0.15, minZoom: 0.45, maxZoom: 0.85 });
+        } else {
+          fitView({ duration: 600, padding: 0.1 });
+        }
       }, 50);
     }
   }, [path, hasBranches, trunkFundamentals, trunkBottom, branchColumns, linearGroups, getStatus, isPathIgnored, path?.color, setSelectedCert, setNodes, setEdges, fitView]);
 
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ flex: 1, minHeight: '800px', width: '100%' }}>
+      <div style={{ flex: 1, minHeight: '600px', width: '100%', position: 'relative' }}>
+        <div className="path-map__touch-hint">
+          <Icons.Info size={14} />
+          <span>Pinch to zoom • Drag to explore</span>
+        </div>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -317,17 +320,231 @@ const PathMapFlow = ({ path, setSelectedCert }) => {
           nodeTypes={nodeTypes}
           fitView={false}
           zoomOnDoubleClick={false}
-          minZoom={0.1}
-          maxZoom={1.5}
+          minZoom={0.15}
+          maxZoom={1.75}
           proOptions={{ hideAttribution: true }}
           nodesDraggable={false}
           nodesConnectable={false}
           elementsSelectable={true}
+          panOnDrag={true}
+          zoomOnPinch={true}
         >
           <Background color="var(--border-subtle)" gap={16} />
           <CustomControls />
         </ReactFlow>
       </div>
+    </div>
+  );
+};
+
+const PathMapListView = ({ path, onSelectCert }) => {
+  const { getStatus, setStatus, isCertIgnored, toggleCertIgnored } = useProgressContext();
+  const { addToast } = useToast();
+
+  const handleSetStatus = (certId, newStatus, e) => {
+    e.stopPropagation();
+    setStatus(certId, newStatus);
+    const cert = path.certifications.find(c => c.id === certId);
+    if (!cert) return;
+
+    if (newStatus === CERT_STATUS.COMPLETED) {
+      const prerequisiteFor = getCertificationsRequiring(certId);
+      if (prerequisiteFor?.length > 0) {
+        const nextCert = prerequisiteFor.find(c => getStatus(c.id) === CERT_STATUS.NOT_STARTED);
+        if (nextCert) {
+          addToast(`🎉 You've unlocked ${nextCert.examCode}!`, 'success', {
+            action: {
+              label: 'Start it',
+              onClick: () => {
+                setStatus(nextCert.id, CERT_STATUS.IN_PROGRESS);
+                addToast(`${nextCert.examCode} marked as In Progress`, 'info');
+              }
+            }
+          });
+          return;
+        }
+      }
+      addToast(`${cert.examCode} marked as Passed`, 'success');
+    } else if (newStatus === CERT_STATUS.IN_PROGRESS) {
+      addToast(`${cert.examCode} marked as In Progress`, 'info');
+    } else if (newStatus === CERT_STATUS.NOT_STARTED) {
+      addToast(`${cert.examCode} marked as Not Started`, 'info');
+    }
+  };
+
+  const sections = useMemo(() => {
+    if (!path?.certifications) return [];
+    const list = [];
+    const trunkFundamentals = path.certifications.filter(c => !c.branch && c.level === CERT_LEVELS.FUNDAMENTALS);
+    if (trunkFundamentals.length > 0) {
+      list.push({
+        id: 'fundamentals',
+        title: 'Foundational Credentials',
+        description: 'Recommended entry points providing fundamental architectural and platform knowledge.',
+        certs: trunkFundamentals,
+      });
+    }
+
+    if (path.branches?.length > 0) {
+      path.branches.forEach(branch => {
+        const branchCerts = path.certifications.filter(c => c.branch === branch.id);
+        if (branchCerts.length > 0) {
+          list.push({
+            id: `branch-${branch.id}`,
+            title: `${branch.name} Pathway`,
+            description: branch.description,
+            certs: branchCerts,
+          });
+        }
+      });
+    }
+
+    const trunkBottom = path.certifications.filter(c => !c.branch && c.level !== CERT_LEVELS.FUNDAMENTALS);
+    if (trunkBottom.length > 0) {
+      list.push({
+        id: 'advanced',
+        title: 'Specialty & Expert Level',
+        description: 'Advanced role-based credentials for architects and domain specialists.',
+        certs: trunkBottom,
+      });
+    }
+
+    if (list.length === 0) {
+      list.push({
+        id: 'all',
+        title: 'All Certifications',
+        description: '',
+        certs: path.certifications,
+      });
+    }
+
+    return list;
+  }, [path]);
+
+  return (
+    <div className="path-map__list-view" id="path-list-view">
+      {sections.map(section => (
+        <div key={section.id} className="path-map__list-section">
+          <div className="path-map__list-section-header">
+            <h2 className="path-map__list-section-title">{section.title}</h2>
+            {section.description && (
+              <p className="path-map__list-section-desc">{section.description}</p>
+            )}
+          </div>
+          <div className="path-map__list-cards">
+            {section.certs.map(cert => {
+              const status = getStatus(cert.id);
+              const retiring = isRetiring(cert);
+              const retired = isRetired(cert);
+              const isRetiredExam = retiring || retired;
+              const isTracked = !isCertIgnored(cert.id);
+              const badgeUrl = getBadgeUrl(cert.level, cert.id);
+
+              return (
+                <div
+                  key={cert.id}
+                  className={`path-map__list-card ${status === CERT_STATUS.COMPLETED ? 'path-map__list-card--completed' : ''} ${status === CERT_STATUS.IN_PROGRESS ? 'path-map__list-card--in-progress' : ''}`}
+                  onClick={() => onSelectCert(cert)}
+                  style={{ '--card-color': path.color }}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === 'Enter' && onSelectCert(cert)}
+                >
+                  <div className="path-map__list-card-header">
+                    <div className="path-map__list-card-badge">
+                      {badgeUrl ? (
+                        <img src={badgeUrl} alt={`${cert.examCode} badge`} loading="lazy" />
+                      ) : (
+                        <Icons.Award size={24} />
+                      )}
+                    </div>
+                    <div className="path-map__list-card-title-group">
+                      <div className="path-map__list-card-code-row">
+                        <span className="path-map__list-card-code">{cert.examCode}</span>
+                        <Badge variant={cert.level.toLowerCase()} small>{cert.level}</Badge>
+                        {retiring && <Badge variant="retiring" small><Icons.AlertTriangle size={9} />Retiring</Badge>}
+                        {retired && <Badge variant="retiring" small><Icons.ArchiveX size={9} />Retired</Badge>}
+                        {cert.isNew && <Badge variant="new" small>New</Badge>}
+                        {cert.isUpdated && <Badge variant="updated" small>Updated</Badge>}
+                        {cert.isBeta && <Badge variant="beta" small>Beta</Badge>}
+                      </div>
+                      <h3 className="path-map__list-card-name">{cert.name}</h3>
+                    </div>
+                    {!isRetiredExam && (
+                      <button
+                        className={`path-map__list-track-btn ${isTracked ? 'path-map__list-track-btn--tracked' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleCertIgnored(cert.id);
+                          if (!isTracked) {
+                            addToast(`${cert.examCode} added to tracked learning`, 'success');
+                          } else {
+                            addToast(`${cert.examCode} removed from tracked learning`, 'info');
+                          }
+                        }}
+                        aria-label={isTracked ? "Untrack exam" : "Track exam"}
+                        title={isTracked ? "Tracked in learning" : "Untracked"}
+                      >
+                        {isTracked ? <Icons.Eye size={18} /> : <Icons.EyeOff size={18} />}
+                      </button>
+                    )}
+                  </div>
+                  <p className="path-map__list-card-desc">{cert.description}</p>
+                  
+                  <div className="path-map__list-card-footer">
+                    <div className="path-map__list-card-prereqs">
+                      {cert.prerequisites?.length > 0 && cert.prerequisites.map((prereq, pIdx) => {
+                        if (Array.isArray(prereq)) {
+                          return (
+                            <Badge key={`prereq-${pIdx}`} variant="default" small>
+                              <Icons.Link size={9} /> 1 of {prereq.length}
+                            </Badge>
+                          );
+                        }
+                        const prereqCert = getCertById(prereq)?.cert;
+                        return (
+                          <Badge key={`prereq-${prereq}`} variant={prereqCert ? prereqCert.level.toLowerCase() : 'default'} small>
+                            <Icons.Link size={9} /> Prereq: {prereqCert ? prereqCert.examCode : prereq.toUpperCase()}
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                    <div className="path-map__list-status-toggle" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        className={`path-map__list-status-btn ${status === CERT_STATUS.NOT_STARTED ? 'path-map__list-status-btn--active' : ''}`}
+                        onClick={(e) => handleSetStatus(cert.id, CERT_STATUS.NOT_STARTED, e)}
+                        aria-label="Set status: Not Started"
+                      >
+                        <Icons.Circle size={14} />
+                        <span>Not Started</span>
+                      </button>
+                      <button
+                        type="button"
+                        className={`path-map__list-status-btn ${status === CERT_STATUS.IN_PROGRESS ? 'path-map__list-status-btn--active path-map__list-status-btn--in-progress' : ''}`}
+                        onClick={(e) => handleSetStatus(cert.id, CERT_STATUS.IN_PROGRESS, e)}
+                        aria-label="Set status: In Progress"
+                      >
+                        <Icons.Clock size={14} />
+                        <span>In Progress</span>
+                      </button>
+                      <button
+                        type="button"
+                        className={`path-map__list-status-btn ${(status === CERT_STATUS.COMPLETED || status === CERT_STATUS.NEEDS_RENEWAL) ? 'path-map__list-status-btn--active path-map__list-status-btn--completed' : ''}`}
+                        onClick={(e) => handleSetStatus(cert.id, CERT_STATUS.COMPLETED, e)}
+                        aria-label="Set status: Passed"
+                      >
+                        {status === CERT_STATUS.NEEDS_RENEWAL ? <Icons.RefreshCw size={14} /> : <Icons.CheckCircle2 size={14} />}
+                        <span>{status === CERT_STATUS.NEEDS_RENEWAL ? 'Renew' : 'Passed'}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
@@ -341,6 +558,9 @@ const PathMap = () => {
   const { addToast } = useToast();
   
   const [selectedCertId, setSelectedCertId] = useState(() => searchParams.get('cert') || null);
+  const [viewMode, setViewMode] = useState(() => {
+    return (typeof window !== 'undefined' && window.innerWidth <= 768) ? 'list' : 'map';
+  });
 
   const selectedCert = useMemo(() => {
     if (!path || !selectedCertId) return null;
@@ -431,14 +651,40 @@ const PathMap = () => {
         schema={breadcrumbSchema}
       />
       <div className="path-map__header">
-        <div className="path-map__header-icon">
-          <PathIcon size={28} />
-        </div>
-        <div className="path-map__header-info">
-          <h1 className="path-map__header-title">{path.name}</h1>
-          <p className="path-map__header-desc">{path.description}</p>
+        <div className="path-map__header-main">
+          <div className="path-map__header-icon">
+            <PathIcon size={28} />
+          </div>
+          <div className="path-map__header-info">
+            <h1 className="path-map__header-title">{path.name}</h1>
+            <p className="path-map__header-desc">{path.description}</p>
+          </div>
         </div>
         <div className="path-map__header-actions">
+          <div className="path-map__view-toggle" role="tablist" aria-label="View mode">
+            <button
+              type="button"
+              className={`path-map__view-btn ${viewMode === 'map' ? 'path-map__view-btn--active' : ''}`}
+              onClick={() => setViewMode('map')}
+              role="tab"
+              aria-selected={viewMode === 'map'}
+              title="Interactive Map View"
+            >
+              <Icons.Map size={15} />
+              <span>Map</span>
+            </button>
+            <button
+              type="button"
+              className={`path-map__view-btn ${viewMode === 'list' ? 'path-map__view-btn--active' : ''}`}
+              onClick={() => setViewMode('list')}
+              role="tab"
+              aria-selected={viewMode === 'list'}
+              title="Roadmap List View"
+            >
+              <Icons.List size={15} />
+              <span>List</span>
+            </button>
+          </div>
           {path.id !== 'retired-exams' && (
             <button
               className={`path-map__track-btn ${isPathTracked ? 'path-map__track-btn--tracked' : 'path-map__track-btn--untracked'}`}
@@ -478,14 +724,18 @@ const PathMap = () => {
         </div>
       </div>
 
-      <div className="path-map__viewport" style={{ flex: 1, minHeight: 0 }}>
-        <ReactFlowProvider>
-          <PathMapFlow 
-            path={path} 
-            setSelectedCert={handleSelectCert}
-          />
-        </ReactFlowProvider>
-      </div>
+      {viewMode === 'list' ? (
+        <PathMapListView path={path} onSelectCert={handleSelectCert} />
+      ) : (
+        <div className="path-map__viewport" style={{ flex: 1, minHeight: 0 }}>
+          <ReactFlowProvider>
+            <PathMapFlow 
+              path={path} 
+              setSelectedCert={handleSelectCert}
+            />
+          </ReactFlowProvider>
+        </div>
+      )}
 
       {selectedCert && (
         <CertDetail cert={selectedCert} path={path} onClose={() => handleSelectCert(null)} />

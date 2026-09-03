@@ -180,24 +180,87 @@
   }
 }
 
+.header__search-btn-mobile {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  color: var(--header-btn-color);
+  background: var(--header-btn-bg);
+  border: 1px solid var(--header-btn-stroke);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--duration-fast) var(--curve-easy-ease),
+              transform var(--duration-fast) var(--curve-easy-ease);
+  flex-shrink: 0;
+}
+
+.header__search-btn-mobile:hover {
+  background: var(--header-btn-bg-hover);
+}
+
+.header__search-btn-mobile:active {
+  transform: scale(0.95);
+  background: var(--header-btn-bg-pressed);
+}
+
+.header__mobile-search-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  animation: fadeIn var(--duration-fast) var(--curve-easy-ease);
+}
+
+.header__mobile-search-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  color: var(--header-btn-color);
+  background: var(--header-btn-bg);
+  border: 1px solid var(--header-btn-stroke);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+  transition: background var(--duration-fast) var(--curve-easy-ease);
+}
+
+.header__mobile-search-close:hover {
+  background: var(--header-btn-bg-hover);
+}
+
+.header__mobile-search-close:active {
+  transform: scale(0.95);
+}
+
 @media (max-width: 639px) {
   .header__data-btn {
-    width: 32px;
+    width: 36px;
+    height: 36px;
     padding: 0;
   }
 }
 
-
-
-
 @media (min-width: 769px) {
   .header {
     padding: 0 20px;
+    padding-left: max(20px, var(--safe-area-left));
+    padding-right: max(20px, var(--safe-area-right));
   }
   .header__left {
     gap: 16px;
   }
   .header__menu-btn {
+    display: none;
+  }
+  .header__search-btn-mobile {
     display: none;
   }
 }
@@ -207,10 +270,20 @@
     display: none;
   }
   .header {
-    padding: 0 16px;
+    padding: 0 12px;
+    padding-left: max(12px, var(--safe-area-left));
+    padding-right: max(12px, var(--safe-area-right));
     gap: 8px;
   }
   .header__menu-btn {
+    display: flex;
+    width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+  }
+  .header__search-btn-mobile {
     display: flex;
   }
 }

@@ -483,14 +483,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-sm);
   background: transparent;
-  border: none;
+  border: 1px solid transparent;
   color: var(--text-secondary);
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: all var(--duration-fast) var(--curve-easy-ease);
+}
+
+.cpb-timeline-move-btn:hover {
+  background: var(--colorSubtleBackgroundHover);
+  color: var(--text-primary);
+}
+
+.cpb-timeline-move-btn:active {
+  transform: scale(0.92);
 }
 
 .cpb-timeline-remove-btn:hover {
@@ -504,6 +515,7 @@
 
 .cpb-timeline-drag-handle {
   cursor: grab;
+  touch-action: none;
 }
 
 .cpb-timeline-drag-handle:active {
@@ -513,6 +525,13 @@
 .cpb-timeline-drag-handle:hover {
   background: var(--colorSubtleBackgroundHover);
   color: var(--text-primary);
+}
+
+@media (pointer: coarse) {
+  .cpb-timeline-action-btn {
+    width: 38px;
+    height: 38px;
+  }
 }
 
 .cpb-timeline-step--sortable {
@@ -544,6 +563,30 @@
   
   .cpb-timeline-step {
     gap: var(--space-3);
+  }
+}
+
+@media (max-width: 640px) {
+  .cpb-timeline-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .cpb-timeline-card-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .cpb-custom-select {
+    width: 100%;
+    height: 40px;
+  }
+
+  .cpb-custom-add-btn,
+  .cpb-custom-export-btn {
+    height: 38px;
+    padding: 0 var(--space-4);
   }
 }
 

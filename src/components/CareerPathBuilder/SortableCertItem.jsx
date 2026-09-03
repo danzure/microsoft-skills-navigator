@@ -26,7 +26,7 @@ import Badge from '../common/Badge';
  * @param {Function} props.onRemove - Callback to remove this item from the custom timeline.
  * @returns {JSX.Element}
  */
-export const SortableCertItem = memo(({ id, index, certInfo, status, statusText, nodeClass, badgeClass, StatusIcon, onNavigate, onRemove }) => {
+export const SortableCertItem = memo(({ id, index, isFirst, isLast, certInfo, status, statusText, nodeClass, badgeClass, StatusIcon, onNavigate, onRemove, onMoveUp, onMoveDown }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
   const style = {
@@ -72,11 +72,35 @@ export const SortableCertItem = memo(({ id, index, certInfo, status, statusText,
               <StatusIcon size={12} />
               {statusText}
             </div>
+            {onMoveUp && !isFirst && (
+              <button 
+                type="button"
+                className="cpb-timeline-action-btn cpb-timeline-move-btn" 
+                onClick={(e) => { e.stopPropagation(); onMoveUp(index); }}
+                title="Move step up"
+                aria-label="Move step up"
+              >
+                <Icons.ArrowUp size={16} />
+              </button>
+            )}
+            {onMoveDown && !isLast && (
+              <button 
+                type="button"
+                className="cpb-timeline-action-btn cpb-timeline-move-btn" 
+                onClick={(e) => { e.stopPropagation(); onMoveDown(index); }}
+                title="Move step down"
+                aria-label="Move step down"
+              >
+                <Icons.ArrowDown size={16} />
+              </button>
+            )}
             {onRemove && (
               <button 
+                type="button"
                 className="cpb-timeline-action-btn cpb-timeline-remove-btn" 
                 onClick={(e) => { e.stopPropagation(); onRemove(id); }}
                 title="Remove from custom list"
+                aria-label="Remove certification"
               >
                 <Icons.X size={16} />
               </button>
@@ -86,6 +110,9 @@ export const SortableCertItem = memo(({ id, index, certInfo, status, statusText,
               {...attributes} 
               {...listeners}
               title="Drag to reorder"
+              role="button"
+              tabIndex={0}
+              aria-label="Drag to reorder"
             >
               <Icons.GripVertical size={20} />
             </div>

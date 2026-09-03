@@ -221,17 +221,35 @@
 @media (max-width: 640px) {
   .data-modal {
     margin: var(--space-2);
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+    margin-bottom: max(var(--space-2), var(--safe-area-bottom));
   }
   
+  .data-modal__close-btn {
+    width: 38px;
+    height: 38px;
+    touch-action: manipulation;
+  }
+
   .data-modal__actions-row {
     flex-direction: column;
   }
   
   .data-modal__btn {
     width: 100%;
+    height: 42px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .data-modal__currency-group {
     flex-direction: column;
+  }
+
+  .data-modal__currency-btn {
+    height: 42px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 }

@@ -30,6 +30,8 @@
 @media (max-width: 768px) {
   .app__content {
     margin-left: 0;
+    padding-bottom: var(--safe-area-bottom);
+    -webkit-overflow-scrolling: touch;
   }
   
   .app__body--collapsed .app__content {
