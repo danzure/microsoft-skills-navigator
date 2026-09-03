@@ -18,9 +18,9 @@
   height: 32px;
   padding: 0 10px;
   border-radius: var(--radius-md, 4px);
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  color: #ffffff;
+  background: var(--header-btn-bg);
+  border: 1px solid var(--header-btn-stroke);
+  color: var(--header-btn-color);
   font-family: inherit;
   font-size: var(--fs-caption1, 12px);
   font-weight: 500;
@@ -33,50 +33,30 @@
 }
 
 .theme-toggle__trigger:hover {
-  background: rgba(255, 255, 255, 0.24);
-  border-color: rgba(255, 255, 255, 0.35);
+  background: var(--header-btn-bg-hover);
+  border-color: var(--header-btn-stroke-hover);
 }
 
 .theme-toggle__trigger:active {
   transform: scale(0.96);
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--header-btn-bg-pressed);
 }
 
 .theme-toggle__trigger--open {
-  background: rgba(255, 255, 255, 0.28);
-  border-color: rgba(255, 255, 255, 0.45);
+  background: var(--header-btn-bg-hover);
+  border-color: var(--header-btn-stroke-hover);
   box-shadow: var(--shadow-2);
 }
 
 .theme-toggle__trigger:focus-visible {
-  outline: 2px solid #ffffff;
+  outline: 2px solid var(--header-btn-focus-outline);
   outline-offset: 2px;
 }
 
-/* Dark theme overrides for trigger */
-[data-theme="dark"] .theme-toggle__trigger {
-  background: var(--colorNeutralBackground3);
-  border-color: var(--colorNeutralStroke2);
-  color: var(--colorNeutralForeground1);
-}
-
-[data-theme="dark"] .theme-toggle__trigger:hover {
-  background: var(--colorSubtleBackgroundHover);
-  border-color: var(--colorNeutralStroke1);
-}
-
-[data-theme="dark"] .theme-toggle__trigger:active {
-  background: var(--colorSubtleBackgroundPressed);
-}
-
+/* Dark theme overrides for trigger (handled via --header-btn-* tokens, open state retains token) */
 [data-theme="dark"] .theme-toggle__trigger--open {
   background: var(--colorSubtleBackgroundSelected);
   border-color: var(--colorNeutralStroke1);
-}
-
-[data-theme="dark"] .theme-toggle__trigger:focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 2px;
 }
 
 .theme-toggle__trigger-icon {

@@ -123,6 +123,15 @@
   --colorBrandStroke1: #0f6cbd;
   --colorBrandStroke2: #ebf3fc;
 
+  /* ── Header Button Tokens (Fluent 2 on Brand Bar) ── */
+  --header-btn-bg: rgba(255, 255, 255, 0.15);
+  --header-btn-bg-hover: rgba(255, 255, 255, 0.24);
+  --header-btn-bg-pressed: rgba(255, 255, 255, 0.3);
+  --header-btn-stroke: rgba(255, 255, 255, 0.25);
+  --header-btn-stroke-hover: rgba(255, 255, 255, 0.35);
+  --header-btn-color: #ffffff;
+  --header-btn-focus-outline: #ffffff;
+
   /* ── Path Map Colors ── */
   --line-azure: #0078D4;
   --line-ai: #1E3A8A;
@@ -330,6 +339,15 @@
   --colorBrandForegroundInverted: #ffffff;
   --colorBrandStroke1: #479ef5;
   --colorBrandStroke2: #082338;
+
+  /* ── Header Button Tokens (Fluent 2 in Dark Bar) ── */
+  --header-btn-bg: var(--colorNeutralBackground3);
+  --header-btn-bg-hover: var(--colorSubtleBackgroundHover);
+  --header-btn-bg-pressed: var(--colorSubtleBackgroundPressed);
+  --header-btn-stroke: var(--colorNeutralStroke2);
+  --header-btn-stroke-hover: var(--colorNeutralStroke1);
+  --header-btn-color: var(--colorNeutralForeground1);
+  --header-btn-focus-outline: var(--border-focus);
 
   /* Path Map Colors (brighter for dark bg) */
   --line-azure: #2899F5;

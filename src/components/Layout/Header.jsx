@@ -48,7 +48,8 @@ const Header = ({ onToggleSidebar }) => {
           aria-label="Data & preferences"
           title="Data backup, restore & settings"
         >
-          <Icons.DatabaseIcon size={18} />
+          <Icons.DatabaseIcon size={16} className="header__data-btn-icon" />
+          <span className="header__data-btn-label">Data</span>
         </button>
         <ThemeToggle />
       </div>
