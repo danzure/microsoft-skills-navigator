@@ -179,7 +179,7 @@ const CustomControls = () => {
 
 let lastFittedPath = null;
 
-const PathMapFlow = ({ path, setSelectedCert }) => {
+const PathMapFlow = ({ path, setSelectedCert, selectedBranch = 'all', statusFilter = 'all' }) => {
   const { getStatus, isPathIgnored } = useProgressContext();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -232,6 +232,12 @@ const PathMapFlow = ({ path, setSelectedCert }) => {
       const isUnlocked = (flatPrereqs.length === 0 || isPrereqCompleted) && certStatus === CERT_STATUS.NOT_STARTED;
       const pos = positions.get(cert.id);
 
+      const isFilteredOut = (statusFilter !== 'all' && (
+        (statusFilter === 'completed' && certStatus !== CERT_STATUS.COMPLETED) ||
+        (statusFilter === 'in_progress' && certStatus !== CERT_STATUS.IN_PROGRESS) ||
+        (statusFilter === 'not_started' && certStatus !== CERT_STATUS.NOT_STARTED)
+      )) || (selectedBranch !== 'all' && cert.branch !== selectedBranch);
+
       return {
         id: cert.id,
         type: 'certNode',
@@ -242,6 +248,11 @@ const PathMapFlow = ({ path, setSelectedCert }) => {
           index: idx,
           isUnlocked,
           isPathIgnored: isPathIgnoredVal,
+        },
+        style: {
+          opacity: isFilteredOut ? 0.22 : 1,
+          filter: isFilteredOut ? 'grayscale(0.6)' : 'none',
+          transition: 'opacity 0.25s ease, filter 0.25s ease',
         },
         position: pos?.position || { x: 0, y: 0 },
         targetPosition: pos?.targetPosition || 'top',
@@ -303,7 +314,7 @@ const PathMapFlow = ({ path, setSelectedCert }) => {
         }
       }, 50);
     }
-  }, [path, hasBranches, trunkFundamentals, trunkBottom, branchColumns, linearGroups, getStatus, isPathIgnored, path?.color, setSelectedCert, setNodes, setEdges, fitView]);
+  }, [path, hasBranches, trunkFundamentals, trunkBottom, branchColumns, linearGroups, getStatus, isPathIgnored, path?.color, setSelectedCert, setNodes, setEdges, fitView, selectedBranch, statusFilter]);
 
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -337,20 +348,17 @@ const PathMapFlow = ({ path, setSelectedCert }) => {
   );
 };
 
-const PathMapListView = ({ path, onSelectCert }) => {
+const PathMapListView = ({ path, onSelectCert, selectedBranch = 'all', statusFilter = 'all', onClearFilters }) => {
   const { getStatus, setStatus, isCertIgnored, toggleCertIgnored } = useProgressContext();
   const { addToast } = useToast();
 
-  const handleSetStatus = (certId, newStatus, e) => {
+  const handleSetStatus = (cert, newStatus, e) => {
     e.stopPropagation();
-    setStatus(certId, newStatus);
-    const cert = path.certifications.find(c => c.id === certId);
-    if (!cert) return;
-
+    setStatus(cert.id, newStatus);
     if (newStatus === CERT_STATUS.COMPLETED) {
-      const prerequisiteFor = getCertificationsRequiring(certId);
-      if (prerequisiteFor?.length > 0) {
-        const nextCert = prerequisiteFor.find(c => getStatus(c.id) === CERT_STATUS.NOT_STARTED);
+      const requiring = getCertificationsRequiring(cert.id);
+      if (requiring?.length > 0) {
+        const nextCert = requiring.map(r => r.cert).find(c => getStatus(c.id) === CERT_STATUS.NOT_STARTED);
         if (nextCert) {
           addToast(`🎉 You've unlocked ${nextCert.examCode}!`, 'success', {
             action: {
@@ -374,11 +382,12 @@ const PathMapListView = ({ path, onSelectCert }) => {
 
   const sections = useMemo(() => {
     if (!path?.certifications) return [];
-    const list = [];
+    let list = [];
     const trunkFundamentals = path.certifications.filter(c => !c.branch && c.level === CERT_LEVELS.FUNDAMENTALS);
     if (trunkFundamentals.length > 0) {
       list.push({
         id: 'fundamentals',
+        branchId: 'fundamentals',
         title: 'Foundational Credentials',
         description: 'Recommended entry points providing fundamental architectural and platform knowledge.',
         certs: trunkFundamentals,
@@ -391,6 +400,7 @@ const PathMapListView = ({ path, onSelectCert }) => {
         if (branchCerts.length > 0) {
           list.push({
             id: `branch-${branch.id}`,
+            branchId: branch.id,
             title: `${branch.name} Pathway`,
             description: branch.description,
             certs: branchCerts,
@@ -403,6 +413,7 @@ const PathMapListView = ({ path, onSelectCert }) => {
     if (trunkBottom.length > 0) {
       list.push({
         id: 'advanced',
+        branchId: 'advanced',
         title: 'Specialty & Expert Level',
         description: 'Advanced role-based credentials for architects and domain specialists.',
         certs: trunkBottom,
@@ -412,17 +423,41 @@ const PathMapListView = ({ path, onSelectCert }) => {
     if (list.length === 0) {
       list.push({
         id: 'all',
+        branchId: 'all',
         title: 'All Certifications',
         description: '',
         certs: path.certifications,
       });
     }
 
+    if (selectedBranch !== 'all') {
+      list = list.filter(s => s.branchId === selectedBranch);
+    }
+
+    if (statusFilter !== 'all') {
+      list = list.map(s => ({
+        ...s,
+        certs: s.certs.filter(c => {
+          const sStatus = getStatus(c.id);
+          if (statusFilter === 'completed') return sStatus === CERT_STATUS.COMPLETED;
+          if (statusFilter === 'in_progress') return sStatus === CERT_STATUS.IN_PROGRESS;
+          if (statusFilter === 'not_started') return sStatus === CERT_STATUS.NOT_STARTED;
+          return true;
+        })
+      })).filter(s => s.certs.length > 0);
+    }
+
     return list;
-  }, [path]);
+  }, [path, selectedBranch, statusFilter, getStatus]);
 
   return (
     <div className="path-map__list-view" id="path-list-view">
+      {sections.length === 0 && (
+        <div className="path-map__list-empty">
+          <p>No certifications match your current filters.</p>
+          <button onClick={onClearFilters}>Clear all filters</button>
+        </div>
+      )}
       {sections.map(section => (
         <div key={section.id} className="path-map__list-section">
           <div className="path-map__list-section-header">
@@ -561,6 +596,20 @@ const PathMap = () => {
   const [viewMode, setViewMode] = useState(() => {
     return (typeof window !== 'undefined' && window.innerWidth <= 768) ? 'list' : 'map';
   });
+  const [prevPathId, setPrevPathId] = useState(pathId);
+  const [selectedBranch, setSelectedBranch] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+
+  if (prevPathId !== pathId) {
+    setPrevPathId(pathId);
+    setSelectedBranch('all');
+    setStatusFilter('all');
+  }
+
+  const handleClearFilters = useCallback(() => {
+    setSelectedBranch('all');
+    setStatusFilter('all');
+  }, []);
 
   const selectedCert = useMemo(() => {
     if (!path || !selectedCertId) return null;
@@ -650,88 +699,165 @@ const PathMap = () => {
         canonical={`https://skills.atozazure.com/path/${path.id}`}
         schema={breadcrumbSchema}
       />
+      
+      {/* ─── Redesigned Header: Concept 3 Hybrid ─── */}
       <div className="path-map__header">
-        <div className="path-map__header-main">
-          <div className="path-map__header-icon">
-            <PathIcon size={28} />
+        <div className="path-map__header-glow" aria-hidden="true" />
+        
+        {/* Upper Tier: Brand and Actions */}
+        <div className="path-map__header-top">
+          <div className="path-map__header-brand">
+            <div className="path-map__header-emblem-wrap">
+              <div className="path-map__header-icon">
+                <PathIcon size={26} />
+              </div>
+              <span className="path-map__header-code-badge">{path.code}</span>
+            </div>
+
+            <div className="path-map__header-info">
+              <div className="path-map__header-meta-row">
+                <span className="path-map__header-pillar-chip">{path.pillar}</span>
+                <span className="path-map__header-cert-count">{path.certifications.length} Credentials</span>
+              </div>
+
+              <h1 className="path-map__header-title">{path.name}</h1>
+
+              <p className="path-map__header-desc">{path.description}</p>
+            </div>
           </div>
-          <div className="path-map__header-info">
-            <h1 className="path-map__header-title">{path.name}</h1>
-            <p className="path-map__header-desc">{path.description}</p>
+
+          <div className="path-map__header-actions">
+            <div className="path-map__view-toggle" role="tablist" aria-label="View mode">
+              <button
+                type="button"
+                className={`path-map__view-btn ${viewMode === 'map' ? 'path-map__view-btn--active' : ''}`}
+                onClick={() => setViewMode('map')}
+                role="tab"
+                aria-selected={viewMode === 'map'}
+                title="Interactive Map View"
+              >
+                <Icons.Map size={15} />
+                <span>Map</span>
+              </button>
+              <button
+                type="button"
+                className={`path-map__view-btn ${viewMode === 'list' ? 'path-map__view-btn--active' : ''}`}
+                onClick={() => setViewMode('list')}
+                role="tab"
+                aria-selected={viewMode === 'list'}
+                title="Roadmap List View"
+              >
+                <Icons.List size={15} />
+                <span>List</span>
+              </button>
+            </div>
+
+            {path.id !== 'retired-exams' && (
+              <button
+                className={`path-map__track-btn ${isPathTracked ? 'path-map__track-btn--tracked' : 'path-map__track-btn--untracked'}`}
+                onClick={() => {
+                  togglePathIgnored(path.id);
+                  if (isPathTracked) {
+                    addToast(`Removed ${path.shortName} from tracked learning`, 'info');
+                  } else {
+                    addToast(`Added ${path.shortName} to tracked learning`, 'success');
+                  }
+                }}
+                title={isPathTracked ? "Remove from My Tracked Learning" : "Track this entire path in My Learning"}
+              >
+                {isPathTracked ? <Icons.CheckCircle2 size={16} /> : <Icons.Plus size={16} />}
+                <span>{isPathTracked ? 'Tracked in Learning' : 'Track This Path'}</span>
+              </button>
+            )}
           </div>
         </div>
-        <div className="path-map__header-actions">
-          <div className="path-map__view-toggle" role="tablist" aria-label="View mode">
-            <button
-              type="button"
-              className={`path-map__view-btn ${viewMode === 'map' ? 'path-map__view-btn--active' : ''}`}
-              onClick={() => setViewMode('map')}
-              role="tab"
-              aria-selected={viewMode === 'map'}
-              title="Interactive Map View"
-            >
-              <Icons.Map size={15} />
-              <span>Map</span>
-            </button>
-            <button
-              type="button"
-              className={`path-map__view-btn ${viewMode === 'list' ? 'path-map__view-btn--active' : ''}`}
-              onClick={() => setViewMode('list')}
-              role="tab"
-              aria-selected={viewMode === 'list'}
-              title="Roadmap List View"
-            >
-              <Icons.List size={15} />
-              <span>List</span>
-            </button>
-          </div>
-          {path.id !== 'retired-exams' && (
-            <button
-              className={`path-map__track-btn ${isPathTracked ? 'path-map__track-btn--tracked' : 'path-map__track-btn--untracked'}`}
-              onClick={() => {
-                togglePathIgnored(path.id);
-                if (isPathTracked) {
-                  addToast(`Removed ${path.shortName} from tracked learning`, 'info');
-                } else {
-                  addToast(`Added ${path.shortName} to tracked learning`, 'success');
-                }
-              }}
-              title={isPathTracked ? "Remove from My Tracked Learning" : "Track this entire path in My Learning"}
-            >
-              {isPathTracked ? <Icons.CheckCircle2 size={16} /> : <Icons.Plus size={16} />}
-              <span>{isPathTracked ? 'Tracked in Learning' : 'Track This Path'}</span>
-            </button>
+
+        {/* Lower Tier: Branch Wayfinding & Interactive Mastery Metrics */}
+        <div className="path-map__header-bottom">
+          {path.branches && path.branches.length > 0 ? (
+            <div className="path-map__branches-bar">
+              <span className="path-map__branches-label">
+                <Icons.GitBranch size={13} />
+                Branches:
+              </span>
+              <div className="path-map__branches-chips">
+                <button
+                  type="button"
+                  className={`path-map__branch-chip ${selectedBranch === 'all' ? 'path-map__branch-chip--active' : ''}`}
+                  onClick={() => setSelectedBranch('all')}
+                >
+                  All Stations
+                </button>
+                {path.branches.map(branch => (
+                  <button
+                    key={branch.id}
+                    type="button"
+                    className={`path-map__branch-chip ${selectedBranch === branch.id ? 'path-map__branch-chip--active' : ''}`}
+                    onClick={() => setSelectedBranch(branch.id === selectedBranch ? 'all' : branch.id)}
+                    title={branch.description}
+                  >
+                    {branch.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="path-map__branches-placeholder" />
           )}
-        </div>
-        <div className="path-map__header-stats">
-          <div className="path-map__header-progress">
-            <ProgressRing percent={pathProgress.percent} size={48} strokeWidth={4} color={path.color} />
-          </div>
-          <div className="path-map__header-counts">
-            <span className="path-map__header-stat">
-              <Icons.CheckCircle2 size={14} />
-              <strong>{pathProgress.completed}</strong> completed
-            </span>
-            <span className="path-map__header-stat">
-              <Icons.Clock size={14} />
-              <strong>{pathProgress.inProgress}</strong> active
-            </span>
-            <span className="path-map__header-stat">
-              <Icons.Circle size={14} />
-              <strong>{Math.max(0, pathProgress.total - pathProgress.completed - pathProgress.inProgress)}</strong> remaining
-            </span>
+
+          <div className="path-map__header-stats">
+            <div className="path-map__header-progress">
+              <ProgressRing percent={pathProgress.percent} size={42} strokeWidth={4} color={path.color} />
+            </div>
+            <div className="path-map__header-counts">
+              <button
+                type="button"
+                className={`path-map__stat-pill path-map__stat-pill--completed ${statusFilter === 'completed' ? 'path-map__stat-pill--active' : ''}`}
+                onClick={() => setStatusFilter(statusFilter === 'completed' ? 'all' : 'completed')}
+                title="Filter completed certifications"
+              >
+                <Icons.CheckCircle2 size={13} />
+                <span><strong>{pathProgress.completed}</strong> Completed</span>
+              </button>
+              <button
+                type="button"
+                className={`path-map__stat-pill path-map__stat-pill--in-progress ${statusFilter === 'in_progress' ? 'path-map__stat-pill--active' : ''}`}
+                onClick={() => setStatusFilter(statusFilter === 'in_progress' ? 'all' : 'in_progress')}
+                title="Filter active in-progress certifications"
+              >
+                <Icons.Clock size={13} />
+                <span><strong>{pathProgress.inProgress}</strong> Active</span>
+              </button>
+              <button
+                type="button"
+                className={`path-map__stat-pill path-map__stat-pill--remaining ${statusFilter === 'not_started' ? 'path-map__stat-pill--active' : ''}`}
+                onClick={() => setStatusFilter(statusFilter === 'not_started' ? 'all' : 'not_started')}
+                title="Filter remaining certifications"
+              >
+                <Icons.Circle size={13} />
+                <span><strong>{Math.max(0, pathProgress.total - pathProgress.completed - pathProgress.inProgress)}</strong> Remaining</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {viewMode === 'list' ? (
-        <PathMapListView path={path} onSelectCert={handleSelectCert} />
+        <PathMapListView 
+          path={path} 
+          onSelectCert={handleSelectCert} 
+          selectedBranch={selectedBranch}
+          statusFilter={statusFilter}
+          onClearFilters={handleClearFilters}
+        />
       ) : (
         <div className="path-map__viewport" style={{ flex: 1, minHeight: 0 }}>
           <ReactFlowProvider>
             <PathMapFlow 
               path={path} 
               setSelectedCert={handleSelectCert}
+              selectedBranch={selectedBranch}
+              statusFilter={statusFilter}
             />
           </ReactFlowProvider>
         </div>
