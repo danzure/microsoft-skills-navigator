@@ -154,10 +154,21 @@
       ]
     }
     </script>
+    <!-- Early theme init to prevent theme flash -->
+    <script>
+      (function() {
+        try {
+          var stored = localStorage.getItem('ms-cert-tracker-theme');
+          var isDark = stored === 'dark' || (stored !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
-    <!-- Fallback semantic markup for search engine crawlers and scrapers -->
-    <div id="root">
+    <div id="root"></div>
+    <!-- Fallback semantic markup for search engine crawlers and scrapers when JavaScript is disabled -->
+    <noscript>
       <header>
         <h1>Microsoft Skills Navigator & Azure Career Path Roadmap</h1>
         <p>An interactive navigation platform and visual roadmap tool designed to help cloud professionals, developers, and IT leaders plan, track, and master Microsoft and Azure certifications. Explore interactive metro-line maps, build role-tailored career pathways, monitor exam renewal lifecycles, and access official Microsoft Learn study resources.</p>
@@ -196,8 +207,6 @@
           </ul>
         </section>
       </main>
-    </div>
-    <noscript>
       <p>JavaScript is required to use the interactive features of the Microsoft Skills Navigator.</p>
     </noscript>
     <script type="module" src="/src/main.jsx"></script>
