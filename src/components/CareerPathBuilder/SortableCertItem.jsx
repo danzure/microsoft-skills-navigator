@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { CERT_STATUS } from '../../data/certificationPaths';
@@ -25,7 +26,7 @@ import Badge from '../common/Badge';
  * @param {Function} props.onRemove - Callback to remove this item from the custom timeline.
  * @returns {JSX.Element}
  */
-export const SortableCertItem = ({ id, index, certInfo, status, statusText, nodeClass, badgeClass, StatusIcon, onNavigate, onRemove }) => {
+export const SortableCertItem = memo(({ id, index, certInfo, status, statusText, nodeClass, badgeClass, StatusIcon, onNavigate, onRemove }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
   const style = {
@@ -96,4 +97,4 @@ export const SortableCertItem = ({ id, index, certInfo, status, statusText, node
       </div>
     </div>
   );
-};
+});

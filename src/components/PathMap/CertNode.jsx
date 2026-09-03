@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { CERT_STATUS, getCertById, getCertificationsRequiring } from '../../data/certificationPaths';
 import { useProgressContext } from '../../context/ProgressContext';
@@ -244,4 +245,4 @@ const CertNode = ({ data }) => {
   );
 };
 
-export default CertNode;
+export default memo(CertNode);

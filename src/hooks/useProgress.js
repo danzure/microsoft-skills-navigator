@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
-import { CERT_STATUS, certificationPaths, doesCertExpire } from '../data/certificationPaths';
+import { useState, useCallback, useEffect, useMemo } from 'react';
+import { CERT_STATUS, certificationPaths, doesCertExpire, getCertById, getPathById } from '../data/certificationPaths';
 import { isRetiring, isRetired } from '../utils/helpers';
 
 const STORAGE_KEY = 'ms-cert-tracker-progress';
@@ -92,14 +92,7 @@ export const useProgress = () => {
     (certId) => {
       const baseStatus = progress[certId] || CERT_STATUS.NOT_STARTED;
       if (baseStatus === CERT_STATUS.COMPLETED) {
-        let certLevel = null;
-        for (const path of certificationPaths) {
-          const cert = path.certifications.find(c => c.id === certId);
-          if (cert) {
-            certLevel = cert.level;
-            break;
-          }
-        }
+        const certLevel = getCertById(certId)?.cert?.level;
         if (doesCertExpire(certLevel)) {
           const completedDate = completionDates[certId];
           if (completedDate) {
@@ -168,7 +161,7 @@ export const useProgress = () => {
       setTrackedPaths((prev) => prev.filter(id => id !== pathId));
       
       // Untrack all certs within this path, unless they belong to another currently tracked path or have progress
-      const path = certificationPaths.find(p => p.id === pathId);
+      const path = getPathById(pathId);
       if (path) {
         const certIds = path.certifications.map(c => c.id);
         setTrackedCerts(prevCerts => prevCerts.filter(id => {
@@ -178,7 +171,7 @@ export const useProgress = () => {
 
             const otherTrackedPaths = trackedPaths.filter(pId => pId !== pathId);
             const isShared = otherTrackedPaths.some(pId => {
-              const otherPath = certificationPaths.find(p => p.id === pId);
+              const otherPath = getPathById(pId);
               return otherPath?.certifications.some(c => c.id === id);
             });
             return isShared;
@@ -190,7 +183,7 @@ export const useProgress = () => {
       setTrackedPaths((prev) => [...prev, pathId]);
       
       // Automatically track all certs within this path
-      const path = certificationPaths.find(p => p.id === pathId);
+      const path = getPathById(pathId);
       if (path) {
         const certIds = path.certifications.map(c => c.id);
         setTrackedCerts(prevCerts => {
@@ -230,38 +223,60 @@ export const useProgress = () => {
     return dismissedCerts.includes(certId);
   }, [dismissedCerts]);
 
-  const getPathProgress = useCallback(
-    (pathId) => {
-      const path = certificationPaths.find((p) => p.id === pathId);
-      if (!path) return { total: 0, completed: 0, inProgress: 0, percent: 0, isTracked: false };
+  const pathProgressMap = useMemo(() => {
+    const map = new Map();
+    const trackedPathsSet = new Set(trackedPaths);
 
-      const isTracked = trackedPaths.includes(pathId);
-      const activeCerts = path.certifications.filter(c => {
+    certificationPaths.forEach((path) => {
+      const isTracked = trackedPathsSet.has(path.id);
+      let total = 0;
+      let completed = 0;
+      let inProgress = 0;
+
+      path.certifications.forEach((c) => {
         const stat = getStatus(c.id);
-        const hasProgress = stat === CERT_STATUS.COMPLETED || stat === CERT_STATUS.NEEDS_RENEWAL || stat === CERT_STATUS.IN_PROGRESS;
+        const hasProgress =
+          stat === CERT_STATUS.COMPLETED ||
+          stat === CERT_STATUS.NEEDS_RENEWAL ||
+          stat === CERT_STATUS.IN_PROGRESS;
+
         if ((isRetiring(c) || isRetired(c)) && !hasProgress) {
-          return false;
+          return;
         }
-        return true;
+
+        total++;
+        if (stat === CERT_STATUS.COMPLETED || stat === CERT_STATUS.NEEDS_RENEWAL) {
+          completed++;
+        } else if (stat === CERT_STATUS.IN_PROGRESS) {
+          inProgress++;
+        }
       });
 
-      const total = activeCerts.length;
-      const completed = activeCerts.filter(
-        (c) => getStatus(c.id) === CERT_STATUS.COMPLETED || getStatus(c.id) === CERT_STATUS.NEEDS_RENEWAL
-      ).length;
-      const inProgress = activeCerts.filter(
-        (c) => getStatus(c.id) === CERT_STATUS.IN_PROGRESS
-      ).length;
-
-      return {
+      map.set(path.id, {
         total,
         completed,
         inProgress,
         percent: total > 0 ? Math.round((completed / total) * 100) : 0,
         isTracked,
-      };
+      });
+    });
+
+    return map;
+  }, [trackedPaths, getStatus]);
+
+  const getPathProgress = useCallback(
+    (pathId) => {
+      return (
+        pathProgressMap.get(pathId) || {
+          total: 0,
+          completed: 0,
+          inProgress: 0,
+          percent: 0,
+          isTracked: false,
+        }
+      );
     },
-    [trackedPaths, getStatus]
+    [pathProgressMap]
   );
 
   const getOverallProgress = useCallback(() => {
@@ -269,43 +284,38 @@ export const useProgress = () => {
     let completed = 0;
     let inProgress = 0;
     const processedCerts = new Set();
+    const trackedPathsSet = new Set(trackedPaths);
+    const trackedCertsSet = new Set(trackedCerts);
 
-    // 1. All certifications in tracked paths
     certificationPaths.forEach((path) => {
-      if (!trackedPaths.includes(path.id)) return;
+      const isPathTracked = trackedPathsSet.has(path.id);
 
       path.certifications.forEach((cert) => {
-        if (!processedCerts.has(cert.id) && trackedCerts.includes(cert.id)) {
-          processedCerts.add(cert.id);
-          
-          const stat = getStatus(cert.id);
-          const hasProgress = stat === CERT_STATUS.COMPLETED || stat === CERT_STATUS.NEEDS_RENEWAL || stat === CERT_STATUS.IN_PROGRESS;
-          
-          if ((isRetiring(cert) || isRetired(cert)) && !hasProgress) {
-            return;
-          }
+        if (processedCerts.has(cert.id)) return;
 
-          total++;
-          if (stat === CERT_STATUS.COMPLETED || stat === CERT_STATUS.NEEDS_RENEWAL) completed++;
-          if (stat === CERT_STATUS.IN_PROGRESS) inProgress++;
+        const stat = getStatus(cert.id);
+        const hasProgress =
+          stat === CERT_STATUS.COMPLETED ||
+          stat === CERT_STATUS.NEEDS_RENEWAL ||
+          stat === CERT_STATUS.IN_PROGRESS;
+        const isIndividuallyTracked = trackedCertsSet.has(cert.id);
+
+        const shouldInclude =
+          (isPathTracked && isIndividuallyTracked) ||
+          (!isPathTracked && (isIndividuallyTracked || hasProgress));
+
+        if (!shouldInclude) return;
+
+        if ((isRetiring(cert) || isRetired(cert)) && !hasProgress) {
+          return;
         }
-      });
-    });
 
-    // 2. Any individually tracked certs (or certs with progress) outside tracked paths
-    certificationPaths.forEach((path) => {
-      path.certifications.forEach((cert) => {
-        if (!processedCerts.has(cert.id)) {
-          const stat = getStatus(cert.id);
-          const hasProgress = stat === CERT_STATUS.COMPLETED || stat === CERT_STATUS.NEEDS_RENEWAL || stat === CERT_STATUS.IN_PROGRESS;
-          const isIndividuallyTracked = trackedCerts.includes(cert.id);
-
-          if (isIndividuallyTracked || hasProgress) {
-            processedCerts.add(cert.id);
-            total++;
-            if (stat === CERT_STATUS.COMPLETED || stat === CERT_STATUS.NEEDS_RENEWAL) completed++;
-            if (stat === CERT_STATUS.IN_PROGRESS) inProgress++;
-          }
+        processedCerts.add(cert.id);
+        total++;
+        if (stat === CERT_STATUS.COMPLETED || stat === CERT_STATUS.NEEDS_RENEWAL) {
+          completed++;
+        } else if (stat === CERT_STATUS.IN_PROGRESS) {
+          inProgress++;
         }
       });
     });
@@ -390,28 +400,54 @@ export const useProgress = () => {
     }
   }, []);
 
-  return {
-    progress,
-    trackedPaths,
-    trackedCerts,
-    dismissedCerts,
-    getStatus,
-    setStatus,
-    cycleStatus,
-    getPathProgress,
-    getOverallProgress,
-    togglePathIgnored,
-    isPathIgnored,
-    toggleCertIgnored,
-    isCertIgnored,
-    toggleCertDismissed,
-    isCertDismissed,
-    resetAll,
-    exportProgressJSON,
-    importProgressJSON,
-    completionDates,
-    setCompletionDate,
-    customPlaylist,
-    setCustomPlaylist,
-  };
+  return useMemo(
+    () => ({
+      progress,
+      trackedPaths,
+      trackedCerts,
+      dismissedCerts,
+      getStatus,
+      setStatus,
+      cycleStatus,
+      getPathProgress,
+      getOverallProgress,
+      togglePathIgnored,
+      isPathIgnored,
+      toggleCertIgnored,
+      isCertIgnored,
+      toggleCertDismissed,
+      isCertDismissed,
+      resetAll,
+      exportProgressJSON,
+      importProgressJSON,
+      completionDates,
+      setCompletionDate,
+      customPlaylist,
+      setCustomPlaylist,
+    }),
+    [
+      progress,
+      trackedPaths,
+      trackedCerts,
+      dismissedCerts,
+      getStatus,
+      setStatus,
+      cycleStatus,
+      getPathProgress,
+      getOverallProgress,
+      togglePathIgnored,
+      isPathIgnored,
+      toggleCertIgnored,
+      isCertIgnored,
+      toggleCertDismissed,
+      isCertDismissed,
+      resetAll,
+      exportProgressJSON,
+      importProgressJSON,
+      completionDates,
+      setCompletionDate,
+      customPlaylist,
+      setCustomPlaylist,
+    ]
+  );
 };

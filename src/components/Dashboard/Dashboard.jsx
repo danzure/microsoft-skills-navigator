@@ -18,32 +18,26 @@ const Dashboard = () => {
   const { getOverallProgress, getPathProgress, getStatus, togglePathIgnored, isPathIgnored, isCertIgnored, customPlaylist } = useProgressContext();
   const overall = useMemo(() => getOverallProgress(), [getOverallProgress]);
 
-  const inProgressCerts = useMemo(() => {
-    const certs = [];
-    const seen = new Set();
-    certificationPaths.forEach(path => {
-      path.certifications.forEach(cert => {
-        if (getStatus(cert.id) === CERT_STATUS.IN_PROGRESS && !seen.has(cert.id)) {
-          certs.push({ ...cert, pathName: path.shortName, pathColor: path.color, pathId: path.id });
-          seen.add(cert.id);
-        }
-      });
-    });
-    return certs;
-  }, [getStatus]);
+  const { inProgressCerts, needsRenewalCerts } = useMemo(() => {
+    const inProgress = [];
+    const needsRenewal = [];
+    const seenInProgress = new Set();
+    const seenRenewal = new Set();
 
-  const needsRenewalCerts = useMemo(() => {
-    const certs = [];
-    const seen = new Set();
     certificationPaths.forEach(path => {
       path.certifications.forEach(cert => {
-        if (getStatus(cert.id) === CERT_STATUS.NEEDS_RENEWAL && !seen.has(cert.id)) {
-          certs.push({ ...cert, pathName: path.shortName, pathColor: path.color, pathId: path.id });
-          seen.add(cert.id);
+        const stat = getStatus(cert.id);
+        if (stat === CERT_STATUS.IN_PROGRESS && !seenInProgress.has(cert.id)) {
+          inProgress.push({ ...cert, pathName: path.shortName, pathColor: path.color, pathId: path.id });
+          seenInProgress.add(cert.id);
+        } else if (stat === CERT_STATUS.NEEDS_RENEWAL && !seenRenewal.has(cert.id)) {
+          needsRenewal.push({ ...cert, pathName: path.shortName, pathColor: path.color, pathId: path.id });
+          seenRenewal.add(cert.id);
         }
       });
     });
-    return certs;
+
+    return { inProgressCerts: inProgress, needsRenewalCerts: needsRenewal };
   }, [getStatus]);
 
   const trackedPaths = useMemo(() => certificationPaths.filter(p => !isPathIgnored(p.id)), [isPathIgnored]);

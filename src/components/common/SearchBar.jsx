@@ -1,6 +1,6 @@
 import { IconMap } from './IconMap';
 const { Search, X } = IconMap;
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { getAllCertifications } from '../../data/certificationPaths';
 import { useNavigate } from 'react-router-dom';
 import './SearchBar.css';
@@ -58,16 +58,19 @@ const SearchBar = ({ onClose }) => {
 
   const allCerts = getAllCertifications();
 
-  const q = debouncedQuery.toLowerCase().trim();
-  const results = q.length > 0 
-    ? allCerts.filter(
+  const results = useMemo(() => {
+    const q = debouncedQuery.toLowerCase().trim();
+    if (!q) return [];
+    return allCerts
+      .filter(
         (c) =>
           c.name.toLowerCase().includes(q) ||
           c.examCode.toLowerCase().includes(q) ||
           c.pathName.toLowerCase().includes(q) ||
           c.description.toLowerCase().includes(q)
-      ).slice(0, 8)
-    : [];
+      )
+      .slice(0, 8);
+  }, [debouncedQuery, allCerts]);
 
   const handleSelect = (cert) => {
     navigate(`/path/${cert.pathId}?cert=${cert.id}`);

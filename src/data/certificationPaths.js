@@ -1478,35 +1478,51 @@ certificationPaths.forEach(path => {
   });
 });
 
-// Helper to get a path by ID
-export const getPathById = (pathId) => certificationPaths.find((p) => p.id === pathId);
+// Precomputed indices for O(1) lookups
+const pathMap = new Map();
+const certMap = new Map();
+const flatAllCertifications = [];
 
-// Helper to get a certification by ID across all paths
-export const getCertById = (certId) => {
-  for (const path of certificationPaths) {
-    const cert = path.certifications.find((c) => c.id === certId);
-    if (cert) return { cert, path };
-  }
-  return null;
-};
-
-// Get all certifications flat
-export const getAllCertifications = () =>
-  certificationPaths.flatMap((path) =>
-    path.certifications.map((cert) => ({ ...cert, pathId: path.id, pathName: path.name, pathColor: path.color }))
-  );
-
-// Helper to get certifications that require a specific certification
-export const getCertificationsRequiring = (certId) => {
-  return getAllCertifications().filter((c) => {
-    if (!c.prerequisites) return false;
-    return c.prerequisites.some((prereq) => {
-      if (Array.isArray(prereq)) {
-        return prereq.includes(certId);
-      }
-      return prereq === certId;
+certificationPaths.forEach(path => {
+  pathMap.set(path.id, path);
+  path.certifications.forEach(cert => {
+    certMap.set(cert.id, { cert, path });
+    flatAllCertifications.push({
+      ...cert,
+      pathId: path.id,
+      pathName: path.name,
+      pathColor: path.color,
     });
   });
-};
+});
+
+// Precomputed reverse index for certifications requiring a prerequisite
+const prereqRequiringMap = new Map();
+flatAllCertifications.forEach(cert => {
+  if (!cert.prerequisites) return;
+  cert.prerequisites.forEach(prereq => {
+    if (Array.isArray(prereq)) {
+      prereq.forEach(reqId => {
+        if (!prereqRequiringMap.has(reqId)) prereqRequiringMap.set(reqId, []);
+        prereqRequiringMap.get(reqId).push(cert);
+      });
+    } else {
+      if (!prereqRequiringMap.has(prereq)) prereqRequiringMap.set(prereq, []);
+      prereqRequiringMap.get(prereq).push(cert);
+    }
+  });
+});
+
+// Helper to get a path by ID (O(1))
+export const getPathById = (pathId) => pathMap.get(pathId);
+
+// Helper to get a certification by ID across all paths (O(1))
+export const getCertById = (certId) => certMap.get(certId) || null;
+
+// Get all certifications flat (O(1) precomputed array)
+export const getAllCertifications = () => flatAllCertifications;
+
+// Helper to get certifications that require a specific certification (O(1))
+export const getCertificationsRequiring = (certId) => prereqRequiringMap.get(certId) || [];
 
 

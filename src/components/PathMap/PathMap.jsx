@@ -15,38 +15,145 @@ import './PathMap.css';
 const LEVELS = [CERT_LEVELS.FUNDAMENTALS, CERT_LEVELS.ASSOCIATE, CERT_LEVELS.EXPERT, CERT_LEVELS.SPECIALTY];
 const nodeTypes = { certNode: CertNode };
 
-const getLayoutedElements = (nodes, edges, direction = 'TB') => {
-  const dagreGraph = new dagre.graphlib.Graph();
-  dagreGraph.setDefaultEdgeLabel(() => ({}));
-  
-  const isHorizontal = direction === 'LR';
-  dagreGraph.setGraph({ rankdir: direction, nodesep: 40, ranksep: 80 });
+const layoutPositionsCache = new Map();
 
-  nodes.forEach((node) => {
-    dagreGraph.setNode(node.id, { width: 400, height: 230 });
-  });
+const computePathLayout = (path, branchColumns, trunkFundamentals, trunkBottom, linearGroups, hasBranches) => {
+  if (layoutPositionsCache.has(path.id)) {
+    return layoutPositionsCache.get(path.id);
+  }
 
-  edges.forEach((edge) => {
-    dagreGraph.setEdge(edge.source, edge.target);
-  });
+  const positions = new Map();
+  const initialEdges = [];
 
-  dagre.layout(dagreGraph);
+  if (hasBranches) {
+    const chainedFundamentals = trunkFundamentals.filter(c => !c.isIndependent);
+    for (let i = 1; i < chainedFundamentals.length; i++) {
+      initialEdges.push({
+        id: `e-${chainedFundamentals[i - 1].id}-${chainedFundamentals[i].id}`,
+        source: chainedFundamentals[i - 1].id,
+        target: chainedFundamentals[i].id,
+        type: 'smoothstep',
+      });
+    }
 
-  const layoutedNodes = nodes.map((node) => {
-    const nodeWithPosition = dagreGraph.node(node.id);
-    const newNode = {
-      ...node,
-      targetPosition: isHorizontal ? 'left' : 'top',
-      sourcePosition: isHorizontal ? 'right' : 'bottom',
-      position: {
-        x: nodeWithPosition.x - 400 / 2,
-        y: nodeWithPosition.y - 230 / 2,
-      },
-    };
-    return newNode;
-  });
+    const lastTrunkFund = chainedFundamentals[chainedFundamentals.length - 1];
+    if (lastTrunkFund) {
+      branchColumns.forEach(branch => {
+        const firstBranchCert = branch.allCerts[0];
+        if (firstBranchCert && !firstBranchCert.isIndependent) {
+          initialEdges.push({
+            id: `e-${lastTrunkFund.id}-${firstBranchCert.id}`,
+            source: lastTrunkFund.id,
+            target: firstBranchCert.id,
+            type: 'smoothstep',
+          });
+        }
+      });
+    }
 
-  return { nodes: layoutedNodes, edges };
+    branchColumns.forEach(branch => {
+      const chainedBranchCerts = branch.allCerts.filter(c => !c.isIndependent);
+      for (let i = 1; i < chainedBranchCerts.length; i++) {
+        initialEdges.push({
+          id: `e-${chainedBranchCerts[i - 1].id}-${chainedBranchCerts[i].id}`,
+          source: chainedBranchCerts[i - 1].id,
+          target: chainedBranchCerts[i].id,
+          type: 'smoothstep',
+        });
+      }
+    });
+
+    const chainedBottom = trunkBottom.filter(c => !c.isIndependent);
+    if (chainedBottom.length > 0) {
+      const firstBottom = chainedBottom[0];
+      const prereqs = firstBottom.prerequisites ? firstBottom.prerequisites.flat() : [];
+
+      branchColumns.forEach(branch => {
+        const chainedBranchCerts = branch.allCerts.filter(c => !c.isIndependent);
+        const lastBranchCert = chainedBranchCerts[chainedBranchCerts.length - 1];
+        if (lastBranchCert) {
+          let shouldConnect = true;
+          if (prereqs.length > 0) {
+            shouldConnect = chainedBranchCerts.some(c => prereqs.includes(c.id));
+          }
+          if (shouldConnect) {
+            initialEdges.push({
+              id: `e-${lastBranchCert.id}-${firstBottom.id}`,
+              source: lastBranchCert.id,
+              target: firstBottom.id,
+              type: 'smoothstep',
+            });
+          }
+        }
+      });
+    }
+
+    for (let i = 1; i < chainedBottom.length; i++) {
+      initialEdges.push({
+        id: `e-${chainedBottom[i - 1].id}-${chainedBottom[i].id}`,
+        source: chainedBottom[i - 1].id,
+        target: chainedBottom[i].id,
+        type: 'smoothstep',
+      });
+    }
+  } else {
+    const orderedCerts = linearGroups.flatMap(g => g.certs).filter(c => !c.isIndependent);
+    for (let i = 1; i < orderedCerts.length; i++) {
+      initialEdges.push({
+        id: `e-${orderedCerts[i - 1].id}-${orderedCerts[i].id}`,
+        source: orderedCerts[i - 1].id,
+        target: orderedCerts[i].id,
+        type: 'smoothstep',
+      });
+    }
+  }
+
+  if (path.id === 'retired-exams') {
+    const colWidth = 440; // 400 node width + 40 gap
+    const rowHeight = 270; // 230 node height + 40 gap
+    const cols = 3;
+    const allCerts = branchColumns.flatMap(branch => branch.allCerts);
+
+    allCerts.forEach((cert, idx) => {
+      const col = idx % cols;
+      const row = Math.floor(idx / cols);
+      positions.set(cert.id, {
+        position: { x: col * colWidth, y: row * rowHeight },
+        sourcePosition: 'bottom',
+        targetPosition: 'top',
+      });
+    });
+  } else {
+    const dagreGraph = new dagre.graphlib.Graph();
+    dagreGraph.setDefaultEdgeLabel(() => ({}));
+    dagreGraph.setGraph({ rankdir: 'TB', nodesep: 40, ranksep: 80 });
+
+    path.certifications.forEach((cert) => {
+      dagreGraph.setNode(cert.id, { width: 400, height: 230 });
+    });
+
+    initialEdges.forEach((edge) => {
+      dagreGraph.setEdge(edge.source, edge.target);
+    });
+
+    dagre.layout(dagreGraph);
+
+    path.certifications.forEach((cert) => {
+      const nodeWithPosition = dagreGraph.node(cert.id);
+      positions.set(cert.id, {
+        position: {
+          x: nodeWithPosition.x - 400 / 2,
+          y: nodeWithPosition.y - 230 / 2,
+        },
+        targetPosition: 'top',
+        sourcePosition: 'bottom',
+      });
+    });
+  }
+
+  const result = { positions, edges: initialEdges };
+  layoutPositionsCache.set(path.id, result);
+  return result;
 };
 
 const CustomControls = () => {
@@ -111,12 +218,24 @@ const PathMapFlow = ({ path, setSelectedCert }) => {
   useEffect(() => {
     if (!path) return;
 
-    // Build initial nodes
-    const initialNodes = path.certifications.map((cert, idx) => {
+    const { positions, edges: initialEdges } = computePathLayout(
+      path,
+      branchColumns,
+      trunkFundamentals,
+      trunkBottom,
+      linearGroups,
+      hasBranches
+    );
+
+    const isPathIgnoredVal = isPathIgnored(path.id);
+
+    // Build nodes with cached layout coordinates
+    const layoutedNodes = path.certifications.map((cert, idx) => {
       const certStatus = getStatus(cert.id);
       const flatPrereqs = cert.prerequisites ? cert.prerequisites.flat() : [];
       const isPrereqCompleted = flatPrereqs.some(id => getStatus(id) === CERT_STATUS.COMPLETED);
       const isUnlocked = (flatPrereqs.length === 0 || isPrereqCompleted) && certStatus === CERT_STATUS.NOT_STARTED;
+      const pos = positions.get(cert.id);
 
       return {
         id: cert.id,
@@ -127,106 +246,22 @@ const PathMapFlow = ({ path, setSelectedCert }) => {
           onSelect: setSelectedCert,
           index: idx,
           isUnlocked,
-          isPathIgnored: isPathIgnored(path.id),
+          isPathIgnored: isPathIgnoredVal,
         },
-        position: { x: 0, y: 0 },
+        position: pos?.position || { x: 0, y: 0 },
+        targetPosition: pos?.targetPosition || 'top',
+        sourcePosition: pos?.sourcePosition || 'bottom',
       };
     });
 
-    // Build initial edges based on the legacy connection logic
-    const initialEdges = [];
-
-    if (hasBranches) {
-      const chainedFundamentals = trunkFundamentals.filter(c => !c.isIndependent);
-      for (let i = 1; i < chainedFundamentals.length; i++) {
-        initialEdges.push({
-          id: `e-${chainedFundamentals[i - 1].id}-${chainedFundamentals[i].id}`,
-          source: chainedFundamentals[i - 1].id,
-          target: chainedFundamentals[i].id,
-          type: 'smoothstep',
-        });
-      }
-
-      const lastTrunkFund = chainedFundamentals[chainedFundamentals.length - 1];
-      if (lastTrunkFund) {
-        branchColumns.forEach(branch => {
-          const firstBranchCert = branch.allCerts[0];
-          if (firstBranchCert && !firstBranchCert.isIndependent) {
-            initialEdges.push({
-              id: `e-${lastTrunkFund.id}-${firstBranchCert.id}`,
-              source: lastTrunkFund.id,
-              target: firstBranchCert.id,
-              type: 'smoothstep',
-            });
-          }
-        });
-      }
-
-      branchColumns.forEach(branch => {
-        const chainedBranchCerts = branch.allCerts.filter(c => !c.isIndependent);
-        for (let i = 1; i < chainedBranchCerts.length; i++) {
-          initialEdges.push({
-            id: `e-${chainedBranchCerts[i - 1].id}-${chainedBranchCerts[i].id}`,
-            source: chainedBranchCerts[i - 1].id,
-            target: chainedBranchCerts[i].id,
-            type: 'smoothstep',
-          });
-        }
-      });
-
-      const chainedBottom = trunkBottom.filter(c => !c.isIndependent);
-      if (chainedBottom.length > 0) {
-        const firstBottom = chainedBottom[0];
-        const prereqs = firstBottom.prerequisites ? firstBottom.prerequisites.flat() : [];
-
-        branchColumns.forEach(branch => {
-          const chainedBranchCerts = branch.allCerts.filter(c => !c.isIndependent);
-          const lastBranchCert = chainedBranchCerts[chainedBranchCerts.length - 1];
-          if (lastBranchCert) {
-            let shouldConnect = true;
-            if (prereqs.length > 0) {
-              shouldConnect = chainedBranchCerts.some(c => prereqs.includes(c.id));
-            }
-            if (shouldConnect) {
-              initialEdges.push({
-                id: `e-${lastBranchCert.id}-${firstBottom.id}`,
-                source: lastBranchCert.id,
-                target: firstBottom.id,
-                type: 'smoothstep',
-              });
-            }
-          }
-        });
-      }
-
-      for (let i = 1; i < chainedBottom.length; i++) {
-        initialEdges.push({
-          id: `e-${chainedBottom[i - 1].id}-${chainedBottom[i].id}`,
-          source: chainedBottom[i - 1].id,
-          target: chainedBottom[i].id,
-          type: 'smoothstep',
-        });
-      }
-    } else {
-      const orderedCerts = linearGroups.flatMap(g => g.certs).filter(c => !c.isIndependent);
-      for (let i = 1; i < orderedCerts.length; i++) {
-        initialEdges.push({
-          id: `e-${orderedCerts[i - 1].id}-${orderedCerts[i].id}`,
-          source: orderedCerts[i - 1].id,
-          target: orderedCerts[i].id,
-          type: 'smoothstep',
-        });
-      }
-    }
-
     // Apply color and state to edges
-    const styledEdges = initialEdges.map(edge => {
+    const layoutedEdges = initialEdges.map(edge => {
       const fromStatus = getStatus(edge.source);
       const toStatus = getStatus(edge.target);
       const fromCompleted = fromStatus === CERT_STATUS.COMPLETED;
       const toActive = toStatus === CERT_STATUS.COMPLETED || toStatus === CERT_STATUS.IN_PROGRESS;
       
-      const targetNode = initialNodes.find(n => n.id === edge.target);
+      const targetNode = layoutedNodes.find(n => n.id === edge.target);
       const toUnlocked = targetNode?.data?.isUnlocked;
 
       let strokeColor;
@@ -258,38 +293,6 @@ const PathMapFlow = ({ path, setSelectedCert }) => {
         animated: isAnimated,
       };
     });
-
-    let layoutedNodes;
-    let layoutedEdges;
-
-    if (path.id === 'retired-exams') {
-      const colWidth = 440; // 400 node width + 40 gap
-      const rowHeight = 270; // 230 node height + 40 gap
-      const cols = 3;
-      const placedNodes = [];
-      
-      const allCerts = branchColumns.flatMap(branch => branch.allCerts);
-      
-      allCerts.forEach((cert, idx) => {
-        const col = idx % cols;
-        const row = Math.floor(idx / cols);
-        const node = initialNodes.find(n => n.id === cert.id);
-        if (node) {
-          placedNodes.push({
-            ...node,
-            position: { x: col * colWidth, y: row * rowHeight },
-            sourcePosition: 'bottom',
-            targetPosition: 'top'
-          });
-        }
-      });
-      
-      layoutedNodes = placedNodes;
-    } else {
-      const res = getLayoutedElements(initialNodes, styledEdges);
-      layoutedNodes = res.nodes;
-      layoutedEdges = res.edges;
-    }
 
     setNodes(layoutedNodes);
     setEdges(layoutedEdges);

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProgressContext } from '../../context/ProgressContext';
 import { CERT_STATUS, getCertById } from '../../data/certificationPaths';
@@ -21,7 +22,7 @@ import '../PathMap/CertNode.css';
  * @param {Function} props.onRemove - Callback when the certification is removed from the custom playlist.
  * @returns {JSX.Element}
  */
-export const CareerPathCertCard = ({ certInfo, customPlaylist, onAdd, onRemove }) => {
+export const CareerPathCertCard = memo(({ certInfo, customPlaylist, onAdd, onRemove }) => {
   const navigate = useNavigate();
   const { getStatus, setStatus } = useProgressContext();
   
@@ -165,4 +166,4 @@ export const CareerPathCertCard = ({ certInfo, customPlaylist, onAdd, onRemove }
       </div>
     </div>
   );
-};
+});
