@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://certifications.atozazure.com/sitemap.xml
+Host: https://skills.atozazure.com
+Sitemap: https://skills.atozazure.com/sitemap.xml

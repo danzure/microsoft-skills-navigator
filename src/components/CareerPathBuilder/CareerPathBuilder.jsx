@@ -4,6 +4,7 @@ import { careerRoles } from '../../data/careerRoles';
 import { certificationPaths, CERT_STATUS } from '../../data/certificationPaths';
 import { useProgressContext } from '../../context/ProgressContext';
 import { IconMap as Icons } from '../common/IconMap';
+import SEO from '../common/SEO';
 import { SortableCertItem } from './SortableCertItem';
 import { CareerPathCertCard } from './CareerPathCertCard';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -113,14 +114,48 @@ const CareerPathBuilder = () => {
     URL.revokeObjectURL(url);
   };
 
+  const breadcrumbSchema = useMemo(() => ({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://skills.atozazure.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Career Paths",
+        "item": "https://skills.atozazure.com/career-paths"
+      }
+    ]
+  }), []);
+
+  const seoTitle = selectedRole && selectedRole.id !== 'custom-playlist'
+    ? `${selectedRole.title} Certification Roadmap | atozazure`
+    : 'Microsoft Career Paths & Certification Builder | atozazure';
+
+  const seoDescription = selectedRole && selectedRole.id !== 'custom-playlist'
+    ? `Official Microsoft certification path and learning roadmap for ${selectedRole.title}. ${selectedRole.description}`
+    : 'Build, customize, and navigate your Microsoft certification roadmap by career role. Explore curated certification journeys for Cloud Architects, AI Engineers, Security Administrators, Data Engineers, and DevOps Specialists.';
+
   return (
     <div className="career-path-builder">
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        keywords="microsoft career paths, azure career roadmap, cloud architect certification path, devops engineer certifications, ai engineer certification roadmap, skills navigator"
+        canonical="https://skills.atozazure.com/career-paths"
+        schema={breadcrumbSchema}
+      />
       <div className="cpb-header">
         <h1 className="cpb-title">
-          Career Paths
+          Microsoft Career Paths & Certification Builder
         </h1>
         <p className="cpb-subtitle">
-          Explore specialized certification paths tailored to your desired job role. Follow the guided paths aligned with Microsoft's official career roles, or build a completely custom career to match your unique career goals.
+          Navigate specialized certification roadmaps aligned with official Microsoft job roles, or craft a personalized drag-and-drop learning playlist. Tailor your certification milestones to accelerate your career growth as an Architect, AI Engineer, Security Admin, or DevOps Specialist.
         </p>
       </div>
 

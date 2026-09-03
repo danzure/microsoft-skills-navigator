@@ -346,8 +346,8 @@ export const useProgress = () => {
 
   const exportProgressJSON = useCallback(() => {
     const data = {
-      app: 'ms-cert-tracker',
-      version: '1.8.2',
+      app: 'ms-skills-navigator',
+      version: '1.11.0',
       exportedAt: new Date().toISOString(),
       progress,
       trackedPaths,
@@ -360,7 +360,7 @@ export const useProgress = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `ms-certification-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `ms-skills-navigator-backup-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

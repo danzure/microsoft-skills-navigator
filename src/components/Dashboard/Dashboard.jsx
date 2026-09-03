@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { certificationPaths, CERT_STATUS, PILLARS } from '../../data/certificationPaths';
 import { useProgressContext } from '../../context/ProgressContext';
 import Badge from '../common/Badge';
+import SEO from '../common/SEO';
 import { IconMap as Icons } from '../common/IconMap';
 import './Dashboard.css';
 
@@ -149,13 +150,17 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard" id="dashboard">
-      
+      <SEO
+        title="Microsoft Skills Navigator & Certification Roadmap | atozazure"
+        description="Interactive Microsoft Skills Navigator: visualize certification prerequisites on an interactive metro map, plan role-based career pathways, track exam completion dates, and manage annual renewals across 11 technology tracks."
+        canonical="https://skills.atozazure.com/"
+      />
       {/* Hero Overview Panel */}
       <div className="dashboard__hero">
         <div className="dashboard__hero-main">
-          <h1 className="dashboard__title">Certification Tracker</h1>
+          <h1 className="dashboard__title">Microsoft Skills Navigator & Certification Roadmap</h1>
           <p className="dashboard__subtitle">
-            Navigate your Microsoft certification journey with ease. Map out your next steps, manage exam renewals, and explore over {certificationPaths.length} distinct technology paths.
+            Your interactive guide to the Microsoft certification ecosystem. Visualize prerequisite paths on a metro-style map, build role-tailored career journeys, track exam completions and annual renewals, and budget with real-time exam pricing across {certificationPaths.length} technology paths.
           </p>
           <div className="dashboard__update-link">
             <a 

@@ -5,6 +5,7 @@ import { useToast } from '../../context/ToastContext';
 import CertNode from './CertNode';
 import CertDetail from '../CertDetail/CertDetail';
 import ProgressRing from '../common/ProgressRing';
+import SEO from '../common/SEO';
 import { IconMap as Icons } from '../common/IconMap';
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { ReactFlow, ReactFlowProvider, useNodesState, useEdgesState, Background, Controls, ControlButton, useReactFlow } from '@xyflow/react';
@@ -355,6 +356,39 @@ const PathMap = () => {
     return getPathProgress(path.id);
   }, [path, getPathProgress]);
 
+  const certCodes = useMemo(() => {
+    if (!path?.certifications) return '';
+    return path.certifications.map(c => c.examCode).filter(Boolean).slice(0, 10).join(', ');
+  }, [path]);
+
+  const breadcrumbSchema = useMemo(() => {
+    if (!path) return null;
+    return {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://skills.atozazure.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Certification Paths",
+          "item": "https://skills.atozazure.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": path.name,
+          "item": `https://skills.atozazure.com/path/${path.id}`
+        }
+      ]
+    };
+  }, [path]);
+
   const isPathTracked = path ? !isPathIgnored(path.id) : false;
 
   useEffect(() => {
@@ -377,10 +411,25 @@ const PathMap = () => {
     );
   }
 
+  const seoTitle = selectedCert
+    ? `${selectedCert.examCode}: ${selectedCert.name} Certification Guide | atozazure`
+    : `${path?.name} Certification Roadmap (${path?.code}) | atozazure`;
+
+  const seoDesc = selectedCert
+    ? `Study guide and requirements for ${selectedCert.examCode} (${selectedCert.name}). ${selectedCert.description}`
+    : `${path?.description} Visual metro roadmap and study tracking for Microsoft ${path?.name} exams including ${certCodes}.`;
+
   const PathIcon = Icons[path.icon] || Icons.Circle;
 
   return (
     <div className="path-map" style={{ '--path-color': path.color, '--path-glow': path.glowColor }}>
+      <SEO
+        title={seoTitle}
+        description={seoDesc}
+        keywords={`${path.name}, ${path.shortName}, ${certCodes}, Microsoft certification roadmap, Azure certifications`}
+        canonical={`https://skills.atozazure.com/path/${path.id}`}
+        schema={breadcrumbSchema}
+      />
       <div className="path-map__header">
         <div className="path-map__header-icon">
           <PathIcon size={28} />

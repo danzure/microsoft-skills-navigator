@@ -1,16 +1,20 @@
 {
-  "name": "atozazure Certification Tracker",
-  "short_name": "atozazure",
-  "description": "A certification roadmap and tracking tool to plan, visualize, and manage your Microsoft and Azure learning journeys.",
+  "name": "Microsoft Skills Navigator & Career Roadmap",
+  "short_name": "Skills Navigator",
+  "description": "Interactive Microsoft Skills Navigator: visual metro-style certification roadmaps, role-based career paths, exam study tracking, and annual renewal management for Microsoft and Azure credentials.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#09090b",
   "theme_color": "#09090b",
+  "categories": ["education", "productivity", "utilities"],
   "icons": [
     {
       "src": "/favicon.png",
       "sizes": "192x192 512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
