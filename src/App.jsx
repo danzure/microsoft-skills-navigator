@@ -11,6 +11,7 @@ import './App.css';
 const Dashboard = lazy(() => import('./components/Dashboard/Dashboard'));
 const PathMap = lazy(() => import('./components/PathMap/PathMap'));
 const CareerPathBuilder = lazy(() => import('./components/CareerPathBuilder/CareerPathBuilder'));
+const AppliedSkills = lazy(() => import('./components/AppliedSkills/AppliedSkills'));
 
 /**
  * Main application component.
@@ -59,6 +60,7 @@ function App() {
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/career-paths" element={<CareerPathBuilder />} />
+                    <Route path="/applied-skills" element={<AppliedSkills />} />
                     <Route path="/path/:pathId" element={<PathMap />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>

@@ -16,8 +16,9 @@ import './Dashboard.css';
  */
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { getOverallProgress, getPathProgress, getStatus, togglePathIgnored, isPathIgnored, isCertIgnored, customPlaylist } = useProgressContext();
+  const { getOverallProgress, getPathProgress, getStatus, togglePathIgnored, isPathIgnored, isCertIgnored, customPlaylist, getAppliedSkillsProgress } = useProgressContext();
   const overall = useMemo(() => getOverallProgress(), [getOverallProgress]);
+  const appliedSkillsStats = useMemo(() => getAppliedSkillsProgress(), [getAppliedSkillsProgress]);
 
   const { inProgressCerts, needsRenewalCerts } = useMemo(() => {
     const inProgress = [];
@@ -181,6 +182,13 @@ const Dashboard = () => {
               <Icons.Microsoft size={16} />
               Official Certification Poster
             </a>
+            <button
+              onClick={() => navigate('/applied-skills')}
+              className="dashboard__update-btn dashboard__update-btn--applied"
+            >
+              <Icons.AppliedSkills size={16} />
+              Applied Skills Hub ({appliedSkillsStats.completed}/{appliedSkillsStats.total})
+            </button>
           </div>
         </div>
         
@@ -215,6 +223,25 @@ const Dashboard = () => {
               <div className="dashboard__stat-mini-info">
                 <span className="dashboard__stat-mini-value">{overall.inProgress}</span>
                 <span className="dashboard__stat-mini-label">In Progress</span>
+              </div>
+            </div>
+            <div 
+              className="dashboard__stat-mini dashboard__stat-mini--clickable"
+              onClick={() => navigate('/applied-skills')}
+              title="Open Applied Skills Hub"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  navigate('/applied-skills');
+                }
+              }}
+            >
+              <div className="dashboard__stat-mini-icon"><Icons.AppliedSkills size={18} /></div>
+              <div className="dashboard__stat-mini-info">
+                <span className="dashboard__stat-mini-value">{appliedSkillsStats.completed}/{appliedSkillsStats.total}</span>
+                <span className="dashboard__stat-mini-label">Applied Skills</span>
               </div>
             </div>
           </div>

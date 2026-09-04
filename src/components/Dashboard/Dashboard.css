@@ -193,6 +193,22 @@
   color: var(--colorNeutralForeground3);
 }
 
+.dashboard__stat-mini--clickable {
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-2);
+  margin: calc(-1 * var(--space-1)) calc(-1 * var(--space-2));
+  transition: all var(--transition-fast);
+}
+
+.dashboard__stat-mini--clickable:hover {
+  background: var(--colorSubtleBackgroundHover);
+}
+
+.dashboard__stat-mini--clickable:active {
+  transform: scale(0.96);
+}
+
 /* ─── Action Center ─── */
 .dashboard__action-center {
   display: flex;

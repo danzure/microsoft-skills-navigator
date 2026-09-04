@@ -15,7 +15,8 @@ import './Sidebar.css';
  * @param {Function} props.onToggle - Callback to toggle the sidebar state
  */
 const Sidebar = ({ isOpen, onClose, onToggle }) => {
-  const { getPathProgress } = useProgressContext();
+  const { getPathProgress, getAppliedSkillsProgress } = useProgressContext();
+  const appliedSkillsStats = getAppliedSkillsProgress();
 
   const getIcon = (iconName) => {
     const Icon = Icons[iconName];
@@ -126,6 +127,29 @@ const Sidebar = ({ isOpen, onClose, onToggle }) => {
               <div className="sidebar__link-content">
                 <span className="sidebar__link-name">Career Paths</span>
               </div>
+            </NavLink>
+
+            <NavLink
+              to="/applied-skills"
+              className={({ isActive }) => `sidebar__link ${isActive ? 'sidebar__link--active' : ''}`}
+              onClick={() => {
+                if (window.innerWidth <= 768) {
+                  onClose();
+                }
+              }}
+              style={{ '--line-color': 'var(--line-azure)' }}
+              title="Applied Skills"
+            >
+              <div className="sidebar__link-indicator" />
+              <div className="sidebar__link-icon" title="Applied Skills">
+                <Icons.AppliedSkills size={20} />
+              </div>
+              <div className="sidebar__link-content">
+                <span className="sidebar__link-name">Applied Skills</span>
+              </div>
+              <span className="sidebar__link-count">
+                {appliedSkillsStats.completed}/{appliedSkillsStats.total}
+              </span>
             </NavLink>
           </div>
 

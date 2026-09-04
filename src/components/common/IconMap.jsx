@@ -74,6 +74,7 @@ import {
   AzureDevOpsIcon,
   CareerPathIcon,
   SettingsColorIcon,
+  AppliedSkillsIcon,
 } from './ProductIcons';
 
 const withSize = (IconComponent) => {
@@ -108,6 +109,7 @@ export const IconMap = {
   GitBranch: withSize(BranchForkRegular),
   Archive: ArchiveIcon,
   CareerPath: CareerPathIcon,
+  AppliedSkills: AppliedSkillsIcon,
 
   // ── UI Icons (Fluent UI) ──
   LayoutDashboard: DashboardIcon,

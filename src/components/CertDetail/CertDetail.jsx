@@ -1,10 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { IconMap } from '../common/IconMap';
-const { X, AlertTriangle, Calendar, Award, Eye, EyeOff, Microsoft } = IconMap;
+const { X, AlertTriangle, Calendar, Award, Eye, EyeOff, Microsoft, AppliedSkills, ExternalLink } = IconMap;
 import { useProgressContext } from '../../context/ProgressContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useToast } from '../../context/ToastContext';
 import { CERT_STATUS, getCertById, getCertificationsRequiring, doesCertExpire } from '../../data/certificationPaths';
+import { getAppliedSkillsForCert } from '../../data/appliedSkills.js';
 import { isRetiring, isRetired, formatDate, getBadgeUrl } from '../../utils/helpers';
 import { getFormattedExamCost, CURRENCIES } from '../../utils/pricing';
 import Badge from '../common/Badge';
@@ -52,6 +53,7 @@ const CertDetail = ({ cert, path, onClose }) => {
   }[cert.level] || 'default';
 
   const prerequisiteFor = getCertificationsRequiring(cert.id);
+  const relatedAppliedSkills = useMemo(() => getAppliedSkillsForCert(cert.id), [cert.id]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -306,6 +308,38 @@ const CertDetail = ({ cert, path, onClose }) => {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+          )}
+
+          {relatedAppliedSkills && relatedAppliedSkills.length > 0 && (
+            <div className="cert-detail__section">
+              <h3 className="cert-detail__section-title">Hands-on Applied Skills Labs</h3>
+              <p className="cert-detail__ignore-hint" style={{ marginTop: 0, marginBottom: '8px' }}>
+                Practice scenario-based interactive lab assessments that validate objectives for this exam:
+              </p>
+              <div className="cert-detail__applied-skills-list">
+                {relatedAppliedSkills.map((skill) => (
+                  <a
+                    key={skill.id}
+                    href={skill.learnUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="cert-detail__applied-skill-item"
+                    title={skill.summary}
+                  >
+                    <div className="cert-detail__applied-skill-icon">
+                      <AppliedSkills size={16} />
+                    </div>
+                    <div className="cert-detail__applied-skill-content">
+                      <div className="cert-detail__applied-skill-title">{skill.title}</div>
+                      <div className="cert-detail__applied-skill-meta">
+                        <span>{skill.focus}</span> • <span>{skill.level}</span> • <span>{skill.duration}</span> • <span>Free</span>
+                      </div>
+                    </div>
+                    <ExternalLink size={14} className="cert-detail__applied-skill-link" />
+                  </a>
+                ))}
               </div>
             </div>
           )}

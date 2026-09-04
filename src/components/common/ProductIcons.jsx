@@ -111,3 +111,21 @@ export const SettingsColorIcon = ({ size = 20, className, style, ...props }) => 
     {...props}
   />
 );
+
+// ─── Applied Skills Badge Icon ──────────────────────────────────────────────
+export const AppliedSkillsIcon = ({ size = 20, className, style, ...props }) => (
+  <svg
+    viewBox="0 0 24 24"
+    width={size}
+    height={size}
+    className={className}
+    style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0, ...style }}
+    aria-hidden="true"
+    {...props}
+  >
+    <circle cx="12" cy="12" r="10.5" fill="#0078D4" />
+    <path d="M12 5.5l1.6 4.9 4.9 1.6-4.9 1.6-1.6 4.9-1.6-4.9-4.9-1.6 4.9-1.6z" fill="#ffffff" />
+    <circle cx="17.8" cy="6.8" r="1.2" fill="#ffffff" />
+  </svg>
+);
+

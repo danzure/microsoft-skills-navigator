@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { CERT_STATUS, certificationPaths, doesCertExpire, getCertById, getPathById } from '../data/certificationPaths';
+import { APPLIED_SKILL_STATUS, getAllAppliedSkills } from '../data/appliedSkills.js';
 import { isRetiring, isRetired } from '../utils/helpers';
 
 const STORAGE_KEY = 'ms-cert-tracker-progress';
@@ -8,6 +9,7 @@ const TRACKED_CERTS_STORAGE_KEY = 'ms-cert-tracker-tracked-certs';
 const DISMISSED_CERTS_KEY = 'ms-cert-tracker-dismissed-certs';
 const DATES_KEY = 'ms-cert-tracker-dates';
 const CUSTOM_PLAYLIST_KEY = 'ms-cert-tracker-custom-playlist';
+const APPLIED_SKILLS_STORAGE_KEY = 'ms-cert-tracker-applied-skills';
 
 const getDefaultTrackedPaths = () => [];
 
@@ -63,6 +65,7 @@ export const useProgress = () => {
   const [dismissedCerts, setDismissedCerts] = useState(() => loadData(DISMISSED_CERTS_KEY, []));
   const [completionDates, setCompletionDates] = useState(() => loadData(DATES_KEY, {}));
   const [customPlaylist, setCustomPlaylist] = useState(() => loadData(CUSTOM_PLAYLIST_KEY, []));
+  const [appliedSkillsProgress, setAppliedSkillsProgress] = useState(() => loadData(APPLIED_SKILLS_STORAGE_KEY, {}));
 
   useEffect(() => {
     saveData(STORAGE_KEY, progress);
@@ -87,6 +90,10 @@ export const useProgress = () => {
   useEffect(() => {
     saveData(CUSTOM_PLAYLIST_KEY, customPlaylist);
   }, [customPlaylist]);
+
+  useEffect(() => {
+    saveData(APPLIED_SKILLS_STORAGE_KEY, appliedSkillsProgress);
+  }, [appliedSkillsProgress]);
 
   const getStatus = useCallback(
     (certId) => {
@@ -330,6 +337,55 @@ export const useProgress = () => {
     };
   }, [trackedPaths, trackedCerts, getStatus]);
 
+  const getAppliedSkillStatus = useCallback(
+    (skillId) => appliedSkillsProgress[skillId] || APPLIED_SKILL_STATUS.NOT_STARTED,
+    [appliedSkillsProgress]
+  );
+
+  const setAppliedSkillStatus = useCallback((skillId, status) => {
+    setAppliedSkillsProgress((prev) => {
+      const next = { ...prev };
+      if (status === APPLIED_SKILL_STATUS.NOT_STARTED) {
+        delete next[skillId];
+      } else {
+        next[skillId] = status;
+      }
+      return next;
+    });
+  }, []);
+
+  const cycleAppliedSkillStatus = useCallback((skillId) => {
+    const current = appliedSkillsProgress[skillId] || APPLIED_SKILL_STATUS.NOT_STARTED;
+    let nextStatus;
+    if (current === APPLIED_SKILL_STATUS.NOT_STARTED) {
+      nextStatus = APPLIED_SKILL_STATUS.IN_PROGRESS;
+    } else if (current === APPLIED_SKILL_STATUS.IN_PROGRESS) {
+      nextStatus = APPLIED_SKILL_STATUS.COMPLETED;
+    } else {
+      nextStatus = APPLIED_SKILL_STATUS.NOT_STARTED;
+    }
+    setAppliedSkillStatus(skillId, nextStatus);
+    return nextStatus;
+  }, [appliedSkillsProgress, setAppliedSkillStatus]);
+
+  const getAppliedSkillsProgress = useCallback(() => {
+    const allSkills = getAllAppliedSkills();
+    const total = allSkills.length;
+    let completed = 0;
+    let inProgress = 0;
+    allSkills.forEach((s) => {
+      const st = appliedSkillsProgress[s.id] || APPLIED_SKILL_STATUS.NOT_STARTED;
+      if (st === APPLIED_SKILL_STATUS.COMPLETED) completed++;
+      else if (st === APPLIED_SKILL_STATUS.IN_PROGRESS) inProgress++;
+    });
+    return {
+      total,
+      completed,
+      inProgress,
+      percent: total > 0 ? Math.round((completed / total) * 100) : 0,
+    };
+  }, [appliedSkillsProgress]);
+
   const resetAll = useCallback(() => {
     setProgress({});
     setTrackedPaths(getDefaultTrackedPaths());
@@ -337,6 +393,7 @@ export const useProgress = () => {
     setDismissedCerts([]);
     setCompletionDates({});
     setCustomPlaylist([]);
+    setAppliedSkillsProgress({});
     try {
       localStorage.removeItem(IGNORED_STORAGE_KEY);
     } catch {
@@ -355,6 +412,7 @@ export const useProgress = () => {
       dismissedCerts,
       completionDates,
       customPlaylist,
+      appliedSkills: appliedSkillsProgress,
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -365,7 +423,7 @@ export const useProgress = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }, [progress, trackedPaths, trackedCerts, dismissedCerts, completionDates, customPlaylist]);
+  }, [progress, trackedPaths, trackedCerts, dismissedCerts, completionDates, customPlaylist, appliedSkillsProgress]);
 
   const importProgressJSON = useCallback((jsonData) => {
     try {
@@ -391,6 +449,9 @@ export const useProgress = () => {
       }
       if (Array.isArray(data.customPlaylist)) {
         setCustomPlaylist(data.customPlaylist);
+      }
+      if (data.appliedSkills && typeof data.appliedSkills === 'object') {
+        setAppliedSkillsProgress(data.appliedSkills);
       }
 
       return { success: true };
@@ -424,6 +485,11 @@ export const useProgress = () => {
       setCompletionDate,
       customPlaylist,
       setCustomPlaylist,
+      appliedSkillsProgress,
+      getAppliedSkillStatus,
+      setAppliedSkillStatus,
+      cycleAppliedSkillStatus,
+      getAppliedSkillsProgress,
     }),
     [
       progress,
@@ -448,6 +514,11 @@ export const useProgress = () => {
       setCompletionDate,
       customPlaylist,
       setCustomPlaylist,
+      appliedSkillsProgress,
+      getAppliedSkillStatus,
+      setAppliedSkillStatus,
+      cycleAppliedSkillStatus,
+      getAppliedSkillsProgress,
     ]
   );
 };

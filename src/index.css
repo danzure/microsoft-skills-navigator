@@ -192,6 +192,12 @@
   --badge-beta-bg: rgba(13, 148, 136, 0.08);
   --badge-beta-fg: #0d9488;
   --badge-beta-border: rgba(13, 148, 136, 0.3);
+  --badge-technical-bg: rgba(2, 132, 199, 0.08);
+  --badge-technical-fg: #0284c7;
+  --badge-technical-border: rgba(2, 132, 199, 0.3);
+  --badge-business-bg: rgba(147, 51, 234, 0.08);
+  --badge-business-fg: #9333ea;
+  --badge-business-border: rgba(147, 51, 234, 0.3);
 
 
   /* ── Fluent 2 Shadows (Light) ── */
@@ -415,6 +421,12 @@
   --badge-beta-bg: rgba(45, 212, 191, 0.12);
   --badge-beta-fg: #2dd4bf;
   --badge-beta-border: rgba(45, 212, 191, 0.3);
+  --badge-technical-bg: rgba(56, 189, 248, 0.15);
+  --badge-technical-fg: #38bdf8;
+  --badge-technical-border: rgba(56, 189, 248, 0.35);
+  --badge-business-bg: rgba(192, 132, 252, 0.15);
+  --badge-business-fg: #c084fc;
+  --badge-business-border: rgba(192, 132, 252, 0.35);
 
 
   /* Shadows (dark) */

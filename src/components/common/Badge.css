@@ -74,6 +74,18 @@
   border-color: var(--badge-beta-border);
 }
 
+.badge--technical {
+  background: var(--badge-technical-bg);
+  color: var(--badge-technical-fg);
+  border-color: var(--badge-technical-border);
+}
+
+.badge--business {
+  background: var(--badge-business-bg);
+  color: var(--badge-business-fg);
+  border-color: var(--badge-business-border);
+}
+
 .badge--small {
   height: 20px;
   padding: 0 var(--space-1);
