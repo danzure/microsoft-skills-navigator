@@ -13,7 +13,7 @@ export const careerRoles = [
     description: 'Implement, manage, and monitor identity, governance, storage, compute, and virtual networks in a cloud environment.',
     icon: 'Cloud',
     color: 'var(--line-azure)',
-    certs: ['az-900', 'az-104', 'az-800', 'az-802', 'az-700', 'az-120', 'az-140', 'ms-102', 'md-102', 'ms-700', 'ms-721', 'ms-900', 'dp-300', 'sc-300', 'ab-900', 'ab-650']
+    certs: ['az-900', 'az-104', 'az-802', 'az-700', 'az-120', 'az-140', 'ms-102', 'md-102', 'ms-700', 'ms-721', 'dp-300', 'sc-300', 'ab-900', 'ab-650']
   },
   {
     id: 'developer',
@@ -21,7 +21,7 @@ export const careerRoles = [
     description: 'Design, build, test, and maintain cloud applications and services to solve technical and business challenges.',
     icon: 'Cloud',
     color: 'var(--line-azure)',
-    certs: ['az-204', 'ai-103', 'ai-200', 'pl-400', 'dp-420', 'gh-foundations', 'gh-actions', 'gh-security', 'gh-copilot', 'gh-600', 'pl-500']
+    certs: ['ai-103', 'ai-200', 'pl-400', 'dp-420', 'gh-foundations', 'gh-actions', 'gh-security', 'gh-copilot', 'gh-600']
   },
   {
     id: 'devops-engineer',
@@ -37,7 +37,7 @@ export const careerRoles = [
     description: 'Advise stakeholders and translate business requirements into secure, scalable, and reliable cloud solutions.',
     icon: 'Cloud',
     color: 'var(--line-azure)',
-    certs: ['az-305', 'sc-100', 'ai-500', 'pl-600', 'mb-700', 'ab-100']
+    certs: ['az-305', 'sc-100', 'ai-500', 'ab-100']
   },
   {
     id: 'data-analyst',
@@ -61,7 +61,7 @@ export const careerRoles = [
     description: 'Apply data science and machine learning to implement and run machine learning workloads to solve complex business problems.',
     icon: 'Brain',
     color: 'var(--line-data)',
-    certs: ['dp-900', 'dp-100']
+    certs: ['dp-900', 'ai-300']
   },
   {
     id: 'business-user',
@@ -69,7 +69,7 @@ export const careerRoles = [
     description: 'Use Microsoft applications to increase efficiency, productivity, and collaboration in your daily business tasks.',
     icon: 'Microsoft',
     color: 'var(--line-m365)',
-    certs: ['ms-900', 'sc-730', 'ab-900', 'ab-730', 'ab-731']
+    certs: ['ab-900', 'ab-730', 'ab-731']
   },
   {
     id: 'app-maker',
@@ -77,7 +77,7 @@ export const careerRoles = [
     description: 'Build custom business applications and automate workflows with low-code techniques to simplify and transform tasks.',
     icon: 'Zap',
     color: 'var(--line-power)',
-    certs: ['pl-900', 'pl-500', 'ab-620']
+    certs: ['pl-900', 'ab-620']
   },
   {
     id: 'functional-consultant',
@@ -85,7 +85,7 @@ export const careerRoles = [
     description: 'Leverage Microsoft Dynamics 365 and Power Platform to anticipate and plan for customer needs and implement solutions.',
     icon: 'Briefcase',
     color: 'var(--line-power)',
-    certs: ['pl-900', 'pl-200', 'ab-410', 'mb-230', 'mb-310', 'mb-330', 'mb-500', 'mb-800', 'mb-820', 'ab-330', 'ab-210']
+    certs: ['pl-900', 'ab-410', 'mb-230', 'mb-310', 'mb-330', 'mb-500', 'mb-800', 'mb-820', 'ab-330', 'ab-210']
   },
   {
     id: 'identity-access-admin',
@@ -109,7 +109,7 @@ export const careerRoles = [
     description: 'Implement security controls and threat protection, manage identity and access, and protect data, applications, and networks.',
     icon: 'Shield',
     color: 'var(--line-security)',
-    certs: ['sc-900', 'az-500', 'sc-500']
+    certs: ['sc-900', 'sc-500']
   },
   {
     id: 'security-operations-analyst',

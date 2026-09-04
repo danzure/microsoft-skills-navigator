@@ -76,7 +76,7 @@ export const certificationPaths = [
         recommendedPrereqs: ['az-900'],
         learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/exams/az-802/',
         retirementDate: null,
-        isBeta: 'Beta from July 2026',
+        isNew: true,
         skillsMeasured: [
         'Deploy and manage Active Directory Domain Services (AD DS)',
         'Manage Windows Server instances and workloads in a hybrid environment',
@@ -279,7 +279,7 @@ export const certificationPaths = [
         prerequisites: ['ai-103'],
         learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/exams/ai-500/',
         retirementDate: null,
-        isBeta: 'Beta from July 2026',
+        isNew: true,
         skillsMeasured: [
         'Design logical architecture for multi-agent solutions',
         'Build and integrate tool ecosystems',
@@ -352,7 +352,6 @@ export const certificationPaths = [
         recommendedPrereqs: ['dp-900'],
         learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/azure-databricks-data-engineer-associate/',
         retirementDate: null,
-        isNew: true,
         skillsMeasured: [
         'Set up and configure an Azure Databricks environment (15–20%)',
         'Secure and govern Unity Catalog objects (15–20%)',
@@ -371,7 +370,6 @@ export const certificationPaths = [
         recommendedPrereqs: ['dp-900'],
         learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/sql-ai-developer-associate/',
         retirementDate: null,
-        isNew: true,
         skillsMeasured: [
         'Design and develop database solutions (35–40%)',
         'Secure, optimize, and deploy database solutions (35–40%)',
@@ -478,9 +476,8 @@ export const certificationPaths = [
         description: 'This certification validates your ability to design, implement, and manage end‑to‑end security controls across Azure, hybrid, and AI-enabled environments to protect identities, data, applications, infrastructure, and maintain regulatory compliance.',
         prerequisites: [],
         recommendedPrereqs: ['sc-900'],
-        learnUrl: 'https://learn.microsoft.com/en-gb/credentials/certifications/cloud-and-ai-security-engineer-associate/?wt.mc_id=certposter_poster_wwl&practice-assessment-type=certification',
+        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/cloud-and-ai-security-engineer-associate/',
         retirementDate: null,
-        isBeta: true,
         skillsMeasured: [
         'Securing access to resources by using Microsoft Entra ID and Azure Key Vault.',
         'Enforcing security and regulatory compliance.',
@@ -590,7 +587,7 @@ export const certificationPaths = [
         prerequisites: [['md-102', 'ms-700', 'sc-300', 'sc-401']],
         recommendedPrereqs: ['ab-900'],
         learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/exams/ms-102/',
-        retirementDate: '2026-10-31',
+        retirementDate: '2026-11-30',
         skillsMeasured: [
         'Deploy and manage a Microsoft 365 tenant (25–30%)',
         'Implement and manage Microsoft Entra identity and access (25–30%)',
@@ -857,7 +854,6 @@ export const certificationPaths = [
         'Configuring proactive engagement capabilities, including outbound dial modes and journey orchestration.',
         'Configuring workforce management capabilities, including demand forecasting, scheduling, and skills alignment.'
         ],
-        isBeta: true,
       },
       {
         id: 'ab-410',
@@ -868,7 +864,7 @@ export const certificationPaths = [
         description: 'This certification validates your ability to design, build, and implement AI-powered solutions using Microsoft Power Platform, leveraging Copilot, low-code tools, and integrated data experiences.',
         prerequisites: [],
         recommendedPrereqs: ['ab-900'],
-        learnUrl: 'https://learn.microsoft.com/en-gb/credentials/certifications/intelligent-applications-builder-associate/?wt.mc_id=credentials_AB410_blog_wwl&practice-assessment-type=certification',
+        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/intelligent-applications-builder-associate/',
         retirementDate: null,
         skillsMeasured: [
         'Developing Dataverse data models, model-driven apps, and canvas apps.',
@@ -1157,7 +1153,7 @@ export const certificationPaths = [
         level: CERT_LEVELS.FUNDAMENTALS,
         description: 'Validates fundamental knowledge of Git, GitHub products, collaboration, and repository management.',
         prerequisites: [],
-        learnUrl: 'https://learn.microsoft.com/en-gb/credentials/certifications/github-foundations/?WT.mc_id=certposter_poster_wwl&practice-assessment-type=certification',
+        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/github-foundations/',
         retirementDate: null,
         skillsMeasured: [
         'Understand core concepts of GH-900',
@@ -1175,7 +1171,7 @@ export const certificationPaths = [
         description: 'Focuses on automating software development workflows, pipeline optimization, and task automation.',
         prerequisites: [],
         recommendedPrereqs: ['gh-foundations'],
-        learnUrl: 'https://learn.microsoft.com/en-gb/credentials/certifications/github-actions/?WT.mc_id=certposter_poster_wwl&practice-assessment-type=certification',
+        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/github-actions/',
         retirementDate: null,
         skillsMeasured: [
         'Author and manage workflows (20–25%)',
@@ -1194,7 +1190,7 @@ export const certificationPaths = [
         description: 'Covers security implementation, vulnerability identification, and managing security within the development lifecycle.',
         prerequisites: [],
         recommendedPrereqs: ['gh-foundations'],
-        learnUrl: 'https://learn.microsoft.com/en-gb/credentials/certifications/github-advanced-security/?practice-assessment-type=certification',
+        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/github-advanced-security/',
         retirementDate: null,
         skillsMeasured: [
         'Understand core concepts of GH-AdvancedSec',
@@ -1212,7 +1208,7 @@ export const certificationPaths = [
         description: 'Validates the ability to manage and optimize GitHub environments, including repository management and collaboration.',
         prerequisites: [],
         recommendedPrereqs: ['gh-foundations'],
-        learnUrl: 'https://learn.microsoft.com/en-gb/credentials/certifications/github-administration/?WT.mc_id=certposter_poster_wwl&practice-assessment-type=certification',
+        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/github-administration/',
         retirementDate: null,
         skillsMeasured: [
         'Manage GitHub identities and access (15–20%)',
@@ -1231,7 +1227,7 @@ export const certificationPaths = [
         description: 'Focuses on using GitHub Copilot, covering prompt engineering, responsible AI, and integrating AI into development workflows.',
         prerequisites: [],
         recommendedPrereqs: ['gh-foundations'],
-        learnUrl: 'https://learn.microsoft.com/en-gb/credentials/certifications/github-copilot/?WT.mc_id=certposter_poster_wwl&practice-assessment-type=certification',
+        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/github-copilot/',
         retirementDate: null,
         skillsMeasured: [
         'Use GitHub Copilot responsibly (15–20%)',
@@ -1252,9 +1248,8 @@ export const certificationPaths = [
         description: 'Develop agentic workflows and advanced AI integrations on GitHub.',
         prerequisites: [],
         recommendedPrereqs: ['gh-foundations'],
-        learnUrl: 'https://learn.microsoft.com/en-gb/credentials/certifications/agentic-ai-developer/?practice-assessment-type=certification',
+        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/agentic-ai-developer/',
         retirementDate: null,
-        isBeta: true,
         skillsMeasured: [
         'Operating agent workflows inside the SDLC',
         'Supervising autonomous behavior with GitHub controls',
@@ -1342,7 +1337,7 @@ export const certificationPaths = [
         examCode: 'PL-200',
         name: 'Power Platform Functional Consultant Associate',
         level: CERT_LEVELS.ASSOCIATE,
-        branch: 'retiring',
+        branch: 'retired',
         description: 'Configure Dataverse, Power Apps, Power Automate, and chatbots for business solutions.',
         prerequisites: [],
         recommendedPrereqs: ['pl-900'],
