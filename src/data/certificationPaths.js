@@ -1115,8 +1115,7 @@ export const certificationPaths = [
         name: 'DevOps Engineer Expert',
         level: CERT_LEVELS.EXPERT,
         description: 'Design and implement DevOps practices for version control, compliance, CI/CD, and monitoring.',
-        prerequisites: [],
-        recommendedPrereqs: ['az-104'],
+        prerequisites: ['az-104'],
         learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/exams/az-400/',
         retirementDate: null,
         skillsMeasured: [
@@ -1477,17 +1476,24 @@ certificationPaths.forEach(path => {
 const pathMap = new Map();
 const certMap = new Map();
 const flatAllCertifications = [];
+const seenFlatCertIds = new Set();
 
 certificationPaths.forEach(path => {
   pathMap.set(path.id, path);
   path.certifications.forEach(cert => {
-    certMap.set(cert.id, { cert, path });
-    flatAllCertifications.push({
-      ...cert,
-      pathId: path.id,
-      pathName: path.name,
-      pathColor: path.color,
-    });
+    // Preserve primary path ownership: do not let shared entries overwrite primary owner
+    if (!certMap.has(cert.id) || !cert.isShared) {
+      certMap.set(cert.id, { cert, path });
+    }
+    if (!seenFlatCertIds.has(cert.id)) {
+      seenFlatCertIds.add(cert.id);
+      flatAllCertifications.push({
+        ...cert,
+        pathId: path.id,
+        pathName: path.name,
+        pathColor: path.color,
+      });
+    }
   });
 });
 

@@ -227,9 +227,18 @@ const PathMapFlow = ({ path, setSelectedCert, selectedBranch = 'all', statusFilt
     // Build nodes with cached layout coordinates
     const layoutedNodes = path.certifications.map((cert, idx) => {
       const certStatus = getStatus(cert.id);
-      const flatPrereqs = cert.prerequisites ? cert.prerequisites.flat() : [];
-      const isPrereqCompleted = flatPrereqs.some(id => getStatus(id) === CERT_STATUS.COMPLETED);
-      const isUnlocked = (flatPrereqs.length === 0 || isPrereqCompleted) && certStatus === CERT_STATUS.NOT_STARTED;
+      const hasPrereqs = cert.prerequisites && cert.prerequisites.length > 0;
+      const isPrereqCompleted = hasPrereqs && cert.prerequisites.every(p => {
+        if (Array.isArray(p)) {
+          return p.some(id => {
+            const s = getStatus(id);
+            return s === CERT_STATUS.COMPLETED || s === CERT_STATUS.NEEDS_RENEWAL;
+          });
+        }
+        const s = getStatus(p);
+        return s === CERT_STATUS.COMPLETED || s === CERT_STATUS.NEEDS_RENEWAL;
+      });
+      const isUnlocked = (!hasPrereqs || isPrereqCompleted) && certStatus === CERT_STATUS.NOT_STARTED;
       const pos = positions.get(cert.id);
 
       const isFilteredOut = (statusFilter !== 'all' && (
@@ -358,7 +367,7 @@ const PathMapListView = ({ path, onSelectCert, selectedBranch = 'all', statusFil
     if (newStatus === CERT_STATUS.COMPLETED) {
       const requiring = getCertificationsRequiring(cert.id);
       if (requiring?.length > 0) {
-        const nextCert = requiring.map(r => r.cert).find(c => getStatus(c.id) === CERT_STATUS.NOT_STARTED);
+        const nextCert = requiring.find(c => getStatus(c.id) === CERT_STATUS.NOT_STARTED);
         if (nextCert) {
           addToast(`🎉 You've unlocked ${nextCert.examCode}!`, 'success', {
             action: {
@@ -548,7 +557,7 @@ const PathMapListView = ({ path, onSelectCert, selectedBranch = 'all', statusFil
                       <button
                         type="button"
                         className={`path-map__list-status-btn ${status === CERT_STATUS.NOT_STARTED ? 'path-map__list-status-btn--active' : ''}`}
-                        onClick={(e) => handleSetStatus(cert.id, CERT_STATUS.NOT_STARTED, e)}
+                        onClick={(e) => handleSetStatus(cert, CERT_STATUS.NOT_STARTED, e)}
                         aria-label="Set status: Not Started"
                       >
                         <Icons.Circle size={14} />
@@ -557,7 +566,7 @@ const PathMapListView = ({ path, onSelectCert, selectedBranch = 'all', statusFil
                       <button
                         type="button"
                         className={`path-map__list-status-btn ${status === CERT_STATUS.IN_PROGRESS ? 'path-map__list-status-btn--active path-map__list-status-btn--in-progress' : ''}`}
-                        onClick={(e) => handleSetStatus(cert.id, CERT_STATUS.IN_PROGRESS, e)}
+                        onClick={(e) => handleSetStatus(cert, CERT_STATUS.IN_PROGRESS, e)}
                         aria-label="Set status: In Progress"
                       >
                         <Icons.Clock size={14} />
@@ -566,7 +575,7 @@ const PathMapListView = ({ path, onSelectCert, selectedBranch = 'all', statusFil
                       <button
                         type="button"
                         className={`path-map__list-status-btn ${(status === CERT_STATUS.COMPLETED || status === CERT_STATUS.NEEDS_RENEWAL) ? 'path-map__list-status-btn--active path-map__list-status-btn--completed' : ''}`}
-                        onClick={(e) => handleSetStatus(cert.id, CERT_STATUS.COMPLETED, e)}
+                        onClick={(e) => handleSetStatus(cert, CERT_STATUS.COMPLETED, e)}
                         aria-label="Set status: Passed"
                       >
                         {status === CERT_STATUS.NEEDS_RENEWAL ? <Icons.RefreshCw size={14} /> : <Icons.CheckCircle2 size={14} />}
