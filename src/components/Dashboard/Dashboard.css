@@ -142,9 +142,9 @@
 }
 
 .dashboard__hero-stats-row {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-4);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
   padding-top: var(--space-4);
   border-top: 1px solid var(--colorNeutralStroke2);
 }
@@ -153,60 +153,100 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  flex: 1;
+  padding: var(--space-2) var(--space-3);
+  background: var(--colorNeutralBackground2);
+  border: 1px solid var(--colorNeutralStroke3);
+  border-radius: var(--radius-lg);
+  min-width: 0;
+  transition: all var(--transition-fast);
+}
+
+[data-theme="dark"] .dashboard__stat-mini {
+  background: var(--colorNeutralBackground1);
+  border-color: var(--colorNeutralStroke2);
+}
+
+.dashboard__stat-mini:hover {
+  border-color: var(--colorNeutralStroke1);
 }
 
 .dashboard__stat-mini-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-md);
+  width: auto;
+  height: auto;
+  background: transparent;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--colorNeutralBackground3);
   color: var(--colorNeutralForeground2);
+  flex-shrink: 0;
+}
+
+.dashboard__stat-mini--total .dashboard__stat-mini-icon {
+  color: var(--colorBrandForeground1);
 }
 
 .dashboard__stat-mini--completed .dashboard__stat-mini-icon {
-  background: var(--badge-completed-bg);
+  background: transparent;
   color: var(--status-completed);
 }
 
 .dashboard__stat-mini--active .dashboard__stat-mini-icon {
-  background: var(--badge-inprogress-bg);
+  background: transparent;
   color: var(--status-in-progress);
 }
 
 .dashboard__stat-mini-info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .dashboard__stat-mini-value {
-  font-size: var(--fs-body2);
-  font-weight: var(--fw-semibold);
+  font-size: var(--fs-body1);
+  font-weight: var(--fw-bold);
   line-height: 1.2;
+  color: var(--colorNeutralForeground1);
 }
 
 .dashboard__stat-mini-label {
   font-size: var(--fs-caption1);
-  color: var(--colorNeutralForeground3);
+  font-weight: var(--fw-medium);
+  color: var(--colorNeutralForeground2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dashboard__stat-mini--clickable {
   cursor: pointer;
-  border-radius: var(--radius-md);
-  padding: var(--space-1) var(--space-2);
-  margin: calc(-1 * var(--space-1)) calc(-1 * var(--space-2));
-  transition: all var(--transition-fast);
 }
 
 .dashboard__stat-mini--clickable:hover {
-  background: var(--colorSubtleBackgroundHover);
+  background: var(--colorNeutralBackground1Hover);
+  border-color: var(--colorBrandStroke1);
+  box-shadow: var(--shadow-2);
+}
+
+[data-theme="dark"] .dashboard__stat-mini--clickable:hover {
+  background: var(--colorNeutralBackground1Hover);
+  border-color: var(--colorBrandStroke1);
 }
 
 .dashboard__stat-mini--clickable:active {
-  transform: scale(0.96);
+  transform: scale(0.97);
+}
+
+.dashboard__stat-mini-arrow {
+  margin-left: auto;
+  color: var(--colorNeutralForeground3);
+  flex-shrink: 0;
+  transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+.dashboard__stat-mini--clickable:hover .dashboard__stat-mini-arrow {
+  color: var(--colorBrandForeground1);
+  transform: translateX(2px);
 }
 
 /* ─── Action Center ─── */

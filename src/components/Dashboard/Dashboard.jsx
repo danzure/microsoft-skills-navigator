@@ -206,29 +206,29 @@ const Dashboard = () => {
           </div>
           
           <div className="dashboard__hero-stats-row">
-            <div className="dashboard__stat-mini">
-              <div className="dashboard__stat-mini-icon"><Icons.Award size={18} /></div>
+            <div className="dashboard__stat-mini dashboard__stat-mini--total">
+              <div className="dashboard__stat-mini-icon"><Icons.Award size={24} /></div>
               <div className="dashboard__stat-mini-info">
                 <span className="dashboard__stat-mini-value">{overall.total}</span>
                 <span className="dashboard__stat-mini-label">Total Exams</span>
               </div>
             </div>
             <div className="dashboard__stat-mini dashboard__stat-mini--completed">
-              <div className="dashboard__stat-mini-icon"><Icons.CheckCircle2 size={18} /></div>
+              <div className="dashboard__stat-mini-icon"><Icons.CheckCircle2 size={24} /></div>
               <div className="dashboard__stat-mini-info">
                 <span className="dashboard__stat-mini-value">{overall.completed}</span>
                 <span className="dashboard__stat-mini-label">Completed</span>
               </div>
             </div>
             <div className="dashboard__stat-mini dashboard__stat-mini--active">
-              <div className="dashboard__stat-mini-icon"><Icons.Clock size={18} /></div>
+              <div className="dashboard__stat-mini-icon"><Icons.Clock size={24} /></div>
               <div className="dashboard__stat-mini-info">
                 <span className="dashboard__stat-mini-value">{overall.inProgress}</span>
                 <span className="dashboard__stat-mini-label">In Progress</span>
               </div>
             </div>
             <div 
-              className="dashboard__stat-mini dashboard__stat-mini--clickable"
+              className="dashboard__stat-mini dashboard__stat-mini--clickable dashboard__stat-mini--applied"
               onClick={() => navigate('/applied-skills')}
               title="Open Applied Skills Hub"
               role="button"
@@ -240,11 +240,12 @@ const Dashboard = () => {
                 }
               }}
             >
-              <div className="dashboard__stat-mini-icon"><Icons.AppliedSkills size={18} /></div>
+              <div className="dashboard__stat-mini-icon"><Icons.AppliedSkills size={24} /></div>
               <div className="dashboard__stat-mini-info">
                 <span className="dashboard__stat-mini-value">{appliedSkillsStats.completed}/{appliedSkillsStats.total}</span>
                 <span className="dashboard__stat-mini-label">Applied Skills</span>
               </div>
+              <Icons.ChevronRight size={14} className="dashboard__stat-mini-arrow" />
             </div>
           </div>
         </div>
