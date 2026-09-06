@@ -5,6 +5,7 @@ import { getAllAppliedSkills, APPLIED_SKILL_STATUS } from '../../data/appliedSki
 import { PILLARS } from '../../data/certificationPaths';
 import AppliedSkillCard from './AppliedSkillCard';
 import AppliedSkillDetail from './AppliedSkillDetail';
+import SEO from '../common/SEO';
 import { IconMap as Icons } from '../common/IconMap';
 import './AppliedSkills.css';
 
@@ -108,6 +109,11 @@ const AppliedSkills = () => {
 
   return (
     <div className="applied-skills">
+      <SEO
+        title="Microsoft Applied Skills Labs & Credentials | atozazure"
+        description="Explore scenario-based Microsoft Applied Skills interactive assessment labs across Cloud & AI Platforms, AI Business Solutions, and Security. Track your hands-on credential progress."
+        canonical="https://skills.atozazure.com/applied-skills"
+      />
       {/* Hero Header */}
       <section className="applied-skills__hero">
         <div className="applied-skills__hero-header">

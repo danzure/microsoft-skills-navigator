@@ -594,5 +594,158 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  margin-top: var(--space-6);
+  margin-top: var(--space-4);
+}
+
+/* ─── Role Pathway Overview Banner ───────────────────────────────────────── */
+.cpb-role-banner {
+  background: var(--colorNeutralBackground1);
+  border: 1px solid var(--colorNeutralStroke1);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-bottom: var(--space-5);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+[data-theme="dark"] .cpb-role-banner {
+  background: var(--colorNeutralBackground2);
+  border-color: var(--colorNeutralStroke2);
+}
+
+.cpb-role-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--role-color, var(--colorBrandForeground1));
+}
+
+.cpb-role-banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--role-color) 8%, transparent) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.cpb-role-banner__title-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.cpb-role-banner__title {
+  font-size: var(--fs-title2);
+  font-weight: var(--fw-bold);
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.cpb-role-banner__desc {
+  font-size: var(--fs-body1);
+  color: var(--text-secondary);
+  line-height: var(--lh-normal);
+  margin: 0;
+  max-width: 840px;
+}
+
+.cpb-role-banner__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
+  position: relative;
+  z-index: 1;
+}
+
+.cpb-role-banner__stat-card {
+  background: var(--colorNeutralBackground2);
+  border: 1px solid var(--colorNeutralStroke3);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+[data-theme="dark"] .cpb-role-banner__stat-card {
+  background: color-mix(in srgb, var(--colorNeutralBackground1) 80%, transparent);
+  border-color: var(--colorNeutralStroke3);
+}
+
+.cpb-role-banner__stat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.cpb-role-banner__stat-label-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.cpb-role-banner__skill-icon {
+  color: var(--line-azure);
+}
+
+.cpb-role-banner__stat-label {
+  font-size: var(--fs-caption1);
+  font-weight: var(--fw-semibold);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cpb-role-banner__stat-count {
+  font-size: var(--fs-caption1);
+  font-weight: var(--fw-bold);
+  color: var(--text-primary);
+}
+
+.cpb-role-banner__stat-track {
+  height: 6px;
+  background: var(--colorNeutralBackground4);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+[data-theme="dark"] .cpb-role-banner__stat-track {
+  background: var(--colorNeutralBackground3);
+}
+
+.cpb-role-banner__stat-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--duration-gentle) var(--curve-easy-ease);
+}
+
+.cpb-role-banner__stat-fill--cert {
+  background: linear-gradient(90deg, var(--colorBrandForeground1), var(--status-completed));
+}
+
+.cpb-role-banner__stat-fill--skill {
+  background: linear-gradient(90deg, var(--line-azure), var(--status-completed));
+}
+
+@media (max-width: 768px) {
+  .cpb-role-banner {
+    padding: var(--space-4);
+  }
+
+  .cpb-role-banner__title {
+    font-size: var(--fs-title3);
+  }
+
+  .cpb-role-banner__stats {
+    grid-template-columns: 1fr;
+  }
 }

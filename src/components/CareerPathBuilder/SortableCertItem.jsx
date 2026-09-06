@@ -4,13 +4,14 @@ import { CSS } from '@dnd-kit/utilities';
 import { CERT_STATUS } from '../../data/certificationPaths';
 import { IconMap as Icons } from '../common/IconMap';
 import Badge from '../common/Badge';
+import { AlignedAppliedSkills } from './AlignedAppliedSkills';
 
 /**
  * SortableCertItem Component
  * 
  * A draggable list item used within the dnd-kit context to display a certification 
  * in the custom career timeline. It supports drag-and-drop reordering, removal, 
- * and displays current tracking status.
+ * displays current tracking status, and reveals aligned Applied Skills labs.
  * 
  * @component
  * @param {Object} props
@@ -24,9 +25,10 @@ import Badge from '../common/Badge';
  * @param {React.ElementType} props.StatusIcon - The icon component to display for the current status.
  * @param {Function} props.onNavigate - Callback to navigate to a path or details page.
  * @param {Function} props.onRemove - Callback to remove this item from the custom timeline.
+ * @param {Function} [props.onSelectSkill] - Callback when an aligned applied skill is selected for details.
  * @returns {JSX.Element}
  */
-export const SortableCertItem = memo(({ id, index, isFirst, isLast, certInfo, status, statusText, nodeClass, badgeClass, StatusIcon, onNavigate, onRemove, onMoveUp, onMoveDown }) => {
+export const SortableCertItem = memo(({ id, index, isFirst, isLast, certInfo, status, statusText, nodeClass, badgeClass, StatusIcon, onNavigate, onRemove, onMoveUp, onMoveDown, onSelectSkill }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
   const style = {
@@ -118,6 +120,12 @@ export const SortableCertItem = memo(({ id, index, isFirst, isLast, certInfo, st
             </div>
           </div>
         </div>
+        <AlignedAppliedSkills 
+          certId={certInfo.id} 
+          certCode={certInfo.examCode} 
+          onSelectSkill={onSelectSkill} 
+        />
+
         <div className="cpb-timeline-cert-desc" onClick={() => onNavigate(`/path/${certInfo.pathId}`)}>
           {certInfo.description}
         </div>

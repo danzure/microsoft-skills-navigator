@@ -1,192 +1,160 @@
-.cp-cert-card {
-  background: var(--colorNeutralBackground1);
-  border: 1px solid var(--colorNeutralStroke1);
-  border-radius: var(--radius-lg);
+/* ==========================================================================
+   CareerPathCertCard Component Styles (Fluent 2 Design System)
+   Sequential Learning Flow: Step 1 (Applied Skills) -> Step 2 (Full Exam)
+   ========================================================================== */
+
+/* ─── Stage Container (When Aligned Labs Exist) ────────────────────────── */
+.cpb-stage-card {
+  background: var(--colorNeutralBackground2);
+  border: 1px solid var(--colorNeutralStroke2);
+  border-radius: var(--radius-xl);
   padding: var(--space-5);
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
-  cursor: pointer;
-  transition: all var(--duration-normal) var(--curve-easy-ease);
+  gap: var(--space-3);
   position: relative;
   overflow: hidden;
   box-shadow: var(--shadow-2);
-  z-index: 1;
+  transition: all var(--duration-normal) var(--curve-easy-ease);
 }
 
-[data-theme="dark"] .cp-cert-card {
-  background: var(--colorNeutralBackground2);
-  border-color: var(--colorNeutralStroke2);
+[data-theme="dark"] .cpb-stage-card {
+  background: color-mix(in srgb, var(--colorNeutralBackground2) 80%, transparent);
+  border-color: var(--colorNeutralStroke3);
 }
 
-.cp-cert-card::after {
+.cpb-stage-card::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--card-color) 10%, transparent) 0%, transparent 100%);
-  opacity: 0.8;
-  z-index: -1;
-  transition: opacity var(--duration-fast) var(--curve-easy-ease);
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--cert-node-color, var(--colorBrandForeground1));
+  border-top-left-radius: var(--radius-xl);
+  border-bottom-left-radius: var(--radius-xl);
 }
 
-.cp-cert-card:hover {
-  transform: translateX(4px) translateY(-2px);
-  box-shadow: var(--shadow-8);
-  border-color: color-mix(in srgb, var(--card-color) 40%, var(--colorNeutralStroke1));
+.cpb-stage-card:hover {
+  border-color: color-mix(in srgb, var(--cert-node-color) 40%, var(--colorNeutralStroke2));
+  box-shadow: var(--shadow-4);
 }
 
-.cp-cert-card:active {
-  transform: scale(0.98);
-}
-
-.cp-cert-card:hover::after {
-  opacity: 1;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--card-color) 18%, transparent) 0%, transparent 100%);
-}
-
-.cp-cert-card__content {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-4);
-}
-
-.cp-cert-card__top {
-  flex: 1;
+/* ─── Step Containers ─────────────────────────────────────────────────── */
+.cpb-stage__step {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  position: relative;
 }
 
-.cp-cert-card__type {
-  font-family: var(--font-mono);
+.cpb-stage__step-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.cpb-stage__step-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   font-size: var(--fs-caption2);
   font-weight: var(--fw-bold);
-  letter-spacing: 0.5px;
-  color: var(--card-color);
   text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  line-height: 1;
 }
 
-.cp-cert-card__title {
-  font-size: var(--fs-title3);
-  font-weight: var(--fw-semibold);
-  color: var(--text-primary);
-  margin: 0;
-  line-height: var(--lh-tight);
+.cpb-stage__step-badge--prep {
+  color: var(--line-azure);
+  background: color-mix(in srgb, var(--line-azure) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--line-azure) 30%, transparent);
 }
 
-.cp-cert-card__tags {
+.cpb-stage__step-badge--exam {
+  color: var(--cert-node-color, var(--colorBrandForeground1));
+  background: color-mix(in srgb, var(--cert-node-color, var(--colorBrandForeground1)) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cert-node-color, var(--colorBrandForeground1)) 30%, transparent);
+}
+
+.cpb-stage__step-subtitle {
   font-size: var(--fs-caption1);
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
+  font-weight: var(--fw-normal);
 }
 
-.cp-cert-card__badge-container {
-  flex-shrink: 0;
+/* ─── Directional Flow Connector ───────────────────────────────────────── */
+.cpb-stage__connector {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-1) 0;
+  user-select: none;
 }
 
-.cp-cert-card__badge {
-  display: flex;
-  flex-direction: column;
+.cpb-stage__connector-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--colorNeutralStroke2), transparent);
+}
+
+.cpb-stage__connector-pill {
+  display: inline-flex;
   align-items: center;
-  gap: 2px;
-  color: var(--card-color);
-  background: var(--colorNeutralBackground2);
-  padding: 4px 8px;
-  border-radius: var(--radius-md);
-  border: 1px solid color-mix(in srgb, var(--card-color) 30%, transparent);
-}
-
-.cp-cert-card__badge-level {
+  gap: 6px;
   font-size: var(--fs-caption2);
-  font-weight: var(--fw-bold);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.cp-cert-card__footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-}
-
-.cp-cert-card__progress {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  max-width: 400px;
-}
-
-.cp-cert-card__progress-bar {
-  flex: 1;
-  height: 6px;
-  background-color: var(--colorNeutralBackground3);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-}
-
-.cp-cert-card__progress-fill {
-  height: 100%;
-  background-color: var(--card-color);
-  border-radius: var(--radius-sm);
-  transition: width var(--duration-normal) var(--curve-easy-ease);
-}
-
-.cp-cert-card__progress-text {
-  font-size: var(--fs-caption1);
+  font-weight: var(--fw-semibold);
   color: var(--text-secondary);
-  font-weight: var(--fw-semibold);
-  font-variant-numeric: tabular-nums;
-  min-width: 3ch;
+  background: var(--colorNeutralBackground1);
+  padding: 3px 12px;
+  border-radius: var(--radius-full);
+  border: 1px dashed var(--colorNeutralStroke2);
+  box-shadow: var(--shadow-2);
 }
 
-.cp-cert-card__actions {
-  flex-shrink: 0;
+[data-theme="dark"] .cpb-stage__connector-pill {
+  background: var(--colorNeutralBackground2);
+  border-color: var(--colorNeutralStroke3);
 }
 
-.cp-cert-card__add-btn {
+.cpb-stage__connector-icon {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  background: var(--colorNeutralBackground1);
-  border: 1px solid var(--colorNeutralStroke1);
-  color: var(--text-primary);
-  font-size: var(--fs-body1);
-  font-weight: var(--fw-semibold);
-  cursor: pointer;
-  height: 32px;
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-md);
-  transition: all var(--duration-fast) var(--curve-easy-ease);
+  color: var(--cert-node-color, var(--colorBrandForeground1));
 }
 
-[data-theme="dark"] .cp-cert-card__add-btn {
-  background: var(--colorNeutralBackground2);
-  border-color: var(--colorNeutralStroke2);
+/* ─── Target Exam Card Overrides Inside Stage ──────────────────────────── */
+.cpb-stage__exam-info {
+  background: var(--colorNeutralBackground1) !important;
+  border: 1px solid var(--colorNeutralStroke1) !important;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2);
+  margin: 0 !important;
 }
 
-.cp-cert-card__add-btn:hover {
-  background-color: var(--card-color);
-  border-color: var(--card-color);
-  color: #ffffff;
+[data-theme="dark"] .cpb-stage__exam-info {
+  background: var(--colorNeutralBackground1) !important;
+  border-color: var(--colorNeutralStroke2) !important;
 }
 
-.cp-cert-card__add-btn:active {
-  transform: scale(0.96);
+.cpb-stage__exam-info:hover {
+  border-color: color-mix(in srgb, var(--cert-node-color) 60%, var(--colorNeutralStroke1)) !important;
+  box-shadow: var(--shadow-8), 0 0 16px color-mix(in srgb, var(--cert-node-color) 15%, transparent);
 }
 
-.cp-cert-card__add-btn--added {
-  color: var(--status-completed);
-  border-color: var(--badge-completed-border);
-  background: var(--badge-completed-bg);
-}
+/* ─── Responsive Media Queries ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .cpb-stage-card {
+    padding: var(--space-4);
+    gap: var(--space-2);
+  }
 
-.cp-cert-card__add-btn--added:hover {
-  background-color: var(--status-completed);
-  border-color: var(--status-completed);
-  color: #ffffff;
+  .cpb-stage__step-subtitle {
+    display: none;
+  }
 }

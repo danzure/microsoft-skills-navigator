@@ -4,6 +4,7 @@ import Badge from '../common/Badge';
 import { IconMap as Icons } from '../common/IconMap';
 import { APPLIED_SKILL_STATUS } from '../../data/appliedSkills';
 import { getCertById } from '../../data/certificationPaths';
+import './AppliedSkills.css';
 
 /**
  * AppliedSkillDetail Component

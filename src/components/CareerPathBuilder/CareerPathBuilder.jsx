@@ -2,11 +2,14 @@ import { useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { careerRoles } from '../../data/careerRoles';
 import { certificationPaths, CERT_STATUS } from '../../data/certificationPaths';
+import { getAppliedSkillsForCert, APPLIED_SKILL_STATUS } from '../../data/appliedSkills';
 import { useProgressContext } from '../../context/ProgressContext';
+import { useToast } from '../../context/ToastContext';
 import { IconMap as Icons } from '../common/IconMap';
 import SEO from '../common/SEO';
 import { SortableCertItem } from './SortableCertItem';
 import { CareerPathCertCard } from './CareerPathCertCard';
+import AppliedSkillDetail from '../AppliedSkills/AppliedSkillDetail';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import './CareerPathBuilder.css';
@@ -24,12 +27,14 @@ import './CareerPathBuilder.css';
 const CareerPathBuilder = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { getStatus, customPlaylist, setCustomPlaylist } = useProgressContext();
+  const { getStatus, customPlaylist, setCustomPlaylist, getAppliedSkillStatus, setAppliedSkillStatus } = useProgressContext();
+  const { addToast } = useToast();
   const [selectedRoleId, setSelectedRoleId] = useState(() => {
     const params = new URLSearchParams(location.search);
     return params.get('role') === 'custom' ? 'custom-playlist' : null;
   });
 
+  const [selectedSkillForDetail, setSelectedSkillForDetail] = useState(null);
   const [certToAdd, setCertToAdd] = useState('');
 
   const sensors = useSensors(
@@ -73,6 +78,42 @@ const CareerPathBuilder = () => {
   const selectedRole = useMemo(() => {
     return sortedRoles.find(r => r.id === selectedRoleId) || null;
   }, [sortedRoles, selectedRoleId]);
+
+  const roleCerts = useMemo(() => {
+    if (!selectedRole || selectedRole.id === 'custom-playlist') return [];
+    return selectedRole.certs.map(id => allCerts.get(id)).filter(Boolean);
+  }, [selectedRole, allCerts]);
+
+  const { completedCertsCount, certPercent } = useMemo(() => {
+    if (roleCerts.length === 0) return { completedCertsCount: 0, certPercent: 0 };
+    const completed = roleCerts.filter(
+      c => getStatus(c.id) === CERT_STATUS.COMPLETED || getStatus(c.id) === CERT_STATUS.NEEDS_RENEWAL
+    ).length;
+    return {
+      completedCertsCount: completed,
+      certPercent: Math.round((completed / roleCerts.length) * 100),
+    };
+  }, [roleCerts, getStatus]);
+
+  const { roleSkills, completedSkillsCount, skillPercent } = useMemo(() => {
+    if (!selectedRole || selectedRole.id === 'custom-playlist') {
+      return { roleSkills: [], completedSkillsCount: 0, skillPercent: 0 };
+    }
+    const uniqueSkillsMap = new Map();
+    selectedRole.certs.forEach(certId => {
+      const skills = getAppliedSkillsForCert(certId);
+      skills.forEach(s => uniqueSkillsMap.set(s.id, s));
+    });
+    const skillsList = Array.from(uniqueSkillsMap.values());
+    const completed = skillsList.filter(
+      s => getAppliedSkillStatus(s.id) === APPLIED_SKILL_STATUS.COMPLETED
+    ).length;
+    return {
+      roleSkills: skillsList,
+      completedSkillsCount: completed,
+      skillPercent: skillsList.length > 0 ? Math.round((completed / skillsList.length) * 100) : 0,
+    };
+  }, [selectedRole, getAppliedSkillStatus]);
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
@@ -201,9 +242,59 @@ const CareerPathBuilder = () => {
 
       {selectedRole && (
         <div className="cpb-path-container">
-          <h2 className="cpb-path-title">
-            {selectedRole.id === 'custom-playlist' ? 'Your Custom Career' : `Roadmap for ${selectedRole.title}`}
-          </h2>
+          {selectedRole.id === 'custom-playlist' ? (
+            <h2 className="cpb-path-title">Your Custom Career</h2>
+          ) : (
+            <div className="cpb-role-banner" style={{ '--role-color': selectedRole.color }}>
+              <div className="cpb-role-banner__header">
+                <div className="cpb-role-banner__title-group">
+                  <h2 className="cpb-role-banner__title">
+                    Roadmap for {selectedRole.title}
+                  </h2>
+                  <p className="cpb-role-banner__desc">
+                    {selectedRole.description}
+                  </p>
+                </div>
+              </div>
+
+              <div className="cpb-role-banner__stats">
+                <div className="cpb-role-banner__stat-card">
+                  <div className="cpb-role-banner__stat-header">
+                    <span className="cpb-role-banner__stat-label">Certifications</span>
+                    <span className="cpb-role-banner__stat-count">
+                      {completedCertsCount} of {roleCerts.length} Passed
+                    </span>
+                  </div>
+                  <div className="cpb-role-banner__stat-track">
+                    <div 
+                      className="cpb-role-banner__stat-fill cpb-role-banner__stat-fill--cert" 
+                      style={{ width: `${certPercent}%` }} 
+                    />
+                  </div>
+                </div>
+
+                {roleSkills.length > 0 && (
+                  <div className="cpb-role-banner__stat-card">
+                    <div className="cpb-role-banner__stat-header">
+                      <div className="cpb-role-banner__stat-label-group">
+                        <Icons.AppliedSkills size={14} className="cpb-role-banner__skill-icon" />
+                        <span className="cpb-role-banner__stat-label">Aligned Applied Skills</span>
+                      </div>
+                      <span className="cpb-role-banner__stat-count">
+                        {completedSkillsCount} of {roleSkills.length} Earned
+                      </span>
+                    </div>
+                    <div className="cpb-role-banner__stat-track">
+                      <div 
+                        className="cpb-role-banner__stat-fill cpb-role-banner__stat-fill--skill" 
+                        style={{ width: `${skillPercent}%` }} 
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           
           {selectedRole.id === 'custom-playlist' && (
             <div className="cpb-custom-add-section">
@@ -306,6 +397,7 @@ const CareerPathBuilder = () => {
                         onRemove={handleRemoveCert}
                         onMoveUp={handleMoveUp}
                         onMoveDown={handleMoveDown}
+                        onSelectSkill={setSelectedSkillForDetail}
                       />
                     );
                   })}
@@ -324,6 +416,7 @@ const CareerPathBuilder = () => {
                       customPlaylist={customPlaylist}
                       onAdd={(id) => setCustomPlaylist([...customPlaylist, id])}
                       onRemove={handleRemoveCert}
+                      onSelectSkill={setSelectedSkillForDetail}
                     />
                   );
                 })}
@@ -331,6 +424,19 @@ const CareerPathBuilder = () => {
             )}
           </div>
         </div>
+      )}
+
+      {selectedSkillForDetail && (
+        <AppliedSkillDetail
+          skill={selectedSkillForDetail}
+          status={getAppliedSkillStatus(selectedSkillForDetail.id)}
+          onClose={() => setSelectedSkillForDetail(null)}
+          onSetStatus={(skillId, newStatus) => {
+            setAppliedSkillStatus(skillId, newStatus);
+            const statusLabel = newStatus === APPLIED_SKILL_STATUS.COMPLETED ? 'Earned' : newStatus === APPLIED_SKILL_STATUS.IN_PROGRESS ? 'In Progress' : 'Not Started';
+            addToast(`Marked '${selectedSkillForDetail.title}' as ${statusLabel}`, newStatus === APPLIED_SKILL_STATUS.COMPLETED ? 'success' : 'info');
+          }}
+        />
       )}
     </div>
   );
