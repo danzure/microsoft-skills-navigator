@@ -182,13 +182,15 @@ const Dashboard = () => {
               <Icons.Microsoft size={16} />
               Official Certification Poster
             </a>
-            <button
-              onClick={() => navigate('/applied-skills')}
-              className="dashboard__update-btn dashboard__update-btn--applied"
+            <a
+              href="https://arch-center.azureedge.net/Credentials/microsoft-applied-skills-poster.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="dashboard__update-btn"
             >
               <Icons.AppliedSkills size={16} />
-              Applied Skills Hub ({appliedSkillsStats.completed}/{appliedSkillsStats.total})
-            </button>
+              Official Applied Skills Poster
+            </a>
           </div>
         </div>
         
