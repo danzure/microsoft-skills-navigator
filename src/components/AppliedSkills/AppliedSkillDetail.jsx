@@ -40,21 +40,26 @@ const AppliedSkillDetail = ({ skill, status = APPLIED_SKILL_STATUS.NOT_STARTED, 
       <div className="skill-detail-overlay" onClick={onClose} aria-hidden="true" />
       <aside className="skill-detail-drawer" role="dialog" aria-modal="true" aria-label={skill.title}>
         <header className="skill-detail__header">
-          <div>
-            <div className="skill-card__badges">
-              <Badge variant={skill.focus.toLowerCase()}>
-                {skill.focus}
-              </Badge>
-              <Badge variant="default">
-                {skill.level}
-              </Badge>
-              {skill.isNew && (
-                <Badge variant="new">
-                  New
-                </Badge>
-              )}
+          <div className="skill-detail__header-title-group">
+            <div className="skill-detail__badge-wrapper">
+              <Icons.AppliedSkills size={48} />
             </div>
-            <h2 className="skill-detail__title">{skill.title}</h2>
+            <div className="skill-detail__header-text">
+              <div className="skill-card__badges">
+                <Badge variant={skill.focus.toLowerCase()}>
+                  {skill.focus}
+                </Badge>
+                <Badge variant="default">
+                  {skill.level}
+                </Badge>
+                {skill.isNew && (
+                  <Badge variant="new">
+                    New
+                  </Badge>
+                )}
+              </div>
+              <h2 className="skill-detail__title">{skill.title}</h2>
+            </div>
           </div>
           <button
             className="skill-detail__close-btn"

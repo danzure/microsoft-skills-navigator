@@ -10,6 +10,7 @@ import fabricSvg from '../../assets/icons/fabric.svg';
 import dashboardSvg from '../../assets/icons/dashboard.svg';
 import archiveSvg from '../../assets/icons/archive.svg';
 import careerPathSvg from '../../assets/icons/career-path.svg';
+import appliedSkillsSvg from '../../assets/icons/applied-skills.svg';
 
 // Base component for image-based icons
 const ImageIcon = ({ src, alt, size = 20, className, style, ...props }) => (
@@ -113,19 +114,8 @@ export const SettingsColorIcon = ({ size = 20, className, style, ...props }) => 
 );
 
 // ─── Applied Skills Badge Icon ──────────────────────────────────────────────
-export const AppliedSkillsIcon = ({ size = 20, className, style, ...props }) => (
-  <svg
-    viewBox="0 0 24 24"
-    width={size}
-    height={size}
-    className={className}
-    style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0, ...style }}
-    aria-hidden="true"
-    {...props}
-  >
-    <circle cx="12" cy="12" r="10.5" fill="#0078D4" />
-    <path d="M12 5.5l1.6 4.9 4.9 1.6-4.9 1.6-1.6 4.9-1.6-4.9-4.9-1.6 4.9-1.6z" fill="#ffffff" />
-    <circle cx="17.8" cy="6.8" r="1.2" fill="#ffffff" />
-  </svg>
+export const AppliedSkillsIcon = (props) => (
+  <ImageIcon src={appliedSkillsSvg} alt="Microsoft Applied Skills" {...props} />
 );
+
 

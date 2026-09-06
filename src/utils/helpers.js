@@ -55,3 +55,9 @@ export const getBadgeUrl = (level, certId) => {
     default: return null;
   }
 };
+
+/**
+ * Gets the URL for the official Microsoft Applied Skills credential badge icon.
+ * @returns {string} The URL of the official Applied Skills badge SVG.
+ */
+export const getAppliedSkillBadgeUrl = () => 'https://learn.microsoft.com/en-us/media/learn/credential/badges/applied-skill.svg';
