@@ -122,19 +122,6 @@ const AppliedSkills = () => {
               </p>
             </div>
           </div>
-
-          <div className="applied-skills__hero-actions">
-            <a
-              href="https://arch-center.azureedge.net/Credentials/microsoft-applied-skills-poster.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="applied-skills__poster-link"
-              title="Download the official Microsoft Applied Skills Poster (July 2026)"
-            >
-              <Icons.Download size={16} />
-              <span>Official Poster (PDF)</span>
-            </a>
-          </div>
         </div>
 
         {/* Stats Row */}

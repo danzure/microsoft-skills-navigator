@@ -72,37 +72,6 @@
   color: var(--text-secondary);
 }
 
-.applied-skills__hero-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.applied-skills__poster-link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: 0 var(--space-3);
-  height: 32px;
-  border-radius: var(--radius-md);
-  font-size: var(--fs-caption1);
-  font-weight: var(--fw-medium);
-  color: var(--colorBrandForeground1);
-  background: var(--colorBrandBackground2);
-  border: 1px solid var(--colorBrandStroke2);
-  text-decoration: none;
-  transition: all var(--transition-fast);
-}
-
-.applied-skills__poster-link:hover {
-  background: var(--colorBrandBackground2Hover);
-  text-decoration: none;
-}
-
-.applied-skills__poster-link:active {
-  transform: scale(0.96);
-}
-
 /* Hero Stats Bar */
 .applied-skills__stats-row {
   display: flex;
