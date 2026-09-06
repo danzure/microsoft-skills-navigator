@@ -93,7 +93,7 @@ export const AlignedAppliedSkills = memo(({ certId, certCode, onSelectSkill }) =
               </Badge>
             </div>
             <span className="cpb-aligned-skills__subtitle">
-              Complete these scenario-based hands-on lab credentials before taking the exam
+              Optional scenario-based labs recommended before studying for the full certification
             </span>
           </div>
         </div>

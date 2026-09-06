@@ -160,7 +160,7 @@
   margin-top: var(--space-5);
 }
 
-.cpb-timeline::before {
+.cpb-timeline--custom::before {
   content: '';
   position: absolute;
   top: 0;
@@ -361,6 +361,35 @@
   border-color: var(--border-focus);
 }
 
+.cpb-custom-select optgroup {
+  font-weight: var(--fw-bold);
+  color: var(--text-primary);
+  background: var(--colorNeutralBackground2);
+  padding: var(--space-1) 0;
+}
+
+[data-theme="dark"] .cpb-custom-select optgroup {
+  background: var(--colorNeutralBackground3);
+  color: var(--text-primary);
+}
+
+.cpb-custom-select option {
+  font-weight: var(--fw-normal);
+  color: var(--text-primary);
+  background: var(--colorNeutralBackground1);
+  padding: 4px var(--space-2);
+}
+
+[data-theme="dark"] .cpb-custom-select option {
+  background: var(--colorNeutralBackground2);
+  color: var(--text-primary);
+}
+
+.cpb-custom-select option:disabled {
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
 .cpb-custom-add-btn {
   display: inline-flex;
   align-items: center;
@@ -536,6 +565,18 @@
 
 .cpb-timeline-step--sortable {
   position: relative;
+  width: 100%;
+}
+
+.cpb-stage-card--sortable {
+  flex: 1;
+  min-width: 0;
+}
+
+.cpb-timeline-step--sortable .cert-node__info {
+  flex: 1;
+  min-width: 0;
+  cursor: default;
 }
 
 @media (max-width: 768px) {
@@ -548,7 +589,7 @@
     padding: var(--space-4);
   }
   
-  .cpb-timeline::before {
+  .cpb-timeline--custom::before {
     left: 20px;
   }
   
@@ -593,8 +634,166 @@
 .cpb-cert-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-2);
   margin-top: var(--space-4);
+  position: relative;
+}
+
+.cpb-cert-list-item {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Milestone Progression Route Connector (Between Cert Cards) ────────── */
+.cpb-route-connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  user-select: none;
+  padding: var(--space-2) 0;
+  z-index: 2;
+}
+
+.cpb-route-connector__stem {
+  width: 2px;
+  height: 16px;
+  background: linear-gradient(180deg, var(--colorNeutralStroke2) 0%, color-mix(in srgb, var(--step-accent-color) 45%, var(--colorNeutralStroke2)) 100%);
+  transition: all var(--duration-normal) var(--curve-easy-ease);
+}
+
+.cpb-route-connector__stem--bottom {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--step-accent-color) 45%, var(--colorNeutralStroke2)) 0%, var(--colorNeutralStroke2) 100%);
+}
+
+.cpb-route-connector--passed .cpb-route-connector__stem {
+  background: var(--status-completed);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--status-completed) 40%, transparent);
+}
+
+.cpb-route-connector__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 6px var(--space-4);
+  background: var(--colorNeutralBackground1);
+  border: 1px solid color-mix(in srgb, var(--step-accent-color) 30%, var(--colorNeutralStroke2));
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-4), 0 2px 8px color-mix(in srgb, var(--step-accent-color) 8%, transparent);
+  transition: all var(--duration-fast) var(--curve-easy-ease);
+  position: relative;
+}
+
+[data-theme="dark"] .cpb-route-connector__badge {
+  background: var(--colorNeutralBackground1);
+  border-color: color-mix(in srgb, var(--step-accent-color) 40%, var(--colorNeutralStroke2));
+  box-shadow: var(--shadow-8), 0 0 12px color-mix(in srgb, var(--step-accent-color) 12%, transparent);
+}
+
+.cpb-route-connector__badge:hover {
+  transform: translateY(-1px);
+  border-color: var(--step-accent-color);
+  box-shadow: var(--shadow-8), 0 0 14px color-mix(in srgb, var(--step-accent-color) 20%, transparent);
+}
+
+.cpb-route-connector--passed .cpb-route-connector__badge {
+  border-color: color-mix(in srgb, var(--status-completed) 50%, var(--colorNeutralStroke2));
+  box-shadow: var(--shadow-4), 0 0 12px color-mix(in srgb, var(--status-completed) 20%, transparent);
+}
+
+[data-theme="dark"] .cpb-route-connector--passed .cpb-route-connector__badge {
+  border-color: var(--status-completed);
+  box-shadow: var(--shadow-8), 0 0 14px color-mix(in srgb, var(--status-completed) 25%, transparent);
+}
+
+.cpb-route-connector__icon-wrap {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--step-accent-color) 12%, transparent);
+  color: var(--step-accent-color);
+  flex-shrink: 0;
+  transition: all var(--duration-fast) var(--curve-easy-ease);
+}
+
+.cpb-route-connector--passed .cpb-route-connector__icon-wrap {
+  background: color-mix(in srgb, var(--status-completed) 15%, transparent);
+  color: var(--status-completed);
+}
+
+.cpb-route-connector__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--duration-fast) var(--curve-easy-ease);
+}
+
+.cpb-route-connector__badge:hover .cpb-route-connector__icon {
+  transform: translateY(2px);
+}
+
+.cpb-route-connector__content {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.cpb-route-connector__step-badge {
+  font-size: 10px;
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-tertiary);
+  line-height: 1.2;
+}
+
+.cpb-route-connector__label {
+  font-size: var(--fs-caption1);
+  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.cpb-route-connector__target {
+  color: var(--step-accent-color);
+  font-weight: var(--fw-bold);
+  font-family: var(--font-mono);
+}
+
+.cpb-route-connector__level-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  background: var(--colorNeutralBackground3);
+  border: 1px solid var(--colorNeutralStroke2);
+  white-space: nowrap;
+}
+
+.cpb-route-connector--passed .cpb-route-connector__level-tag {
+  color: var(--status-completed);
+  background: color-mix(in srgb, var(--status-completed) 10%, transparent);
+  border-color: color-mix(in srgb, var(--status-completed) 30%, transparent);
+}
+
+@media (max-width: 768px) {
+  .cpb-route-connector__badge {
+    padding: 5px var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .cpb-route-connector__level-tag {
+    display: none;
+  }
 }
 
 /* ─── Role Pathway Overview Banner ───────────────────────────────────────── */

@@ -2,7 +2,7 @@ import { memo, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProgressContext } from '../../context/ProgressContext';
 import { CERT_STATUS, getCertById } from '../../data/certificationPaths';
-import { getAppliedSkillsForCert } from '../../data/appliedSkills';
+import { getAppliedSkillsForCert, APPLIED_SKILL_STATUS } from '../../data/appliedSkills';
 import { IconMap as Icons } from '../common/IconMap';
 import Badge from '../common/Badge';
 import { getBadgeUrl } from '../../utils/helpers';
@@ -30,13 +30,20 @@ import './CareerPathCertCard.css';
  */
 export const CareerPathCertCard = memo(({ certInfo, customPlaylist, onAdd, onRemove, onSelectSkill }) => {
   const navigate = useNavigate();
-  const { getStatus, setStatus } = useProgressContext();
+  const { getStatus, setStatus, getAppliedSkillStatus } = useProgressContext();
   
   const status = getStatus(certInfo.id);
   const isAdded = customPlaylist.includes(certInfo.id);
 
   const alignedSkills = useMemo(() => getAppliedSkillsForCert(certInfo.id), [certInfo.id]);
   const hasAlignedSkills = alignedSkills && alignedSkills.length > 0;
+
+  const completedLabsCount = useMemo(() => {
+    if (!hasAlignedSkills || !getAppliedSkillStatus) return 0;
+    return alignedSkills.filter(s => getAppliedSkillStatus(s.id) === APPLIED_SKILL_STATUS.COMPLETED).length;
+  }, [hasAlignedSkills, alignedSkills, getAppliedSkillStatus]);
+
+  const isPrepComplete = hasAlignedSkills && completedLabsCount === alignedSkills.length;
 
   const levelVariant = {
     Fundamentals: 'fundamentals',
@@ -194,10 +201,10 @@ export const CareerPathCertCard = memo(({ certInfo, customPlaylist, onAdd, onRem
         <div className="cpb-stage__step-header">
           <span className="cpb-stage__step-badge cpb-stage__step-badge--prep">
             <Icons.AppliedSkills size={13} />
-            Step 1 • Hands-on Lab Preparation
+            Step 1 • Optional Lab Preparation
           </span>
           <span className="cpb-stage__step-subtitle">
-            Complete scenario-based lab credentials before taking the full exam
+            Optional scenario-based labs recommended before studying for the full certification
           </span>
         </div>
         
@@ -208,16 +215,47 @@ export const CareerPathCertCard = memo(({ certInfo, customPlaylist, onAdd, onRem
         />
       </div>
 
-      {/* Directional Flow Connector */}
+      {/* Directional Progression Flow Connector */}
       <div className="cpb-stage__connector" aria-hidden="true">
-        <div className="cpb-stage__connector-line" />
-        <div className="cpb-stage__connector-pill">
-          <span className="cpb-stage__connector-icon">
-            <Icons.ArrowDown size={13} />
-          </span>
-          <span>Hands-on prep leads to target certification</span>
+        <div className={`cpb-stage__connector-stem cpb-stage__connector-stem--top ${isPrepComplete ? 'cpb-stage__connector-stem--complete' : ''}`} />
+        <div className={`cpb-stage__connector-badge ${isPrepComplete ? 'cpb-stage__connector-badge--ready' : ''}`}>
+          <div className="cpb-stage__connector-icon-wrap">
+            {isPrepComplete ? (
+              <Icons.CheckCircle2 size={14} className="cpb-stage__connector-icon" />
+            ) : (
+              <Icons.ArrowDown size={14} className="cpb-stage__connector-icon" />
+            )}
+          </div>
+          <div className="cpb-stage__connector-content">
+            <span className="cpb-stage__connector-title">
+              Progression Route
+            </span>
+            <div className="cpb-stage__connector-flow">
+              <span className="cpb-stage__connector-step-name">Step 1: Optional Labs</span>
+              <Icons.ChevronRight size={11} className="cpb-stage__connector-chevron" />
+              <span className="cpb-stage__connector-step-name">Step 2: Proctored Exam</span>
+            </div>
+          </div>
+          {hasAlignedSkills && (
+            <div className="cpb-stage__connector-status">
+              {isPrepComplete ? (
+                <span className="cpb-stage__connector-tag cpb-stage__connector-tag--ready">
+                  <Icons.Check size={11} />
+                  Exam Ready
+                </span>
+              ) : completedLabsCount > 0 ? (
+                <span className="cpb-stage__connector-tag cpb-stage__connector-tag--progress">
+                  {completedLabsCount}/{alignedSkills.length} Labs Earned
+                </span>
+              ) : (
+                <span className="cpb-stage__connector-tag cpb-stage__connector-tag--prep">
+                  Recommended Prep
+                </span>
+              )}
+            </div>
+          )}
         </div>
-        <div className="cpb-stage__connector-line" />
+        <div className={`cpb-stage__connector-stem cpb-stage__connector-stem--bottom ${isPrepComplete ? 'cpb-stage__connector-stem--complete' : ''}`} />
       </div>
 
       {/* Stage Step 2: Target Certification Exam */}

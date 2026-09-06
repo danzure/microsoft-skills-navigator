@@ -53,7 +53,7 @@ export const appliedSkills = [
     roles: ["service-adoption-specialist","support-engineer"],
     products: ["azure-resource-manager","azure-managed-applications","azure-storage-accounts","azure-virtual-machines","azure-virtual-network"],
     subjects: ["networking","virtual-machine"],
-    relatedCerts: ["az-900","az-104"],
+    relatedCerts: ["az-900"],
   },
   {
     id: 'get-started-with-classes-properties-and-methods-in-c-sharp',
@@ -70,7 +70,7 @@ export const appliedSkills = [
     roles: ["developer"],
     products: ["vs-code"],
     subjects: ["custom-app-development"],
-    relatedCerts: ["ai-103","ai-200"],
+    relatedCerts: ["ai-103","ai-200","az-204"],
   },
   {
     id: 'accelerate-app-development-by-using-github-copilot',
@@ -104,7 +104,7 @@ export const appliedSkills = [
     roles: ["administrator"],
     products: ["active-directory"],
     subjects: ["device-management","infrastructure"],
-    relatedCerts: ["az-802","az-104"],
+    relatedCerts: ["az-802"],
   },
   {
     id: 'automate-azure-load-testing-by-using-github-actions',
@@ -138,7 +138,7 @@ export const appliedSkills = [
     roles: ["developer"],
     products: ["azure-database-postgresql"],
     subjects: ["artificial-intelligence","databases"],
-    relatedCerts: ["dp-900","ai-103"],
+    relatedCerts: ["ai-103","dp-300"],
   },
   {
     id: 'configure-and-migrate-to-azure-database-for-postgresql',
@@ -155,7 +155,7 @@ export const appliedSkills = [
     roles: ["database-administrator"],
     products: ["azure-database-postgresql"],
     subjects: ["databases"],
-    relatedCerts: ["dp-300","dp-900"],
+    relatedCerts: ["dp-300"],
   },
   {
     id: 'configure-secure-workloads-use-azure-virtual-networking',
@@ -206,7 +206,7 @@ export const appliedSkills = [
     roles: ["developer","devops-engineer"],
     products: ["azure","azure-container-apps","azure-container-registry","azure-pipelines"],
     subjects: ["app-development"],
-    relatedCerts: ["az-104","ai-200"],
+    relatedCerts: ["az-204","az-400","ai-200"],
   },
   {
     id: 'build-a-generative-ai-chat-app',
@@ -257,7 +257,7 @@ export const appliedSkills = [
     roles: ["developer"],
     products: ["azure-sql-database"],
     subjects: ["app-development","backend-development","cloud-computing"],
-    relatedCerts: ["dp-300","dp-800"],
+    relatedCerts: ["dp-300","dp-800","az-204"],
   },
   {
     id: 'enhance-agents-with-autonomous-capabilities',
@@ -359,7 +359,7 @@ export const appliedSkills = [
     roles: ["database-administrator","data-engineer","administrator"],
     products: ["sql-server","azure-sql-database"],
     subjects: ["databases"],
-    relatedCerts: ["dp-300","dp-900"],
+    relatedCerts: ["dp-300"],
   },
   {
     id: 'resolve-github-issues-by-using-github-copilot',
@@ -461,7 +461,7 @@ export const appliedSkills = [
     roles: ["administrator"],
     products: ["power-platform","power-automate"],
     subjects: ["automation"],
-    relatedCerts: ["pl-900","ab-410","ab-620"],
+    relatedCerts: ["ab-410","ab-620"],
   },
   {
     id: 'create-manage-canvas-apps-power-apps',
@@ -478,7 +478,7 @@ export const appliedSkills = [
     roles: ["maker"],
     products: ["power-apps"],
     subjects: ["custom-app-development"],
-    relatedCerts: ["pl-900","ab-410"],
+    relatedCerts: ["ab-410"],
   },
   {
     id: 'get-started-with-cloud-security-and-monitoring-tasks',
@@ -495,7 +495,7 @@ export const appliedSkills = [
     roles: ["security-engineer"],
     products: ["azure-firewall","azure-key-vault","azure-monitor"],
     subjects: ["cloud-security"],
-    relatedCerts: ["sc-900","az-104"],
+    relatedCerts: ["sc-900"],
   },
   {
     id: 'get-started-with-identities-and-access-using-microsoft-entra',
@@ -512,7 +512,7 @@ export const appliedSkills = [
     roles: ["administrator","identity-access-admin"],
     products: ["entra-id"],
     subjects: ["identity-access"],
-    relatedCerts: ["sc-900","sc-300","az-104"],
+    relatedCerts: ["sc-900","sc-300"],
   },
   {
     id: 'defend-against-cyberthreats-with-microsoft-defender-xdr',

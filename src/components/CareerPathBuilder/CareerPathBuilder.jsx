@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { careerRoles } from '../../data/careerRoles';
-import { certificationPaths, CERT_STATUS } from '../../data/certificationPaths';
+import { certificationPaths, CERT_STATUS, CERT_LEVELS } from '../../data/certificationPaths';
 import { getAppliedSkillsForCert, APPLIED_SKILL_STATUS } from '../../data/appliedSkills';
 import { useProgressContext } from '../../context/ProgressContext';
 import { useToast } from '../../context/ToastContext';
@@ -61,6 +61,59 @@ const CareerPathBuilder = () => {
       });
     });
     return certsMap;
+  }, []);
+
+  // Grouped and logically ordered certifications for the custom career path selector
+  const groupedCertsForSelect = useMemo(() => {
+    const LEVEL_RANK = {
+      [CERT_LEVELS.FUNDAMENTALS]: 1,
+      [CERT_LEVELS.ASSOCIATE]: 2,
+      [CERT_LEVELS.EXPERT]: 3,
+      [CERT_LEVELS.SPECIALTY]: 4,
+    };
+
+    const seenCertIds = new Set();
+    const groups = [];
+
+    certificationPaths.forEach(path => {
+      const pathCerts = [];
+      path.certifications.forEach(cert => {
+        if (!seenCertIds.has(cert.id)) {
+          seenCertIds.add(cert.id);
+          pathCerts.push({
+            ...cert,
+            pathId: path.id,
+            pathName: path.name,
+            pathColor: path.color,
+          });
+        }
+      });
+
+      if (pathCerts.length > 0) {
+        // Sort certifications within this path:
+        // 1. By level progression: Fundamentals -> Associate -> Expert -> Specialty
+        // 2. By exam code alphanumeric (e.g. AZ-104 before AZ-700 before AZ-802)
+        pathCerts.sort((a, b) => {
+          const rankA = LEVEL_RANK[a.level] || 99;
+          const rankB = LEVEL_RANK[b.level] || 99;
+          if (rankA !== rankB) return rankA - rankB;
+          return a.examCode.localeCompare(b.examCode, undefined, { numeric: true, sensitivity: 'base' });
+        });
+
+        let groupLabel = path.name;
+        if (path.id === 'retired-exams') {
+          groupLabel = 'Retired & Archived Certifications';
+        }
+
+        groups.push({
+          id: path.id,
+          name: groupLabel,
+          certs: pathCerts,
+        });
+      }
+    });
+
+    return groups;
   }, []);
 
   const sortedRoles = useMemo(() => {
@@ -302,12 +355,33 @@ const CareerPathBuilder = () => {
                 className="cpb-custom-select"
                 value={certToAdd}
                 onChange={(e) => setCertToAdd(e.target.value)}
+                aria-label="Select a certification to add"
               >
                 <option value="">-- Select a Certification to Add --</option>
-                {Array.from(allCerts.values()).sort((a, b) => a.name.localeCompare(b.name)).map(cert => (
-                  <option key={`add-${cert.id}`} value={cert.id} disabled={customPlaylist.includes(cert.id)}>
-                    {cert.examCode} - {cert.name}
-                  </option>
+                {groupedCertsForSelect.map(group => (
+                  <optgroup key={group.id} label={group.name}>
+                    {group.certs.map(cert => {
+                      const isAdded = customPlaylist.includes(cert.id);
+                      let suffix = '';
+                      if (isAdded) {
+                        suffix = ' (Added)';
+                      } else if (group.id === 'retired-exams') {
+                        suffix = ' (Retired)';
+                      } else if (cert.isBeta) {
+                        suffix = ' (Beta)';
+                      }
+
+                      return (
+                        <option 
+                          key={`add-${cert.id}`} 
+                          value={cert.id} 
+                          disabled={isAdded}
+                        >
+                          {cert.examCode} - {cert.name}{suffix}
+                        </option>
+                      );
+                    })}
+                  </optgroup>
                 ))}
               </select>
               <button 
@@ -329,7 +403,7 @@ const CareerPathBuilder = () => {
             </div>
           )}
 
-          <div className="cpb-timeline">
+          <div className={`cpb-timeline ${selectedRole.id === 'custom-playlist' ? 'cpb-timeline--custom' : 'cpb-timeline--role'}`}>
             {selectedRole.id === 'custom-playlist' ? (
               <DndContext 
                 sensors={sensors}
@@ -405,19 +479,57 @@ const CareerPathBuilder = () => {
               </DndContext>
             ) : (
               <div className="cpb-cert-list">
-                {selectedRole.certs.map((certId) => {
+                {selectedRole.certs.map((certId, idx) => {
                   const certInfo = allCerts.get(certId);
                   if (!certInfo) return null;
+                  const isLast = idx === selectedRole.certs.length - 1;
+                  const nextCertId = !isLast ? selectedRole.certs[idx + 1] : null;
+                  const nextCertInfo = nextCertId ? allCerts.get(nextCertId) : null;
+                  const status = getStatus(certId);
+                  const isPassed = status === CERT_STATUS.COMPLETED;
+
                   return (
-                    <CareerPathCertCard 
-                      key={certId} 
-                      certInfo={certInfo} 
-                      roleTitle={selectedRole.title}
-                      customPlaylist={customPlaylist}
-                      onAdd={(id) => setCustomPlaylist([...customPlaylist, id])}
-                      onRemove={handleRemoveCert}
-                      onSelectSkill={setSelectedSkillForDetail}
-                    />
+                    <div key={certId} className="cpb-cert-list-item">
+                      <CareerPathCertCard 
+                        certInfo={certInfo} 
+                        roleTitle={selectedRole.title}
+                        customPlaylist={customPlaylist}
+                        onAdd={(id) => setCustomPlaylist([...customPlaylist, id])}
+                        onRemove={handleRemoveCert}
+                        onSelectSkill={setSelectedSkillForDetail}
+                      />
+                      {!isLast && nextCertInfo && (
+                        <div 
+                          className={`cpb-route-connector ${isPassed ? 'cpb-route-connector--passed' : ''}`}
+                          style={{ '--step-accent-color': certInfo.pathColor || 'var(--colorBrandForeground1)' }}
+                          aria-hidden="true"
+                        >
+                          <div className="cpb-route-connector__stem cpb-route-connector__stem--top" />
+                          <div className="cpb-route-connector__badge">
+                            <div className="cpb-route-connector__icon-wrap">
+                              {isPassed ? (
+                                <Icons.CheckCircle2 size={13} className="cpb-route-connector__icon" />
+                              ) : (
+                                <Icons.ArrowDown size={13} className="cpb-route-connector__icon" />
+                              )}
+                            </div>
+                            <div className="cpb-route-connector__content">
+                              <span className="cpb-route-connector__step-badge">
+                                Step {idx + 1} of {selectedRole.certs.length}
+                              </span>
+                              <span className="cpb-route-connector__label">
+                                {isPassed ? 'Milestone Passed • Advance to' : 'Next in Progression Route:'}{' '}
+                                <strong className="cpb-route-connector__target">{nextCertInfo.examCode}</strong>
+                              </span>
+                            </div>
+                            <span className="cpb-route-connector__level-tag">
+                              {nextCertInfo.level}
+                            </span>
+                          </div>
+                          <div className="cpb-route-connector__stem cpb-route-connector__stem--bottom" />
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
