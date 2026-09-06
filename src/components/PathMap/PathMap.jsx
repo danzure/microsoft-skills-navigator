@@ -479,11 +479,8 @@ const PathMap = () => {
         {/* Upper Tier: Brand and Actions */}
         <div className="path-map__header-top">
           <div className="path-map__header-brand">
-            <div className="path-map__header-emblem-wrap">
-              <div className="path-map__header-icon">
-                <PathIcon size={44} />
-              </div>
-              <span className="path-map__header-code-badge">{path.code}</span>
+            <div className="path-map__header-icon">
+              <PathIcon size={52} />
             </div>
 
             <div className="path-map__header-info">
