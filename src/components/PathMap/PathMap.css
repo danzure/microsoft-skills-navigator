@@ -76,16 +76,14 @@
 }
 
 .path-map__header-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: color-mix(in srgb, var(--path-color) 14%, var(--colorNeutralBackground1));
-  border: 1px solid color-mix(in srgb, var(--path-color) 35%, transparent);
+  background: transparent;
+  border: none;
+  box-shadow: none;
   color: var(--path-color);
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--path-color) 16%, transparent);
+  filter: drop-shadow(0 3px 10px color-mix(in srgb, var(--path-color) 32%, transparent));
   flex-shrink: 0;
 }
 

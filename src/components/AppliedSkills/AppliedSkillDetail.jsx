@@ -42,7 +42,7 @@ const AppliedSkillDetail = ({ skill, status = APPLIED_SKILL_STATUS.NOT_STARTED, 
         <header className="skill-detail__header">
           <div className="skill-detail__header-title-group">
             <div className="skill-detail__badge-wrapper">
-              <Icons.AppliedSkills size={48} />
+              <Icons.AppliedSkills size={56} />
             </div>
             <div className="skill-detail__header-text">
               <div className="skill-card__badges">

@@ -113,7 +113,7 @@ const AppliedSkills = () => {
         <div className="applied-skills__hero-header">
           <div className="applied-skills__hero-title-area">
             <div className="applied-skills__hero-icon">
-              <Icons.AppliedSkills size={28} />
+              <Icons.AppliedSkills size={52} />
             </div>
             <div>
               <h1 className="applied-skills__title">Microsoft Applied Skills</h1>

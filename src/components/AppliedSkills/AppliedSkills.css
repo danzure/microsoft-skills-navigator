@@ -53,12 +53,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-lg);
-  background: rgba(0, 120, 212, 0.1);
-  color: var(--line-azure);
   flex-shrink: 0;
+  background: transparent;
+  filter: drop-shadow(0 3px 10px rgba(0, 120, 212, 0.28));
 }
 
 .applied-skills__title {
@@ -588,8 +585,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  background: transparent;
+  filter: drop-shadow(0 3px 10px rgba(0, 120, 212, 0.28));
   margin-top: var(--space-1);
 }
 

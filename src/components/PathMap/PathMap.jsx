@@ -481,7 +481,7 @@ const PathMap = () => {
           <div className="path-map__header-brand">
             <div className="path-map__header-emblem-wrap">
               <div className="path-map__header-icon">
-                <PathIcon size={26} />
+                <PathIcon size={44} />
               </div>
               <span className="path-map__header-code-badge">{path.code}</span>
             </div>
