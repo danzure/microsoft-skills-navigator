@@ -15,8 +15,8 @@ import {
   Warning16Regular,
   BookOpen16Regular,
   Add16Regular,
-  Subtract16Regular,
   ArrowTrending24Regular,
+  Checkmark16Regular,
 } from '@fluentui/react-icons';
 import { certificationPaths, CERT_STATUS, PILLARS } from '../../data/certificationPaths';
 import { useProgressContext } from '../../context/ProgressContext';
@@ -316,54 +316,147 @@ const useStyles = makeStyles({
   },
   pathCard: {
     backgroundColor: tokens.colorNeutralBackground1,
-    ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke1),
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke2),
     ...shorthands.borderRadius(tokens.borderRadiusLarge),
-    ...shorthands.padding(tokens.spacingVerticalL),
+    ...shorthands.padding(tokens.spacingVerticalL, tokens.spacingHorizontalL),
     boxShadow: tokens.shadow2,
     cursor: 'pointer',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
-    minHeight: '160px',
+    minHeight: '230px',
     boxSizing: 'border-box',
-    transitionProperty: 'transform, box-shadow, border-color',
+    transitionProperty: 'transform, box-shadow, border-color, background-color',
     transitionDuration: tokens.durationFast,
     transitionTimingFunction: tokens.curveEasyEase,
     position: 'relative',
     overflow: 'hidden',
     ':hover': {
       boxShadow: tokens.shadow8,
-      transform: 'translateY(-2px)',
-      ...shorthands.borderColor(tokens.colorBrandStroke1),
+      transform: 'translateY(-3px)',
+      ...shorthands.borderColor('color-mix(in srgb, var(--card-accent, var(--colorBrandStroke1)) 40%, var(--colorNeutralStroke1))'),
+    },
+    ':active': {
+      transform: 'scale(0.99)',
+    },
+    ':focus-visible': {
+      outlineWidth: '2px',
+      outlineStyle: 'solid',
+      outlineColor: tokens.colorStrokeFocus2,
+      outlineOffset: '2px',
     },
   },
   pathCardIgnored: {
-    opacity: 0.85,
-    backgroundColor: tokens.colorNeutralBackground2,
+    backgroundColor: tokens.colorNeutralBackground1,
+    ...shorthands.borderColor(tokens.colorNeutralStroke2),
   },
-  pathCardHeader: {
+  pathCardAccentBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '3px',
+    backgroundColor: 'var(--card-accent, var(--colorBrandBackground))',
+    opacity: 0.9,
+    transitionProperty: 'height, opacity',
+    transitionDuration: tokens.durationFast,
+    transitionTimingFunction: tokens.curveEasyEase,
+  },
+  pathCardMetaRow: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: tokens.spacingHorizontalS,
   },
-  pathIconTitle: {
+  pathCardBadges: {
     display: 'flex',
-    alignItems: 'flex-start',
-    gap: tokens.spacingHorizontalM,
-    flexGrow: 1,
-    minWidth: 0,
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
   },
-  pathIcon: {
-    width: '36px',
-    height: '36px',
+  pathCodeChip: {
+    fontSize: tokens.fontSizeCaption2,
+    fontWeight: tokens.fontWeightSemibold,
+    fontFamily: "'Cascadia Code', 'Cascadia Mono', Consolas, monospace",
+    color: tokens.colorNeutralForeground3,
+    backgroundColor: tokens.colorNeutralBackground3,
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke3),
+    ...shorthands.borderRadius(tokens.borderRadiusSmall),
+    ...shorthands.padding('1px', '6px'),
+    letterSpacing: '0.04em',
+    lineHeight: 1.2,
+  },
+  pathTrackBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalXXS,
+    height: '24px',
+    ...shorthands.padding(0, tokens.spacingHorizontalS),
+    ...shorthands.borderRadius(tokens.borderRadiusSmall),
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke2),
+    backgroundColor: tokens.colorNeutralBackground1,
+    color: tokens.colorNeutralForeground2,
+    fontSize: tokens.fontSizeCaption1,
+    fontWeight: tokens.fontWeightSemibold,
+    cursor: 'pointer',
+    transitionProperty: 'all',
+    transitionDuration: tokens.durationFast,
+    transitionTimingFunction: tokens.curveEasyEase,
+    ':hover': {
+      backgroundColor: tokens.colorBrandBackground2,
+      color: tokens.colorBrandForeground1,
+      ...shorthands.borderColor(tokens.colorBrandStroke2),
+      transform: 'scale(1.02)',
+    },
+    ':active': {
+      transform: 'scale(0.96)',
+    },
+  },
+  pathTrackedBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalXXS,
+    height: '24px',
+    ...shorthands.padding(0, tokens.spacingHorizontalS),
+    ...shorthands.borderRadius(tokens.borderRadiusSmall),
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', 'color-mix(in srgb, var(--card-accent, var(--colorBrandStroke1)) 35%, transparent)'),
+    backgroundColor: 'color-mix(in srgb, var(--card-accent, var(--colorBrandBackground2)) 10%, var(--colorNeutralBackground1))',
+    color: tokens.colorNeutralForeground1,
+    fontSize: tokens.fontSizeCaption1,
+    fontWeight: tokens.fontWeightSemibold,
+    cursor: 'pointer',
+    transitionProperty: 'all',
+    transitionDuration: tokens.durationFast,
+    transitionTimingFunction: tokens.curveEasyEase,
+    ':hover': {
+      backgroundColor: tokens.colorPaletteDarkOrangeBackground1,
+      ...shorthands.borderColor(tokens.colorPaletteDarkOrangeBorder1),
+      color: tokens.colorPaletteDarkOrangeForeground1,
+      transform: 'scale(1.02)',
+    },
+    ':active': {
+      transform: 'scale(0.96)',
+    },
+  },
+  pathIdentityRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalM,
+    marginTop: tokens.spacingVerticalS,
+  },
+  pathIconContainer: {
+    width: '42px',
+    height: '42px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     ...shorthands.borderRadius(tokens.borderRadiusMedium),
-    backgroundColor: tokens.colorNeutralBackground3,
-    color: tokens.colorNeutralForeground1,
+    backgroundColor: 'color-mix(in srgb, var(--card-accent, var(--colorBrandBackground)) 10%, var(--colorNeutralBackground2))',
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', 'color-mix(in srgb, var(--card-accent, var(--colorBrandStroke1)) 22%, transparent)'),
+    color: 'var(--card-accent, var(--colorBrandForeground1))',
     flexShrink: 0,
+    transitionProperty: 'transform, border-color, background-color',
+    transitionDuration: tokens.durationFast,
+    transitionTimingFunction: tokens.curveEasyEase,
   },
   pathTitleGroup: {
     display: 'flex',
@@ -372,19 +465,6 @@ const useStyles = makeStyles({
     flexGrow: 1,
     minWidth: 0,
   },
-  pathBadgeStats: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: tokens.spacingHorizontalS,
-    flexWrap: 'wrap',
-  },
-  pathStatsMini: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: tokens.spacingHorizontalS,
-    fontSize: tokens.fontSizeBase100,
-    color: tokens.colorNeutralForeground3,
-  },
   pathName: {
     margin: 0,
     fontSize: tokens.fontSizeBase400,
@@ -392,54 +472,113 @@ const useStyles = makeStyles({
     color: tokens.colorNeutralForeground1,
     lineHeight: tokens.lineHeightBase400,
   },
-  pathToggleBtn: {
-    width: '28px',
-    height: '28px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...shorthands.padding(0),
-    ...shorthands.borderRadius(tokens.borderRadiusSmall),
-    ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke2),
-    backgroundColor: tokens.colorNeutralBackground1,
-    color: tokens.colorNeutralForeground2,
-    cursor: 'pointer',
-    flexShrink: 0,
-    transitionProperty: 'all',
-    transitionDuration: tokens.durationFast,
-    transitionTimingFunction: tokens.curveEasyEase,
-    ':hover': {
-      backgroundColor: tokens.colorNeutralBackground1Hover,
-      color: tokens.colorNeutralForeground1,
-      ...shorthands.borderColor(tokens.colorBrandStroke1),
-    },
+  pathMetaSubtitle: {
+    fontSize: tokens.fontSizeCaption1,
+    color: tokens.colorNeutralForeground3,
   },
   pathCardBody: {
     marginTop: tokens.spacingVerticalM,
     flexGrow: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalS,
   },
   pathDesc: {
     margin: 0,
     fontSize: tokens.fontSizeBase200,
     color: tokens.colorNeutralForeground2,
-    lineHeight: tokens.lineHeightBase200,
+    lineHeight: tokens.lineHeightBase300,
     display: '-webkit-box',
-    WebkitLineClamp: 2,
+    WebkitLineClamp: 3,
     WebkitBoxOrient: 'vertical',
     overflow: 'hidden',
   },
+  branchChipsRow: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '6px',
+    alignItems: 'center',
+    marginTop: tokens.spacingVerticalXS,
+  },
+  branchChip: {
+    fontSize: tokens.fontSizeCaption2,
+    color: tokens.colorNeutralForeground2,
+    backgroundColor: tokens.colorNeutralBackground2,
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke3),
+    ...shorthands.borderRadius(tokens.borderRadiusSmall),
+    ...shorthands.padding('2px', '7px'),
+    whiteSpace: 'nowrap',
+  },
+  branchChipMore: {
+    fontSize: tokens.fontSizeCaption2,
+    color: tokens.colorNeutralForeground4,
+    ...shorthands.padding('2px', '4px'),
+  },
+  pathCardFooter: {
+    marginTop: 'auto',
+    paddingTop: tokens.spacingVerticalM,
+    borderTopWidth: tokens.strokeWidthThin,
+    borderTopStyle: 'solid',
+    borderTopColor: tokens.colorNeutralStroke3,
+  },
+  pathProgressSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalXXS,
+  },
+  pathProgressStats: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    fontSize: tokens.fontSizeCaption1,
+  },
+  pathProgressText: {
+    fontWeight: tokens.fontWeightSemibold,
+    color: tokens.colorNeutralForeground2,
+  },
+  pathProgressCounts: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+  },
+  pathProgCompleted: {
+    color: tokens.colorPaletteGreenForeground1,
+    fontWeight: tokens.fontWeightSemibold,
+  },
+  pathProgInProgress: {
+    color: tokens.colorPaletteDarkOrangeForeground1,
+    fontWeight: tokens.fontWeightSemibold,
+  },
   pathProgressContainer: {
-    height: '3px',
-    backgroundColor: tokens.colorNeutralStroke3,
+    height: '4px',
+    backgroundColor: tokens.colorNeutralBackground3,
     ...shorthands.borderRadius(tokens.borderRadiusCircular),
-    marginTop: tokens.spacingVerticalM,
     overflow: 'hidden',
+    marginTop: '4px',
   },
   pathProgressFill: {
     height: '100%',
     ...shorthands.borderRadius(tokens.borderRadiusCircular),
     transitionProperty: 'width',
     transitionDuration: tokens.durationNormal,
+    transitionTimingFunction: tokens.curveEasyEase,
+  },
+  pathExploreAffordance: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    color: tokens.colorBrandForeground1,
+    fontSize: tokens.fontSizeCaption1,
+    fontWeight: tokens.fontWeightSemibold,
+  },
+  pathExploreLabel: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  pathExploreChevron: {
+    color: tokens.colorBrandForeground1,
+    transitionProperty: 'transform',
+    transitionDuration: tokens.durationFast,
     transitionTimingFunction: tokens.curveEasyEase,
   },
   emptyState: {
@@ -593,6 +732,9 @@ export default function Dashboard() {
   const renderPathCard = (path, isIgnored) => {
     const prog = getPathProgress(path.id);
     const Icon = Icons[path.icon] || Icons.Circle;
+    const branches = path.branches || [];
+    const displayedBranches = branches.slice(0, 3);
+    const remainingBranches = branches.length - displayedBranches.length;
 
     return (
       <div
@@ -603,71 +745,142 @@ export default function Dashboard() {
         )}
         onClick={() => navigate(`/path/${path.id}`)}
         id={`dashboard-path-${path.id}`}
+        style={{
+          '--card-accent': path.color,
+          '--card-glow': path.glowColor || 'var(--colorBrandBackground2)',
+        }}
       >
-        <div className={styles.pathCardHeader}>
-          <div className={styles.pathIconTitle}>
-            <div className={styles.pathIcon}>
-              <Icon size={20} />
-            </div>
-            <div className={styles.pathTitleGroup}>
-              <div className={styles.pathBadgeStats}>
-                <Badge color={path.color} small>
-                  {path.pillar}
-                </Badge>
-                {path.id !== 'retired-exams' && (
-                  <div className={styles.pathStatsMini}>
-                    <span title="Total Available Certifications">
-                      {prog.total} exams
-                    </span>
-                    {prog.completed > 0 && (
-                      <span title="Completed">✓ {prog.completed}</span>
-                    )}
-                    {prog.inProgress > 0 && (
-                      <span title="In Progress">◐ {prog.inProgress}</span>
-                    )}
-                  </div>
-                )}
-              </div>
-              <h2 className={styles.pathName}>{path.shortName}</h2>
-            </div>
+        {/* Top Accent Strip */}
+        <div className={styles.pathCardAccentBar} />
+
+        {/* Card Header Meta Row */}
+        <div className={styles.pathCardMetaRow}>
+          <div className={styles.pathCardBadges}>
+            <Badge color={path.color} small>
+              {path.pillar}
+            </Badge>
+            {path.code && (
+              <span className={styles.pathCodeChip}>
+                {path.code}
+              </span>
+            )}
           </div>
+
           {path.id !== 'retired-exams' && (
             <button
               type="button"
-              className={styles.pathToggleBtn}
+              className={isIgnored ? styles.pathTrackBtn : styles.pathTrackedBtn}
               onClick={(e) => {
                 e.stopPropagation();
                 togglePathIgnored(path.id);
               }}
               title={
                 isIgnored
-                  ? 'Track this path in My Learning'
-                  : 'Remove path from My Learning'
+                  ? `Track ${path.shortName} in My Learning`
+                  : `Remove ${path.shortName} from My Learning`
+              }
+              aria-label={
+                isIgnored
+                  ? `Track ${path.shortName}`
+                  : `Remove ${path.shortName} from tracked learning`
               }
             >
-              {isIgnored ? <Add16Regular /> : <Subtract16Regular />}
-              <span className={styles.srOnly}>
-                {isIgnored ? 'Track' : 'Remove'}
-              </span>
+              {isIgnored ? (
+                <>
+                  <Add16Regular />
+                  <span>Track</span>
+                </>
+              ) : (
+                <>
+                  <Checkmark16Regular style={{ color: tokens.colorPaletteGreenForeground1 }} />
+                  <span>Tracked</span>
+                </>
+              )}
             </button>
           )}
         </div>
 
+        {/* Card Identity: Branded Icon + Title + Subtitle */}
+        <div className={styles.pathIdentityRow}>
+          <div className={styles.pathIconContainer}>
+            <Icon size={24} />
+          </div>
+          <div className={styles.pathTitleGroup}>
+            <h2 className={styles.pathName}>{path.shortName}</h2>
+            <div className={styles.pathMetaSubtitle}>
+              {path.id === 'retired-exams' ? (
+                <span>{prog.total} archived certifications</span>
+              ) : (
+                <span>
+                  {prog.total} certifications
+                  {branches.length > 0 && ` • ${branches.length} specializations`}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Card Body: Reworked Description */}
         <div className={styles.pathCardBody}>
           <p className={styles.pathDesc}>{path.description}</p>
         </div>
 
-        {!isIgnored && path.id !== 'retired-exams' && (
-          <div className={styles.pathProgressContainer}>
-            <div
-              className={styles.pathProgressFill}
-              style={{
-                width: `${prog.percent}%`,
-                backgroundColor: path.color,
-              }}
-            />
+        {/* Specialization Tags / Branches */}
+        {displayedBranches.length > 0 && path.id !== 'retired-exams' && (
+          <div className={styles.branchChipsRow}>
+            {displayedBranches.map((b) => (
+              <span key={b.id} className={styles.branchChip} title={b.description || b.name}>
+                {b.name}
+              </span>
+            ))}
+            {remainingBranches > 0 && (
+              <span className={styles.branchChipMore}>
+                +{remainingBranches} more
+              </span>
+            )}
           </div>
         )}
+
+        {/* Card Footer: Progress (Tracked) OR Roadmap link (Untracked) */}
+        <div className={styles.pathCardFooter}>
+          {!isIgnored && path.id !== 'retired-exams' ? (
+            <div className={styles.pathProgressSection}>
+              <div className={styles.pathProgressStats}>
+                <span className={styles.pathProgressText}>
+                  {prog.percent}% complete
+                </span>
+                <div className={styles.pathProgressCounts}>
+                  {prog.completed > 0 && (
+                    <span className={styles.pathProgCompleted} title="Completed">
+                      ✓ {prog.completed}
+                    </span>
+                  )}
+                  {prog.inProgress > 0 && (
+                    <span className={styles.pathProgInProgress} title="In Progress">
+                      ◐ {prog.inProgress}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className={styles.pathProgressContainer}>
+                <div
+                  className={styles.pathProgressFill}
+                  style={{
+                    width: `${prog.percent}%`,
+                    backgroundColor: path.color,
+                  }}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className={styles.pathExploreAffordance}>
+              <span className={styles.pathExploreLabel}>
+                {path.id === 'retired-exams' ? 'View Archived Exams' : 'Explore Metro Roadmap'}
+              </span>
+              <ChevronRight16Regular className={styles.pathExploreChevron} />
+            </div>
+          )}
+        </div>
       </div>
     );
   };
@@ -913,28 +1126,45 @@ export default function Dashboard() {
                   <div
                     className={styles.pathCard}
                     onClick={() => navigate('/career-paths?role=custom')}
+                    style={{
+                      '--card-accent': 'var(--colorBrandForeground1)',
+                      '--card-glow': 'var(--glow-azure)',
+                    }}
                   >
-                    <div className={styles.pathCardHeader}>
-                      <div className={styles.pathIconTitle}>
-                        <div className={styles.pathIcon}>
-                          <Icons.SettingsColor size={20} />
-                        </div>
-                        <div className={styles.pathTitleGroup}>
-                          <div className={styles.pathBadgeStats}>
-                            <Badge color="var(--colorBrandForeground1)" small>
-                              Custom Track
-                            </Badge>
-                          </div>
-                          <h2 className={styles.pathName}>Your Custom Career</h2>
+                    <div className={styles.pathCardAccentBar} />
+                    <div className={styles.pathCardMetaRow}>
+                      <div className={styles.pathCardBadges}>
+                        <Badge color="var(--colorBrandForeground1)" small>
+                          Custom Track
+                        </Badge>
+                        <span className={styles.pathCodeChip}>CUSTOM</span>
+                      </div>
+                    </div>
+
+                    <div className={styles.pathIdentityRow}>
+                      <div className={styles.pathIconContainer}>
+                        <Icons.SettingsColor size={24} />
+                      </div>
+                      <div className={styles.pathTitleGroup}>
+                        <h2 className={styles.pathName}>Your Custom Career</h2>
+                        <div className={styles.pathMetaSubtitle}>
+                          <span>{customPlaylist.length} certifications in roadmap</span>
                         </div>
                       </div>
                     </div>
 
                     <div className={styles.pathCardBody}>
                       <p className={styles.pathDesc}>
-                        A personalized playlist of {customPlaylist.length}{' '}
-                        certifications tailored to your unique goals.
+                        A personalized playlist of {customPlaylist.length} certifications
+                        tailored to your unique career goals and sequence.
                       </p>
+                    </div>
+
+                    <div className={styles.pathCardFooter}>
+                      <div className={styles.pathExploreAffordance}>
+                        <span className={styles.pathExploreLabel}>Open Career Playlist</span>
+                        <ChevronRight16Regular className={styles.pathExploreChevron} />
+                      </div>
                     </div>
                   </div>
                 )}
@@ -995,10 +1225,10 @@ export default function Dashboard() {
           {activeIgnoredPaths.length > 0 && (
             <div className={styles.catalogGroup}>
               <div className={styles.sectionHeader}>
-                <h2 className={styles.sectionTitle}>Explore Catalog</h2>
+                <h2 className={styles.sectionTitle}>Explore Certification Tracks</h2>
                 <p className={styles.sectionDesc}>
-                  Discover new certification paths, or pick and choose individual
-                  exams to add to your tracked learning.
+                  Discover official Microsoft certification roadmaps across cloud, AI, data,
+                  security, and business applications. Track entire paths or explore interactive metro maps.
                 </p>
               </div>
 
@@ -1016,9 +1246,9 @@ export default function Dashboard() {
               }}
             >
               <div className={styles.sectionHeader}>
-                <h2 className={styles.sectionTitle}>Retired Certifications</h2>
+                <h2 className={styles.sectionTitle}>Archived & Retiring Exams</h2>
                 <p className={styles.sectionDesc}>
-                  Historically retired or soon-to-be retired certifications.
+                  Historical certification paths and scheduled exam retirements across the Microsoft ecosystem.
                 </p>
               </div>
 

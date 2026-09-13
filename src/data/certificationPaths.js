@@ -40,7 +40,7 @@ export const certificationPaths = [
     glowColor: 'var(--glow-azure)',
     cssVar: '--line-azure',
     icon: 'Cloud',
-    description: 'Cloud administration, networking, and architecture for Azure infrastructure.',
+    description: 'Architect, deploy, and manage scalable cloud computing, virtual networking, hybrid Windows Server workloads, and enterprise solutions on Azure.',
     branches: [
       { id: 'admin', name: 'Admin', description: 'Core infrastructure administration' },
       { id: 'developer', name: 'Developer', description: 'Cloud application development' },
@@ -190,7 +190,7 @@ export const certificationPaths = [
     glowColor: 'var(--glow-ai)',
     cssVar: '--line-ai',
     icon: 'Brain',
-    description: 'Build and deploy AI solutions, intelligent agents, and machine learning operations.',
+    description: 'Design, build, and deploy production AI solutions, computer vision models, natural language systems, intelligent agents, and MLOps pipelines.',
     branches: [
       { id: 'cloud-ai', name: 'Cloud AI', description: 'Cloud-based AI solutions' },
       { id: 'apps-agents', name: 'Apps & Agents', description: 'Intelligent apps and AI agents' },
@@ -300,7 +300,7 @@ export const certificationPaths = [
     glowColor: 'var(--glow-data)',
     cssVar: '--line-data',
     icon: 'Database',
-    description: 'Design and implement data solutions, analytics pipelines, and database systems.',
+    description: 'Engineer modern data pipelines, lakehouses, enterprise BI, and relational or NoSQL data stores with Microsoft Fabric, Azure Synapse, and Cosmos DB.',
     branches: [
       { id: 'engineering', name: 'Engineering', description: 'Data integration and pipelines' },
       { id: 'analytics', name: 'Analytics', description: 'Data modeling and visualization' },
@@ -443,7 +443,7 @@ export const certificationPaths = [
     glowColor: 'var(--glow-security)',
     cssVar: '--line-security',
     icon: 'Shield',
-    description: 'Secure cloud environments, manage identity, and protect AI systems.',
+    description: 'Safeguard multicloud environments, orchestrate zero-trust identity with Microsoft Entra, combat advanced threats with Defender and Sentinel, and enforce compliance.',
     branches: [
       { id: 'cloud-security', name: 'Cloud Security', description: 'Cloud infrastructure protection' },
       { id: 'operations', name: 'SecOps', description: 'Security operations and threat hunting' },
@@ -569,7 +569,7 @@ export const certificationPaths = [
     glowColor: 'var(--glow-m365)',
     cssVar: '--line-m365',
     icon: 'Monitor',
-    description: 'Administer, secure, and optimize Microsoft 365 and modern workplace solutions.',
+    description: 'Administer enterprise collaboration, secure cloud endpoints with Microsoft Intune, manage Exchange and Teams, and empower hybrid workforce productivity.',
     branches: [
       { id: 'admin', name: 'Admin', description: 'Tenant administration and services' },
       { id: 'endpoint', name: 'Endpoint', description: 'Device management and deployment' },
@@ -661,7 +661,7 @@ export const certificationPaths = [
     glowColor: 'var(--glow-power)',
     cssVar: '--line-power',
     icon: 'Zap',
-    description: 'Build low-code applications, automate workflows, and analyze data with Power Platform.',
+    description: 'Accelerate business transformation with low-code solutions, automated workflows in Power Automate, custom apps in Power Apps, and rich BI analytics.',
     branches: [
       { id: 'functional', name: 'Functional', description: 'Solution architecture and consulting' },
       { id: 'developer', name: 'Developer', description: 'Custom extensions and integrations' },
@@ -736,7 +736,7 @@ export const certificationPaths = [
     glowColor: 'var(--glow-agentic)',
     cssVar: '--line-agentic',
     icon: 'Bot',
-    description: 'Build and architect AI-powered business solutions with Copilot and autonomous agents.',
+    description: 'Architect and deploy generative AI transformations using Microsoft 365 Copilot, autonomous agent frameworks, and Copilot Studio integrations.',
     branches: [
       { id: 'admin', name: 'Admin', description: 'AI services administration' },
       { id: 'sales', name: 'Sales', description: 'AI solutions for sales processes' },
@@ -942,7 +942,7 @@ export const certificationPaths = [
     glowColor: 'var(--glow-dynamics)',
     cssVar: '--line-dynamics',
     icon: 'Briefcase',
-    description: 'Implement, customize, and maintain Dynamics 365 business applications.',
+    description: 'Implement, configure, and maintain intelligent enterprise ERP and CRM solutions across Customer Service, Sales, Supply Chain, Finance, and Business Central.',
     branches: [
       { id: 'sales-service', name: 'Sales & Service' },
       { id: 'finance-ops', name: 'Finance & Operations' },
@@ -1069,7 +1069,7 @@ export const certificationPaths = [
     glowColor: 'var(--glow-devops)',
     cssVar: '--line-devops',
     icon: 'AzureDevOps',
-    description: 'Design and implement DevOps practices for version control, compliance, CI/CD, and monitoring.',
+    description: 'Modernize software delivery with automated CI/CD pipelines, container orchestration, git version control, security compliance, and continuous monitoring.',
     branches: [],
     certifications: [
       {
@@ -1138,7 +1138,7 @@ export const certificationPaths = [
     glowColor: 'var(--glow-github)',
     cssVar: '--line-github',
     icon: 'GitHub',
-    description: 'Automate software development workflows, pipeline optimization, and AI integrations with GitHub.',
+    description: 'Master developer workflows, automated CI/CD with GitHub Actions, code security with Advanced Security, and AI-assisted development with GitHub Copilot.',
     branches: [
       { id: 'devops', name: 'DevOps', description: 'Automate software development workflows and pipeline optimization' },
       { id: 'security', name: 'Security', description: 'Secure code, identify vulnerabilities, and manage security' },
@@ -1269,7 +1269,7 @@ export const certificationPaths = [
     glowColor: 'var(--glow-retired)',
     cssVar: '--line-retired',
     icon: 'Archive',
-    description: 'A collection of historically retired or soon-to-be retired certifications.',
+    description: 'Review archived credentials, verify grandfathered certification history, and monitor announced sunset dates for legacy Microsoft exams.',
     branches: [
       { id: 'retiring', name: 'Retiring Soon', isIndependent: true },
       { id: 'retired', name: 'Already Retired', isIndependent: true },
