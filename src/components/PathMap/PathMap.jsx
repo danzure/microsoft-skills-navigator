@@ -10,6 +10,7 @@ import ProgressRing from '../common/ProgressRing';
 import SEO from '../common/SEO';
 import { IconMap as Icons } from '../common/IconMap';
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { Target16Regular } from '@fluentui/react-icons';
 import { ReactFlow, ReactFlowProvider, useNodesState, useEdgesState, Background, Panel, useReactFlow } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import dagre from 'dagre';
@@ -840,7 +841,7 @@ const MapNavigationControls = () => {
           aria-label="Fit View / Re-center Map"
           style={{ gridColumn: '2', gridRow: '2' }}
         >
-          <Icons.Compass size={15} />
+          <Target16Regular />
         </button>
 
         <button
