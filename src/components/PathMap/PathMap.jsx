@@ -665,9 +665,13 @@ const CustomControls = () => {
   );
 };
 
-let lastFittedPath = null;
-
-const PathMapFlow = ({ path, setSelectedCert, selectedBranch = 'all', statusFilter = 'all' }) => {
+const PathMapFlow = ({
+  path,
+  setSelectedCert,
+  selectedBranch = 'all',
+  statusFilter = 'all',
+  fitViewTrigger = 0,
+}) => {
   const c = useClasses();
   const { getStatus, isPathIgnored } = useProgressContext();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -800,19 +804,23 @@ const PathMapFlow = ({ path, setSelectedCert, selectedBranch = 'all', statusFilt
 
     setNodes(layoutedNodes);
     setEdges(layoutedEdges);
+  }, [path, hasBranches, trunkFundamentals, trunkBottom, branchColumns, linearGroups, getStatus, isPathIgnored, path?.color, setSelectedCert, setNodes, setEdges, selectedBranch, statusFilter]);
 
-    if (lastFittedPath !== path.id) {
-      lastFittedPath = path.id;
-      setTimeout(() => {
-        const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
-        if (isMobile) {
-          fitView({ duration: 600, padding: 0.15, minZoom: 0.45, maxZoom: 0.85 });
-        } else {
-          fitView({ duration: 600, padding: 0.1 });
-        }
-      }, 50);
+  const performFitView = useCallback((duration = 500) => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    if (isMobile) {
+      fitView({ duration, padding: 0.15, minZoom: 0.45, maxZoom: 0.85 });
+    } else {
+      fitView({ duration, padding: 0.1 });
     }
-  }, [path, hasBranches, trunkFundamentals, trunkBottom, branchColumns, linearGroups, getStatus, isPathIgnored, path?.color, setSelectedCert, setNodes, setEdges, fitView, selectedBranch, statusFilter]);
+  }, [fitView]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      performFitView(500);
+    }, 80);
+    return () => clearTimeout(timer);
+  }, [fitViewTrigger, path?.id, performFitView]);
 
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -859,6 +867,7 @@ const PathMap = () => {
   const [viewMode, setViewMode] = useState(() => {
     return (typeof window !== 'undefined' && window.innerWidth <= 768) ? 'list' : 'map';
   });
+  const [fitViewTrigger, setFitViewTrigger] = useState(0);
   const [prevPathId, setPrevPathId] = useState(pathId);
   const [selectedBranch, setSelectedBranch] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -868,6 +877,11 @@ const PathMap = () => {
     setSelectedBranch('all');
     setStatusFilter('all');
   }
+
+  const handleSelectMapView = useCallback(() => {
+    setViewMode('map');
+    setFitViewTrigger((prev) => prev + 1);
+  }, []);
 
   const handleClearFilters = useCallback(() => {
     setSelectedBranch('all');
@@ -991,7 +1005,7 @@ const PathMap = () => {
               <button
                 type="button"
                 className={mergeClasses(c.viewBtn, viewMode === 'map' && c.viewBtnActive)}
-                onClick={() => setViewMode('map')}
+                onClick={handleSelectMapView}
                 role="tab"
                 aria-selected={viewMode === 'map'}
                 title="Interactive Map View"
@@ -1131,6 +1145,7 @@ const PathMap = () => {
               setSelectedCert={handleSelectCert}
               selectedBranch={selectedBranch}
               statusFilter={statusFilter}
+              fitViewTrigger={fitViewTrigger}
             />
           </ReactFlowProvider>
         </div>
