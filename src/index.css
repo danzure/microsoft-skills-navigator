@@ -707,37 +707,46 @@ input, textarea, select {
 
 /* ─── React Flow Canvas Overrides ─────────────────────────────────────── */
 .react-flow__controls {
-  background: var(--colorNeutralBackground1);
-  border: 1px solid var(--colorNeutralStroke1);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-8);
-  overflow: hidden;
+  background: var(--colorNeutralBackground1) !important;
+  border: 1px solid var(--colorNeutralStroke1) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-8) !important;
+  overflow: hidden !important;
+  padding: 0 !important;
 }
 
 [data-theme="dark"] .react-flow__controls {
-  background: var(--colorNeutralBackground2);
-  border-color: var(--colorNeutralStroke2);
+  background: var(--colorNeutralBackground2) !important;
+  border-color: var(--colorNeutralStroke2) !important;
 }
 
 .react-flow__controls-button {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border-bottom: 1px solid var(--colorNeutralStroke2);
-  color: var(--text-secondary);
-  cursor: pointer;
+  width: 36px !important;
+  height: 36px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: var(--colorNeutralBackground1) !important;
+  border: none !important;
+  border-bottom: 1px solid var(--colorNeutralStroke2) !important;
+  color: var(--colorNeutralForeground2) !important;
+  cursor: pointer !important;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  transition: background var(--duration-fast) var(--curve-easy-ease), color var(--duration-fast) var(--curve-easy-ease);
+  transition: background var(--duration-fast) var(--curve-easy-ease), color var(--duration-fast) var(--curve-easy-ease) !important;
+}
+
+[data-theme="dark"] .react-flow__controls-button {
+  background-color: var(--colorNeutralBackground2) !important;
+  color: var(--colorNeutralForeground2) !important;
+  border-bottom: 1px solid var(--colorNeutralStroke2) !important;
 }
 
 @media (pointer: coarse) {
   .react-flow__controls-button {
-    width: 42px;
-    height: 42px;
+    width: 42px !important;
+    height: 42px !important;
   }
 }
 
@@ -749,14 +758,25 @@ input, textarea, select {
 }
 
 .react-flow__controls-button:last-child {
-  border-bottom: none;
+  border-bottom: none !important;
 }
 
 .react-flow__controls-button:hover {
-  background: var(--colorSubtleBackgroundHover);
-  color: var(--text-primary);
+  background-color: var(--colorSubtleBackgroundHover) !important;
+  color: var(--colorNeutralForeground1) !important;
+}
+
+[data-theme="dark"] .react-flow__controls-button:hover {
+  background-color: var(--colorNeutralBackground2Hover) !important;
+  color: var(--colorNeutralForeground1) !important;
 }
 
 .react-flow__controls-button svg {
-  fill: currentColor;
+  fill: currentColor !important;
+  color: inherit !important;
+  width: 16px !important;
+  height: 16px !important;
+  max-width: 16px !important;
+  max-height: 16px !important;
+  display: block !important;
 }
