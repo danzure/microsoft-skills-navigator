@@ -10,7 +10,7 @@ import ProgressRing from '../common/ProgressRing';
 import SEO from '../common/SEO';
 import { IconMap as Icons } from '../common/IconMap';
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { ReactFlow, ReactFlowProvider, useNodesState, useEdgesState, Background, Controls, ControlButton, useReactFlow } from '@xyflow/react';
+import { ReactFlow, ReactFlowProvider, useNodesState, useEdgesState, Background, Panel, useReactFlow } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import dagre from 'dagre';
 
@@ -501,6 +501,138 @@ const useClasses = makeStyles({
       display: 'none',
     },
   },
+  navControlsPanel: {
+    margin: '0 0 16px 16px !important',
+    backgroundColor: tokens.colorNeutralBackground1,
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+    borderRadius: tokens.borderRadiusLarge,
+    boxShadow: tokens.shadow8,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '3px',
+    padding: '4px',
+    userSelect: 'none',
+    zIndex: 10,
+    '@media (max-width: 768px)': {
+      margin: '0 0 12px 12px !important',
+      transform: 'scale(0.92)',
+      transformOrigin: 'bottom left',
+    },
+  },
+  navControlsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 28px)',
+    gridTemplateRows: 'repeat(3, 28px)',
+    gap: '2px',
+    alignItems: 'center',
+    justifyItems: 'center',
+  },
+  navControlsBtn: {
+    width: '28px',
+    height: '28px',
+    boxSizing: 'border-box',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    border: '1px solid transparent',
+    borderRadius: tokens.borderRadiusMedium,
+    color: tokens.colorNeutralForeground2,
+    cursor: 'pointer',
+    padding: 0,
+    touchAction: 'manipulation',
+    transitionProperty: 'all',
+    transitionDuration: tokens.durationFast,
+    transitionTimingFunction: tokens.curveEasyEase,
+    ':hover': {
+      backgroundColor: tokens.colorSubtleBackgroundHover,
+      color: tokens.colorNeutralForeground1,
+      borderColor: tokens.colorNeutralStroke2,
+    },
+    ':active': {
+      backgroundColor: tokens.colorSubtleBackgroundPressed,
+      transform: 'scale(0.92)',
+    },
+    ':focus-visible': {
+      outline: '2px solid var(--border-focus)',
+      outlineOffset: '1px',
+    },
+  },
+  navControlsFitBtn: {
+    width: '28px',
+    height: '28px',
+    boxSizing: 'border-box',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: tokens.colorNeutralBackground2,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderRadius: tokens.borderRadiusMedium,
+    color: tokens.colorNeutralForeground1,
+    cursor: 'pointer',
+    padding: 0,
+    touchAction: 'manipulation',
+    transitionProperty: 'all',
+    transitionDuration: tokens.durationFast,
+    transitionTimingFunction: tokens.curveEasyEase,
+    ':hover': {
+      backgroundColor: tokens.colorBrandBackground2,
+      borderColor: tokens.colorBrandStroke1,
+      color: tokens.colorBrandForeground1,
+    },
+    ':active': {
+      transform: 'scale(0.92)',
+    },
+    ':focus-visible': {
+      outline: '2px solid var(--border-focus)',
+      outlineOffset: '1px',
+    },
+  },
+  navControlsDivider: {
+    width: '100%',
+    height: '1px',
+    backgroundColor: tokens.colorNeutralStroke2,
+    margin: '1px 0',
+  },
+  navControlsZoomRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: '2px',
+  },
+  navControlsZoomBtn: {
+    flex: 1,
+    height: '26px',
+    boxSizing: 'border-box',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    border: '1px solid transparent',
+    borderRadius: tokens.borderRadiusMedium,
+    color: tokens.colorNeutralForeground2,
+    cursor: 'pointer',
+    padding: 0,
+    touchAction: 'manipulation',
+    transitionProperty: 'all',
+    transitionDuration: tokens.durationFast,
+    transitionTimingFunction: tokens.curveEasyEase,
+    ':hover': {
+      backgroundColor: tokens.colorSubtleBackgroundHover,
+      color: tokens.colorNeutralForeground1,
+      borderColor: tokens.colorNeutralStroke2,
+    },
+    ':active': {
+      backgroundColor: tokens.colorSubtleBackgroundPressed,
+      transform: 'scale(0.92)',
+    },
+    ':focus-visible': {
+      outline: '2px solid var(--border-focus)',
+      outlineOffset: '1px',
+    },
+  },
 });
 
 const LEVELS = [CERT_LEVELS.FUNDAMENTALS, CERT_LEVELS.ASSOCIATE, CERT_LEVELS.EXPERT, CERT_LEVELS.SPECIALTY];
@@ -647,21 +779,116 @@ const computePathLayout = (path, branchColumns, trunkFundamentals, trunkBottom, 
   return result;
 };
 
-const CustomControls = () => {
-  const { zoomIn, zoomOut, fitView } = useReactFlow();
+const PAN_STEP = 160;
+
+const MapNavigationControls = () => {
+  const c = useClasses();
+  const { getViewport, setViewport, zoomIn, zoomOut, fitView } = useReactFlow();
+
+  const handlePan = useCallback((dx, dy) => {
+    const { x, y, zoom } = getViewport();
+    setViewport({ x: x + dx, y: y + dy, zoom }, { duration: 250 });
+  }, [getViewport, setViewport]);
+
+  const handleZoomIn = useCallback(() => {
+    zoomIn({ duration: 250 });
+  }, [zoomIn]);
+
+  const handleZoomOut = useCallback(() => {
+    zoomOut({ duration: 250 });
+  }, [zoomOut]);
+
+  const handleFitView = useCallback(() => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    if (isMobile) {
+      fitView({ duration: 500, padding: 0.15, minZoom: 0.45, maxZoom: 0.85 });
+    } else {
+      fitView({ duration: 500, padding: 0.1 });
+    }
+  }, [fitView]);
 
   return (
-    <Controls showZoom={false} showFitView={false} showInteractive={false}>
-      <ControlButton onClick={() => zoomIn({ duration: 300 })} title="Zoom In" aria-label="Zoom In">
-        <Icons.Plus size={16} />
-      </ControlButton>
-      <ControlButton onClick={() => zoomOut({ duration: 300 })} title="Zoom Out" aria-label="Zoom Out">
-        <Icons.Minus size={16} />
-      </ControlButton>
-      <ControlButton onClick={() => fitView({ duration: 500, padding: 0.15 })} title="Fit View" aria-label="Fit View">
-        <Icons.Compass size={16} />
-      </ControlButton>
-    </Controls>
+    <Panel position="bottom-left" className={c.navControlsPanel}>
+      <div className={c.navControlsGrid} role="group" aria-label="Map navigation directional pad">
+        <button
+          type="button"
+          className={c.navControlsBtn}
+          onClick={() => handlePan(0, PAN_STEP)}
+          title="Pan Up"
+          aria-label="Pan Up"
+          style={{ gridColumn: '2', gridRow: '1' }}
+        >
+          <Icons.ArrowUp size={16} />
+        </button>
+
+        <button
+          type="button"
+          className={c.navControlsBtn}
+          onClick={() => handlePan(PAN_STEP, 0)}
+          title="Pan Left"
+          aria-label="Pan Left"
+          style={{ gridColumn: '1', gridRow: '2' }}
+        >
+          <Icons.ArrowLeft size={16} />
+        </button>
+
+        <button
+          type="button"
+          className={c.navControlsFitBtn}
+          onClick={handleFitView}
+          title="Fit View / Re-center Map"
+          aria-label="Fit View / Re-center Map"
+          style={{ gridColumn: '2', gridRow: '2' }}
+        >
+          <Icons.Compass size={15} />
+        </button>
+
+        <button
+          type="button"
+          className={c.navControlsBtn}
+          onClick={() => handlePan(-PAN_STEP, 0)}
+          title="Pan Right"
+          aria-label="Pan Right"
+          style={{ gridColumn: '3', gridRow: '2' }}
+        >
+          <Icons.ArrowRight size={16} />
+        </button>
+
+        <button
+          type="button"
+          className={c.navControlsBtn}
+          onClick={() => handlePan(0, -PAN_STEP)}
+          title="Pan Down"
+          aria-label="Pan Down"
+          style={{ gridColumn: '2', gridRow: '3' }}
+        >
+          <Icons.ArrowDown size={16} />
+        </button>
+      </div>
+
+      <div className={c.navControlsDivider} role="separator" />
+
+      <div className={c.navControlsZoomRow} role="group" aria-label="Zoom controls">
+        <button
+          type="button"
+          className={c.navControlsZoomBtn}
+          onClick={handleZoomIn}
+          title="Zoom In"
+          aria-label="Zoom In"
+        >
+          <Icons.Plus size={15} />
+        </button>
+        <button
+          type="button"
+          className={c.navControlsZoomBtn}
+          onClick={handleZoomOut}
+          title="Zoom Out"
+          aria-label="Zoom Out"
+        >
+          <Icons.Minus size={15} />
+        </button>
+      </div>
+    </Panel>
   );
 };
 
@@ -847,7 +1074,7 @@ const PathMapFlow = ({
           zoomOnPinch={true}
         >
           <Background color="var(--border-subtle)" gap={16} />
-          <CustomControls />
+          <MapNavigationControls />
         </ReactFlow>
       </div>
     </div>
