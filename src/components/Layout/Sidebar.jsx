@@ -142,7 +142,6 @@ const useStyles = makeStyles({
     display: 'flex',
     alignItems: 'center',
     height: '40px',
-    ...shorthands.padding(0, tokens.spacingHorizontalM),
     textDecorationLine: 'none',
     color: tokens.colorNeutralForeground2,
     transitionProperty: 'background-color, color',
@@ -153,6 +152,13 @@ const useStyles = makeStyles({
       backgroundColor: tokens.colorSubtleBackgroundHover,
       color: tokens.colorNeutralForeground1,
     },
+  },
+  linkOpen: {
+    ...shorthands.padding(0, tokens.spacingHorizontalM),
+  },
+  linkCollapsed: {
+    justifyContent: 'center',
+    ...shorthands.padding(0),
   },
   linkActive: {
     backgroundColor: tokens.colorNeutralBackground1Hover,
@@ -256,7 +262,11 @@ export default function Sidebar({ isOpen, onClose, onToggle }) {
         key={path.id}
         to={`/path/${path.id}`}
         className={({ isActive }) =>
-          mergeClasses(styles.link, isActive && styles.linkActive)
+          mergeClasses(
+            styles.link,
+            isOpen ? styles.linkOpen : styles.linkCollapsed,
+            isActive && styles.linkActive
+          )
         }
         onClick={() => {
           if (typeof window !== 'undefined' && window.innerWidth <= 1024) {
@@ -347,7 +357,11 @@ export default function Sidebar({ isOpen, onClose, onToggle }) {
               to="/"
               end
               className={({ isActive }) =>
-                mergeClasses(styles.link, isActive && styles.linkActive)
+                mergeClasses(
+                  styles.link,
+                  isOpen ? styles.linkOpen : styles.linkCollapsed,
+                  isActive && styles.linkActive
+                )
               }
               onClick={() => {
                 if (typeof window !== 'undefined' && window.innerWidth <= 1024) {
@@ -379,7 +393,11 @@ export default function Sidebar({ isOpen, onClose, onToggle }) {
             <NavLink
               to="/career-paths"
               className={({ isActive }) =>
-                mergeClasses(styles.link, isActive && styles.linkActive)
+                mergeClasses(
+                  styles.link,
+                  isOpen ? styles.linkOpen : styles.linkCollapsed,
+                  isActive && styles.linkActive
+                )
               }
               onClick={() => {
                 if (typeof window !== 'undefined' && window.innerWidth <= 1024) {
@@ -411,7 +429,11 @@ export default function Sidebar({ isOpen, onClose, onToggle }) {
             <NavLink
               to="/applied-skills"
               className={({ isActive }) =>
-                mergeClasses(styles.link, isActive && styles.linkActive)
+                mergeClasses(
+                  styles.link,
+                  isOpen ? styles.linkOpen : styles.linkCollapsed,
+                  isActive && styles.linkActive
+                )
               }
               onClick={() => {
                 if (typeof window !== 'undefined' && window.innerWidth <= 1024) {
