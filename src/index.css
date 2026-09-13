@@ -704,3 +704,59 @@ input, textarea, select {
 .dashboard__hero-line {
   transition-property: none;
 }
+
+/* ─── React Flow Canvas Overrides ─────────────────────────────────────── */
+.react-flow__controls {
+  background: var(--colorNeutralBackground1);
+  border: 1px solid var(--colorNeutralStroke1);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-8);
+  overflow: hidden;
+}
+
+[data-theme="dark"] .react-flow__controls {
+  background: var(--colorNeutralBackground2);
+  border-color: var(--colorNeutralStroke2);
+}
+
+.react-flow__controls-button {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border-bottom: 1px solid var(--colorNeutralStroke2);
+  color: var(--text-secondary);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--duration-fast) var(--curve-easy-ease), color var(--duration-fast) var(--curve-easy-ease);
+}
+
+@media (pointer: coarse) {
+  .react-flow__controls-button {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+@media (max-width: 768px) {
+  .react-flow__controls {
+    bottom: max(var(--space-6), calc(var(--space-4) + var(--safe-area-bottom))) !important;
+    left: var(--space-4) !important;
+  }
+}
+
+.react-flow__controls-button:last-child {
+  border-bottom: none;
+}
+
+.react-flow__controls-button:hover {
+  background: var(--colorSubtleBackgroundHover);
+  color: var(--text-primary);
+}
+
+.react-flow__controls-button svg {
+  fill: currentColor;
+}

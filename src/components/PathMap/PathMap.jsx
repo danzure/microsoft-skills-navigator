@@ -1,4 +1,5 @@
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { makeStyles, mergeClasses, tokens } from '@fluentui/react-components';
 import { getPathById, CERT_LEVELS, CERT_STATUS } from '../../data/certificationPaths';
 import { useProgressContext } from '../../context/ProgressContext';
 import { useToast } from '../../context/ToastContext';
@@ -12,7 +13,495 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import { ReactFlow, ReactFlowProvider, useNodesState, useEdgesState, Background, Controls, ControlButton, useReactFlow } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import dagre from 'dagre';
-import './PathMap.css';
+
+const useClasses = makeStyles({
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalXXL,
+    paddingBottom: tokens.spacingVerticalXXXL,
+    height: '100%',
+  },
+  notFound: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: tokens.spacingVerticalL,
+    padding: '64px',
+    color: tokens.colorNeutralForeground3,
+    textAlign: 'center',
+    '& h2': {
+      fontSize: tokens.fontSizeBase600,
+      fontWeight: tokens.fontWeightSemibold,
+      color: tokens.colorNeutralForeground1,
+      margin: 0,
+    },
+    '& p': {
+      fontSize: tokens.fontSizeBase300,
+      color: tokens.colorNeutralForeground2,
+      margin: 0,
+    },
+  },
+  header: {
+    position: 'relative',
+    overflow: 'visible',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalL,
+    padding: `${tokens.spacingVerticalXL} ${tokens.spacingHorizontalXXL}`,
+    backgroundColor: tokens.colorNeutralBackground1,
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+    borderRadius: tokens.borderRadiusLarge,
+    boxShadow: tokens.shadow4,
+    margin: `${tokens.spacingVerticalL} ${tokens.spacingHorizontalL} 0`,
+    '@media (max-width: 768px)': {
+      margin: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalS} 0`,
+      padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalL}`,
+      gap: tokens.spacingVerticalM,
+    },
+    '@media (min-width: 769px) and (max-width: 960px)': {
+      gap: tokens.spacingVerticalM,
+      padding: tokens.spacingVerticalL,
+    },
+  },
+  headerGlow: {
+    position: 'absolute',
+    top: '-30px',
+    left: '-30px',
+    width: '260px',
+    height: '180px',
+    background: 'radial-gradient(circle, color-mix(in srgb, var(--path-color) 22%, transparent) 0%, transparent 70%)',
+    pointerEvents: 'none',
+    borderRadius: '50%',
+    filter: 'blur(28px)',
+    zIndex: 0,
+    opacity: 0.75,
+  },
+  headerTop: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: tokens.spacingHorizontalXL,
+    width: '100%',
+    position: 'relative',
+    zIndex: 2,
+    '@media (max-width: 768px)': {
+      flexDirection: 'column',
+      alignItems: 'stretch',
+      gap: tokens.spacingVerticalM,
+    },
+    '@media (min-width: 769px) and (max-width: 960px)': {
+      flexDirection: 'column',
+      alignItems: 'stretch',
+      gap: tokens.spacingVerticalM,
+    },
+  },
+  headerBrand: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalL,
+    flex: 1,
+    minWidth: 0,
+    '@media (max-width: 768px)': {
+      width: '100%',
+      minWidth: 0,
+      gap: tokens.spacingHorizontalM,
+    },
+  },
+  headerIcon: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    border: 'none',
+    boxShadow: 'none',
+    color: 'var(--path-color)',
+    filter: 'drop-shadow(0 3px 12px color-mix(in srgb, var(--path-color) 35%, transparent))',
+    flexShrink: 0,
+    '@media (max-width: 768px)': {
+      width: '42px',
+      height: '42px',
+      '& svg': {
+        width: '22px',
+        height: '22px',
+      },
+    },
+  },
+  headerInfo: {
+    flex: 1,
+    minWidth: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
+  },
+  headerMetaRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    flexWrap: 'wrap',
+  },
+  headerPillarChip: {
+    fontSize: '11px',
+    fontWeight: tokens.fontWeightSemibold,
+    color: tokens.colorNeutralForeground3,
+    backgroundColor: tokens.colorNeutralBackground2,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    padding: '1px 7px',
+    borderRadius: tokens.borderRadiusSmall,
+    letterSpacing: '0.3px',
+    textTransform: 'uppercase',
+  },
+  headerCertCount: {
+    fontSize: '12px',
+    color: tokens.colorNeutralForeground3,
+  },
+  headerTitle: {
+    fontSize: 'var(--fs-title2)',
+    fontWeight: tokens.fontWeightBold,
+    color: tokens.colorNeutralForeground1,
+    margin: 0,
+    lineHeight: 'var(--lh-tight)',
+    overflowWrap: 'break-word',
+    '@media (max-width: 768px)': {
+      fontSize: 'var(--fs-subtitle1)',
+    },
+  },
+  headerDesc: {
+    fontSize: tokens.fontSizeBase300,
+    color: tokens.colorNeutralForeground2,
+    lineHeight: 'var(--lh-normal)',
+    margin: `${tokens.spacingVerticalXS} 0 0`,
+    maxWidth: '800px',
+    '@media (max-width: 768px)': {
+      display: 'none',
+    },
+  },
+  headerActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    flexShrink: 0,
+    '@media (max-width: 768px)': {
+      width: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: tokens.spacingHorizontalS,
+      flexWrap: 'wrap',
+    },
+    '@media (min-width: 769px) and (max-width: 960px)': {
+      width: '100%',
+      justifyContent: 'space-between',
+    },
+  },
+  viewToggle: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    backgroundColor: tokens.colorNeutralBackground2,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderRadius: tokens.borderRadiusMedium,
+    padding: '2px',
+    gap: '2px',
+  },
+  viewBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalXS,
+    height: '28px',
+    padding: `0 ${tokens.spacingHorizontalM}`,
+    borderRadius: tokens.borderRadiusSmall,
+    border: '1px solid transparent',
+    backgroundColor: 'transparent',
+    color: tokens.colorNeutralForeground2,
+    fontSize: 'var(--fs-caption1)',
+    fontWeight: tokens.fontWeightSemibold,
+    cursor: 'pointer',
+    touchAction: 'manipulation',
+    transitionProperty: 'all',
+    transitionDuration: 'var(--duration-fast)',
+    transitionTimingFunction: 'var(--curve-easy-ease)',
+    ':hover': {
+      backgroundColor: tokens.colorSubtleBackgroundHover,
+      color: tokens.colorNeutralForeground1,
+    },
+  },
+  viewBtnActive: {
+    backgroundColor: tokens.colorNeutralBackground1,
+    color: tokens.colorNeutralForeground1,
+    boxShadow: tokens.shadow2,
+    borderColor: tokens.colorNeutralStroke2,
+  },
+  trackBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    height: '32px',
+    padding: `0 ${tokens.spacingHorizontalL}`,
+    borderRadius: tokens.borderRadiusMedium,
+    fontSize: tokens.fontSizeBase300,
+    fontWeight: tokens.fontWeightSemibold,
+    fontFamily: 'inherit',
+    cursor: 'pointer',
+    transitionProperty: 'all',
+    transitionDuration: 'var(--duration-fast)',
+    transitionTimingFunction: 'var(--curve-easy-ease)',
+    border: '1px solid transparent',
+    ':active': {
+      transform: 'scale(0.96)',
+    },
+  },
+  trackBtnUntracked: {
+    backgroundColor: 'color-mix(in srgb, var(--path-color) 12%, transparent)',
+    borderColor: 'color-mix(in srgb, var(--path-color) 30%, transparent)',
+    color: 'var(--path-color)',
+    ':hover': {
+      backgroundColor: 'color-mix(in srgb, var(--path-color) 20%, transparent)',
+      borderColor: 'var(--path-color)',
+      transform: 'translateY(-1px)',
+    },
+  },
+  trackBtnTracked: {
+    backgroundColor: 'var(--path-color)',
+    borderColor: 'var(--path-color)',
+    color: tokens.colorNeutralBackground1,
+    ':hover': {
+      filter: 'brightness(1.1)',
+      transform: 'translateY(-1px)',
+    },
+  },
+  headerBottom: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: tokens.spacingHorizontalL,
+    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+    paddingTop: tokens.spacingVerticalM,
+    position: 'relative',
+    zIndex: 1,
+    width: '100%',
+    flexWrap: 'wrap',
+    '@media (max-width: 768px)': {
+      flexDirection: 'column',
+      alignItems: 'stretch',
+      gap: tokens.spacingVerticalM,
+      paddingTop: tokens.spacingVerticalS,
+    },
+    '@media (min-width: 769px) and (max-width: 960px)': {
+      flexDirection: 'column',
+      alignItems: 'stretch',
+      gap: tokens.spacingVerticalM,
+    },
+  },
+  branchesBar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    flex: 1,
+    minWidth: 0,
+    overflowX: 'auto',
+    WebkitOverflowScrolling: 'touch',
+    scrollbarWidth: 'none',
+    padding: '2px 0',
+    '&::-webkit-scrollbar': {
+      display: 'none',
+    },
+    '@media (max-width: 768px)': {
+      width: '100%',
+    },
+  },
+  branchesPlaceholder: {
+    flex: 1,
+  },
+  branchesLabel: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    fontSize: '11px',
+    fontWeight: tokens.fontWeightBold,
+    color: tokens.colorNeutralForeground3,
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    flexShrink: 0,
+  },
+  branchesChips: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    flexWrap: 'nowrap',
+  },
+  branchChip: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    height: '28px',
+    padding: `0 ${tokens.spacingHorizontalM}`,
+    borderRadius: tokens.borderRadiusMedium,
+    fontSize: 'var(--fs-caption1)',
+    fontWeight: tokens.fontWeightSemibold,
+    backgroundColor: tokens.colorNeutralBackground2,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    color: tokens.colorNeutralForeground2,
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+    transitionProperty: 'all',
+    transitionDuration: 'var(--duration-fast)',
+    transitionTimingFunction: 'var(--curve-easy-ease)',
+    touchAction: 'manipulation',
+    ':hover': {
+      backgroundColor: tokens.colorSubtleBackgroundHover,
+      color: tokens.colorNeutralForeground1,
+      borderColor: tokens.colorNeutralStroke1,
+    },
+    ':active': {
+      transform: 'scale(0.96)',
+    },
+  },
+  branchChipActive: {
+    backgroundColor: 'color-mix(in srgb, var(--path-color) 16%, var(--colorNeutralBackground1))',
+    borderColor: 'var(--path-color)',
+    color: 'var(--path-color)',
+    boxShadow: '0 0 8px color-mix(in srgb, var(--path-color) 25%, transparent)',
+  },
+  headerStats: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalM,
+    flexShrink: 0,
+    '@media (max-width: 768px)': {
+      width: '100%',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: tokens.spacingHorizontalS,
+    },
+    '@media (min-width: 769px) and (max-width: 960px)': {
+      width: '100%',
+      justifyContent: 'space-between',
+    },
+  },
+  headerProgress: {
+    flexShrink: 0,
+    display: 'flex',
+    alignItems: 'center',
+    '@media (max-width: 768px)': {
+      transform: 'scale(0.85)',
+      transformOrigin: 'left center',
+      marginLeft: '-2px',
+    },
+  },
+  headerCounts: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    '@media (max-width: 768px)': {
+      display: 'flex',
+      alignItems: 'center',
+      gap: tokens.spacingHorizontalS,
+      flex: 1,
+      justifyContent: 'flex-end',
+    },
+  },
+  statPill: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    height: '32px',
+    padding: `0 ${tokens.spacingHorizontalM}`,
+    borderRadius: tokens.borderRadiusMedium,
+    fontSize: 'var(--fs-caption1)',
+    fontWeight: tokens.fontWeightMedium,
+    backgroundColor: tokens.colorNeutralBackground2,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    color: tokens.colorNeutralForeground2,
+    cursor: 'pointer',
+    transitionProperty: 'all',
+    transitionDuration: 'var(--duration-fast)',
+    transitionTimingFunction: 'var(--curve-easy-ease)',
+    touchAction: 'manipulation',
+    ':hover': {
+      backgroundColor: tokens.colorSubtleBackgroundHover,
+      color: tokens.colorNeutralForeground1,
+      transform: 'translateY(-1px)',
+    },
+    ':active': {
+      transform: 'scale(0.96)',
+    },
+    '@media (max-width: 768px)': {
+      padding: '0 8px',
+      fontSize: 'var(--fs-caption2)',
+      height: '30px',
+      gap: '4px',
+    },
+  },
+  statPillCompleted: {
+    ':hover': {
+      borderColor: 'var(--badge-completed-border)',
+      color: 'var(--badge-completed-text)',
+    },
+  },
+  statPillCompletedActive: {
+    backgroundColor: 'color-mix(in srgb, var(--badge-completed-bg) 25%, var(--colorNeutralBackground1))',
+    borderColor: 'var(--badge-completed-text)',
+    color: 'var(--badge-completed-text)',
+    fontWeight: tokens.fontWeightBold,
+    boxShadow: '0 0 10px color-mix(in srgb, var(--badge-completed-text) 20%, transparent)',
+  },
+  statPillInProgress: {
+    ':hover': {
+      borderColor: 'var(--badge-inprogress-border)',
+      color: 'var(--badge-inprogress-text)',
+    },
+  },
+  statPillInProgressActive: {
+    backgroundColor: 'color-mix(in srgb, var(--badge-inprogress-bg) 25%, var(--colorNeutralBackground1))',
+    borderColor: 'var(--badge-inprogress-text)',
+    color: 'var(--badge-inprogress-text)',
+    fontWeight: tokens.fontWeightBold,
+    boxShadow: '0 0 10px color-mix(in srgb, var(--badge-inprogress-text) 20%, transparent)',
+  },
+  statPillRemaining: {
+    ':hover': {
+      borderColor: tokens.colorNeutralStroke1,
+      color: tokens.colorNeutralForeground1,
+    },
+  },
+  statPillRemainingActive: {
+    backgroundColor: tokens.colorNeutralBackground3,
+    borderColor: tokens.colorNeutralStroke1,
+    color: tokens.colorNeutralForeground1,
+    fontWeight: tokens.fontWeightBold,
+  },
+  viewport: {
+    width: '100%',
+    height: '100%',
+    paddingBottom: tokens.spacingVerticalL,
+    flex: 1,
+    minHeight: 0,
+  },
+  touchHint: {
+    position: 'absolute',
+    top: tokens.spacingVerticalM,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    zIndex: 5,
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    padding: '6px 14px',
+    borderRadius: '9999px',
+    backgroundColor: tokens.colorNeutralBackground1,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    color: tokens.colorNeutralForeground2,
+    fontSize: 'var(--fs-caption2)',
+    fontWeight: tokens.fontWeightMedium,
+    boxShadow: tokens.shadow4,
+    pointerEvents: 'none',
+    opacity: 0.9,
+    '@media (min-width: 769px)': {
+      display: 'none',
+    },
+  },
+});
 
 const LEVELS = [CERT_LEVELS.FUNDAMENTALS, CERT_LEVELS.ASSOCIATE, CERT_LEVELS.EXPERT, CERT_LEVELS.SPECIALTY];
 const nodeTypes = { certNode: CertNode };
@@ -162,7 +651,7 @@ const CustomControls = () => {
   const { zoomIn, zoomOut, fitView } = useReactFlow();
 
   return (
-    <Controls showZoom={false} showFitView={false} showInteractive={false} className="path-map__flow-controls">
+    <Controls showZoom={false} showFitView={false} showInteractive={false}>
       <ControlButton onClick={() => zoomIn({ duration: 300 })} title="Zoom In" aria-label="Zoom In">
         <Icons.Plus size={16} />
       </ControlButton>
@@ -179,23 +668,24 @@ const CustomControls = () => {
 let lastFittedPath = null;
 
 const PathMapFlow = ({ path, setSelectedCert, selectedBranch = 'all', statusFilter = 'all' }) => {
+  const c = useClasses();
   const { getStatus, isPathIgnored } = useProgressContext();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const { fitView } = useReactFlow();
 
   const branches = useMemo(() => path?.branches || [], [path?.branches]);
-  const hasBranches = branches.length > 0 && path?.certifications.some(c => c.branch);
+  const hasBranches = branches.length > 0 && path?.certifications.some(cert => cert.branch);
 
   const { trunkFundamentals, trunkBottom, branchColumns } = useMemo(() => {
     if (!path || !hasBranches) return { trunkFundamentals: [], trunkBottom: [], branchColumns: [] };
 
-    const trunkCerts = path.certifications.filter(c => !c.branch);
-    const trunkFundamentals = trunkCerts.filter(c => c.level === CERT_LEVELS.FUNDAMENTALS);
-    const trunkBottom = trunkCerts.filter(c => c.level !== CERT_LEVELS.FUNDAMENTALS);
+    const trunkCerts = path.certifications.filter(cert => !cert.branch);
+    const trunkFundamentals = trunkCerts.filter(cert => cert.level === CERT_LEVELS.FUNDAMENTALS);
+    const trunkBottom = trunkCerts.filter(cert => cert.level !== CERT_LEVELS.FUNDAMENTALS);
 
     const branchColumns = branches.map(branchDef => {
-      const certs = path.certifications.filter(c => c.branch === branchDef.id);
+      const certs = path.certifications.filter(cert => cert.branch === branchDef.id);
       return { ...branchDef, allCerts: certs };
     }).filter(b => b.allCerts.length > 0);
 
@@ -205,7 +695,7 @@ const PathMapFlow = ({ path, setSelectedCert, selectedBranch = 'all', statusFilt
   const linearGroups = useMemo(() => {
     if (!path || hasBranches) return [];
     return LEVELS
-      .map(level => ({ level, certs: path.certifications.filter(c => c.level === level) }))
+      .map(level => ({ level, certs: path.certifications.filter(cert => cert.level === level) }))
       .filter(g => g.certs.length > 0);
   }, [path, hasBranches]);
 
@@ -327,7 +817,7 @@ const PathMapFlow = ({ path, setSelectedCert, selectedBranch = 'all', statusFilt
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ flex: 1, minHeight: '600px', width: '100%', position: 'relative' }}>
-        <div className="path-map__touch-hint">
+        <div className={c.touchHint}>
           <Icons.Info size={14} />
           <span>Pinch to zoom • Drag to explore</span>
         </div>
@@ -357,6 +847,7 @@ const PathMapFlow = ({ path, setSelectedCert, selectedBranch = 'all', statusFilt
 };
 
 const PathMap = () => {
+  const c = useClasses();
   const { pathId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -385,7 +876,7 @@ const PathMap = () => {
 
   const selectedCert = useMemo(() => {
     if (!path || !selectedCertId) return null;
-    return path.certifications.find((c) => c.id === selectedCertId) || null;
+    return path.certifications.find((item) => item.id === selectedCertId) || null;
   }, [path, selectedCertId]);
 
   const handleSelectCert = useCallback((cert) => {
@@ -399,7 +890,7 @@ const PathMap = () => {
 
   const certCodes = useMemo(() => {
     if (!path?.certifications) return '';
-    return path.certifications.map(c => c.examCode).filter(Boolean).slice(0, 10).join(', ');
+    return path.certifications.map(item => item.examCode).filter(Boolean).slice(0, 10).join(', ');
   }, [path]);
 
   const breadcrumbSchema = useMemo(() => {
@@ -444,7 +935,7 @@ const PathMap = () => {
 
   if (!path) {
     return (
-      <div className="path-map__not-found">
+      <div className={c.notFound}>
         <Icons.MapPinOff size={48} />
         <h2>Path not found</h2>
         <p>The certification path you're looking for doesn't exist.</p>
@@ -463,7 +954,7 @@ const PathMap = () => {
   const PathIcon = Icons[path.icon] || Icons.Circle;
 
   return (
-    <div className="path-map" style={{ '--path-color': path.color, '--path-glow': path.glowColor }}>
+    <div className={c.root} style={{ '--path-color': path.color, '--path-glow': path.glowColor }}>
       <SEO
         title={seoTitle}
         description={seoDesc}
@@ -473,33 +964,33 @@ const PathMap = () => {
       />
       
       {/* ─── Redesigned Header: Concept 3 Hybrid ─── */}
-      <div className="path-map__header">
-        <div className="path-map__header-glow" aria-hidden="true" />
+      <div className={c.header}>
+        <div className={c.headerGlow} aria-hidden="true" />
         
         {/* Upper Tier: Brand and Actions */}
-        <div className="path-map__header-top">
-          <div className="path-map__header-brand">
-            <div className="path-map__header-icon">
+        <div className={c.headerTop}>
+          <div className={c.headerBrand}>
+            <div className={c.headerIcon}>
               <PathIcon size={52} />
             </div>
 
-            <div className="path-map__header-info">
-              <div className="path-map__header-meta-row">
-                <span className="path-map__header-pillar-chip">{path.pillar}</span>
-                <span className="path-map__header-cert-count">{path.certifications.length} Credentials</span>
+            <div className={c.headerInfo}>
+              <div className={c.headerMetaRow}>
+                <span className={c.headerPillarChip}>{path.pillar}</span>
+                <span className={c.headerCertCount}>{path.certifications.length} Credentials</span>
               </div>
 
-              <h1 className="path-map__header-title">{path.name}</h1>
+              <h1 className={c.headerTitle}>{path.name}</h1>
 
-              <p className="path-map__header-desc">{path.description}</p>
+              <p className={c.headerDesc}>{path.description}</p>
             </div>
           </div>
 
-          <div className="path-map__header-actions">
-            <div className="path-map__view-toggle" role="tablist" aria-label="View mode">
+          <div className={c.headerActions}>
+            <div className={c.viewToggle} role="tablist" aria-label="View mode">
               <button
                 type="button"
-                className={`path-map__view-btn ${viewMode === 'map' ? 'path-map__view-btn--active' : ''}`}
+                className={mergeClasses(c.viewBtn, viewMode === 'map' && c.viewBtnActive)}
                 onClick={() => setViewMode('map')}
                 role="tab"
                 aria-selected={viewMode === 'map'}
@@ -510,7 +1001,7 @@ const PathMap = () => {
               </button>
               <button
                 type="button"
-                className={`path-map__view-btn ${viewMode === 'list' ? 'path-map__view-btn--active' : ''}`}
+                className={mergeClasses(c.viewBtn, viewMode === 'list' && c.viewBtnActive)}
                 onClick={() => setViewMode('list')}
                 role="tab"
                 aria-selected={viewMode === 'list'}
@@ -523,7 +1014,8 @@ const PathMap = () => {
 
             {path.id !== 'retired-exams' && (
               <button
-                className={`path-map__track-btn ${isPathTracked ? 'path-map__track-btn--tracked' : 'path-map__track-btn--untracked'}`}
+                type="button"
+                className={mergeClasses(c.trackBtn, isPathTracked ? c.trackBtnTracked : c.trackBtnUntracked)}
                 onClick={() => {
                   togglePathIgnored(path.id);
                   if (isPathTracked) {
@@ -542,17 +1034,17 @@ const PathMap = () => {
         </div>
 
         {/* Lower Tier: Branch Wayfinding & Interactive Mastery Metrics */}
-        <div className="path-map__header-bottom">
+        <div className={c.headerBottom}>
           {path.branches && path.branches.length > 0 ? (
-            <div className="path-map__branches-bar">
-              <span className="path-map__branches-label">
+            <div className={c.branchesBar}>
+              <span className={c.branchesLabel}>
                 <Icons.GitBranch size={13} />
                 Branches:
               </span>
-              <div className="path-map__branches-chips">
+              <div className={c.branchesChips}>
                 <button
                   type="button"
-                  className={`path-map__branch-chip ${selectedBranch === 'all' ? 'path-map__branch-chip--active' : ''}`}
+                  className={mergeClasses(c.branchChip, selectedBranch === 'all' && c.branchChipActive)}
                   onClick={() => setSelectedBranch('all')}
                 >
                   All Stations
@@ -561,7 +1053,7 @@ const PathMap = () => {
                   <button
                     key={branch.id}
                     type="button"
-                    className={`path-map__branch-chip ${selectedBranch === branch.id ? 'path-map__branch-chip--active' : ''}`}
+                    className={mergeClasses(c.branchChip, selectedBranch === branch.id && c.branchChipActive)}
                     onClick={() => setSelectedBranch(branch.id === selectedBranch ? 'all' : branch.id)}
                     title={branch.description}
                   >
@@ -571,17 +1063,21 @@ const PathMap = () => {
               </div>
             </div>
           ) : (
-            <div className="path-map__branches-placeholder" />
+            <div className={c.branchesPlaceholder} />
           )}
 
-          <div className="path-map__header-stats">
-            <div className="path-map__header-progress">
+          <div className={c.headerStats}>
+            <div className={c.headerProgress}>
               <ProgressRing percent={pathProgress.percent} size={42} strokeWidth={4} color={path.color} />
             </div>
-            <div className="path-map__header-counts">
+            <div className={c.headerCounts}>
               <button
                 type="button"
-                className={`path-map__stat-pill path-map__stat-pill--completed ${statusFilter === 'completed' ? 'path-map__stat-pill--active' : ''}`}
+                className={mergeClasses(
+                  c.statPill,
+                  c.statPillCompleted,
+                  statusFilter === 'completed' && c.statPillCompletedActive
+                )}
                 onClick={() => setStatusFilter(statusFilter === 'completed' ? 'all' : 'completed')}
                 title="Filter completed certifications"
               >
@@ -590,7 +1086,11 @@ const PathMap = () => {
               </button>
               <button
                 type="button"
-                className={`path-map__stat-pill path-map__stat-pill--in-progress ${statusFilter === 'in_progress' ? 'path-map__stat-pill--active' : ''}`}
+                className={mergeClasses(
+                  c.statPill,
+                  c.statPillInProgress,
+                  statusFilter === 'in_progress' && c.statPillInProgressActive
+                )}
                 onClick={() => setStatusFilter(statusFilter === 'in_progress' ? 'all' : 'in_progress')}
                 title="Filter active in-progress certifications"
               >
@@ -599,7 +1099,11 @@ const PathMap = () => {
               </button>
               <button
                 type="button"
-                className={`path-map__stat-pill path-map__stat-pill--remaining ${statusFilter === 'not_started' ? 'path-map__stat-pill--active' : ''}`}
+                className={mergeClasses(
+                  c.statPill,
+                  c.statPillRemaining,
+                  statusFilter === 'not_started' && c.statPillRemainingActive
+                )}
                 onClick={() => setStatusFilter(statusFilter === 'not_started' ? 'all' : 'not_started')}
                 title="Filter remaining certifications"
               >
@@ -620,7 +1124,7 @@ const PathMap = () => {
           onClearFilters={handleClearFilters}
         />
       ) : (
-        <div className="path-map__viewport" style={{ flex: 1, minHeight: 0 }}>
+        <div className={c.viewport}>
           <ReactFlowProvider>
             <PathMapFlow 
               path={path} 

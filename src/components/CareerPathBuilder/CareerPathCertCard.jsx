@@ -8,7 +8,7 @@ import { IconMap as Icons } from '../common/IconMap';
 import Badge from '../common/Badge';
 import { getBadgeUrl } from '../../utils/helpers';
 import { AlignedAppliedSkills } from './AlignedAppliedSkills';
-import '../PathMap/CertNode.css';
+import { useCertNodeStyles } from '../PathMap/useCertNodeStyles';
 
 const useClasses = makeStyles({
   /* ─── Stage Container (When Aligned Labs Exist) ───────────────────────── */
@@ -250,6 +250,7 @@ const useClasses = makeStyles({
  */
 export const CareerPathCertCard = memo(({ certInfo, customPlaylist, onAdd, onRemove, onSelectSkill }) => {
   const c = useClasses();
+  const certClasses = useCertNodeStyles();
   const navigate = useNavigate();
   const { getStatus, setStatus, getAppliedSkillStatus } = useProgressContext();
   
@@ -279,10 +280,12 @@ export const CareerPathCertCard = memo(({ certInfo, customPlaylist, onAdd, onRem
     setStatus(certInfo.id, newStatus);
   };
 
+  const badgeUrl = getBadgeUrl(certInfo.level, certInfo.id);
+
   // Exam card — reused in both simple and stage layouts
   const examCard = (
     <div 
-      className="cert-node__info"
+      className={certClasses.info}
       onClick={() => navigate(`/path/${certInfo.pathId}`)}
       style={{ 
         '--cert-node-color': certInfo.pathColor || 'var(--colorBrandForeground1)', 
@@ -294,39 +297,39 @@ export const CareerPathCertCard = memo(({ certInfo, customPlaylist, onAdd, onRem
         } : {}),
       }}
     >
-      <div className="cert-node__info-header">
-        <div className="cert-node__icon-title">
-          <div className={`cert-node__icon ${getBadgeUrl(certInfo.level, certInfo.id) ? 'cert-node__icon--image' : ''}`}>
-            {getBadgeUrl(certInfo.level, certInfo.id) ? (
+      <div className={certClasses.infoHeader}>
+        <div className={certClasses.iconTitle}>
+          <div className={mergeClasses(certClasses.icon, badgeUrl && certClasses.iconImage)}>
+            {badgeUrl ? (
               <img 
-                src={getBadgeUrl(certInfo.level, certInfo.id)} 
+                src={badgeUrl} 
                 alt={`${certInfo.level} Badge`} 
-                className="cert-node__badge-image" 
+                className={certClasses.badgeImage} 
                 loading="lazy"
               />
             ) : (
               <Icons.Award size={20} />
             )}
           </div>
-          <div className="cert-node__title-group">
-            <h3 className="cert-node__name">
+          <div className={certClasses.titleGroup}>
+            <h3 className={certClasses.name}>
               {certInfo.name.startsWith('Microsoft') ? certInfo.name : `Microsoft Certified: ${certInfo.name}`}
             </h3>
-            <div className="cert-node__badge-stats">
-              <span className="cert-node__exam-code">{certInfo.examCode}</span>
+            <div className={certClasses.badgeStats}>
+              <span className={certClasses.examCode}>{certInfo.examCode}</span>
             </div>
           </div>
         </div>
       </div>
       
-      <div className="cert-node__info-body">
-        <p className="cert-node__description">
+      <div className={certClasses.infoBody}>
+        <p className={certClasses.description}>
           {certInfo.description}
         </p>
       </div>
 
       <div 
-        className="cert-node__info-footer" 
+        className={certClasses.infoFooter} 
         style={{ 
           marginTop: 'auto', 
           display: 'flex', 
@@ -357,14 +360,14 @@ export const CareerPathCertCard = memo(({ certInfo, customPlaylist, onAdd, onRem
             href={certInfo.learnUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="cert-node__learn-link"
+            className={certClasses.learnLink}
             onClick={(e) => e.stopPropagation()}
           >
             <Icons.Microsoft size={12} />
             Microsoft Learn
           </a>
           <button
-            className={`cert-node__learn-link ${isAdded ? 'cert-node__learn-link--added' : ''}`}
+            className={certClasses.learnLink}
             style={{ 
               border: '1px solid',
               borderColor: isAdded ? 'var(--status-completed)' : 'var(--border-subtle)', 
@@ -383,9 +386,9 @@ export const CareerPathCertCard = memo(({ certInfo, customPlaylist, onAdd, onRem
           </button>
         </div>
         
-        <div className="cert-node__status-toggle" style={{ flexShrink: 0 }} onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}>
+        <div className={certClasses.statusToggle} style={{ flexShrink: 0 }} onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}>
           <button
-            className={`cert-node__toggle-btn ${status === CERT_STATUS.NOT_STARTED ? 'cert-node__toggle-btn--active' : ''}`}
+            className={mergeClasses(certClasses.toggleBtn, status === CERT_STATUS.NOT_STARTED && certClasses.toggleBtnActiveNotStarted)}
             onClick={(e) => handleSetStatus(CERT_STATUS.NOT_STARTED, e)}
             title="Not Started"
             aria-label="Mark as Not Started"
@@ -393,7 +396,7 @@ export const CareerPathCertCard = memo(({ certInfo, customPlaylist, onAdd, onRem
             <Icons.Circle size={14} />
           </button>
           <button
-            className={`cert-node__toggle-btn ${status === CERT_STATUS.IN_PROGRESS ? 'cert-node__toggle-btn--active' : ''}`}
+            className={mergeClasses(certClasses.toggleBtn, status === CERT_STATUS.IN_PROGRESS && certClasses.toggleBtnActiveInProgress)}
             onClick={(e) => handleSetStatus(CERT_STATUS.IN_PROGRESS, e)}
             title="In Progress"
             aria-label="Mark as In Progress"
@@ -401,7 +404,7 @@ export const CareerPathCertCard = memo(({ certInfo, customPlaylist, onAdd, onRem
             <Icons.Clock size={14} />
           </button>
           <button
-            className={`cert-node__toggle-btn ${(status === CERT_STATUS.COMPLETED || status === CERT_STATUS.NEEDS_RENEWAL) ? 'cert-node__toggle-btn--active' : ''}`}
+            className={mergeClasses(certClasses.toggleBtn, (status === CERT_STATUS.COMPLETED || status === CERT_STATUS.NEEDS_RENEWAL) && certClasses.toggleBtnActivePassed)}
             onClick={(e) => handleSetStatus(CERT_STATUS.COMPLETED, e)}
             title="Passed"
             aria-label="Mark as Passed"

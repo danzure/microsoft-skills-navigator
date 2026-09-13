@@ -1,13 +1,15 @@
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
+import { mergeClasses } from '@fluentui/react-components';
 import { CERT_STATUS, getCertById, getCertificationsRequiring } from '../../data/certificationPaths';
 import { useProgressContext } from '../../context/ProgressContext';
 import { useToast } from '../../context/ToastContext';
 import { isRetiring, isRetired, getBadgeUrl } from '../../utils/helpers';
 import Badge from '../common/Badge';
 import { IconMap } from '../common/IconMap';
+import { useCertNodeStyles } from './useCertNodeStyles';
+
 const { AlertTriangle, Link, ArchiveX, Eye, EyeOff } = IconMap;
-import './CertNode.css';
 
 /**
  * Represents a single node (cert-node) on the certification path map.
@@ -18,6 +20,7 @@ import './CertNode.css';
  * @param {Object} props.data - The data injected by React Flow
  */
 const CertNode = ({ data }) => {
+  const classes = useCertNodeStyles();
   const { cert, pathColor, onSelect, index, isUnlocked, isPathIgnored } = data;
   const { getStatus, setStatus, isCertIgnored, toggleCertIgnored } = useProgressContext();
   const { addToast } = useToast();
@@ -27,13 +30,6 @@ const CertNode = ({ data }) => {
   const isRetiredExam = retiring || retired;
   const isTracked = !isCertIgnored(cert.id);
   const isExplicitlyExcluded = !isRetiredExam && !isPathIgnored && !isTracked;
-
-  const statusClass = {
-    [CERT_STATUS.NOT_STARTED]: 'cert-node--not-started',
-    [CERT_STATUS.IN_PROGRESS]: 'cert-node--in-progress',
-    [CERT_STATUS.COMPLETED]: 'cert-node--completed',
-    [CERT_STATUS.NEEDS_RENEWAL]: 'cert-node--needs-renewal',
-  }[status];
 
   const levelVariant = {
     Fundamentals: 'fundamentals',
@@ -84,9 +80,21 @@ const CertNode = ({ data }) => {
     return isTracked ? "Tracked individually • Click to untrack" : "Track individual exam in My Learning";
   };
 
+  const badgeUrl = getBadgeUrl(cert.level, cert.id);
+
+  const infoStateClass = !isUnlocked && status === CERT_STATUS.NOT_STARTED
+    ? classes.infoNotStartedLocked
+    : isUnlocked && status === CERT_STATUS.NOT_STARTED
+    ? classes.infoUnlocked
+    : (status === CERT_STATUS.COMPLETED || status === CERT_STATUS.NEEDS_RENEWAL)
+    ? classes.infoCompleted
+    : undefined;
+
+  const infoIgnoredClass = isExplicitlyExcluded ? classes.infoIgnored : undefined;
+
   return (
     <div
-      className={`cert-node ${statusClass} ${isUnlocked ? 'cert-node--unlocked' : ''} ${isExplicitlyExcluded ? 'cert-node--ignored' : ''}`}
+      className={classes.root}
       style={{
         '--cert-node-color': pathColor,
         '--cert-node-index': index,
@@ -97,7 +105,7 @@ const CertNode = ({ data }) => {
       <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
       {/* CertNode Info Card */}
       <div 
-        className="cert-node__info" 
+        className={mergeClasses(classes.info, infoStateClass, infoIgnoredClass)} 
         onClick={handleOpenDetail}
         tabIndex={0}
         onKeyDown={(e) => {
@@ -106,24 +114,33 @@ const CertNode = ({ data }) => {
           }
         }}
       >
-        <div className="cert-node__info-header">
-          <div className="cert-node__icon-title">
-            <div className={`cert-node__icon ${getBadgeUrl(cert.level, cert.id) ? 'cert-node__icon--image' : ''}`}>
-              {getBadgeUrl(cert.level, cert.id) ? (
+        <div className={classes.infoHeader}>
+          <div className={classes.iconTitle}>
+            <div 
+              className={mergeClasses(
+                classes.icon, 
+                badgeUrl && classes.iconImage,
+                isExplicitlyExcluded && !badgeUrl && classes.iconIgnored,
+                isExplicitlyExcluded && badgeUrl && classes.iconImageIgnored
+              )}
+            >
+              {badgeUrl ? (
                 <img 
-                  src={getBadgeUrl(cert.level, cert.id)} 
+                  src={badgeUrl} 
                   alt={`${cert.examCode} Badge`} 
-                  className="cert-node__badge-image"
+                  className={classes.badgeImage}
                   loading="lazy"
                 />
               ) : (
                 <IconMap.Award size={20} />
               )}
             </div>
-            <div className="cert-node__title-group">
-              <h3 className="cert-node__name">{cert.name}</h3>
-              <div className="cert-node__badge-stats">
-                <span className="cert-node__exam-code">{cert.examCode}</span>
+            <div className={classes.titleGroup}>
+              <h3 className={classes.name}>{cert.name}</h3>
+              <div className={classes.badgeStats}>
+                <span className={mergeClasses(classes.examCode, isExplicitlyExcluded && classes.examCodeIgnored)}>
+                  {cert.examCode}
+                </span>
                 {retiring && (
                   <Badge variant="retiring" small>
                     <AlertTriangle size={9} />
@@ -162,7 +179,7 @@ const CertNode = ({ data }) => {
           
           {!isRetiredExam && (
             <button
-              className={`cert-node__track-btn ${isTracked ? 'cert-node__track-btn--tracked' : 'cert-node__track-btn--untracked'}`}
+              className={mergeClasses(classes.trackBtn, isTracked ? classes.trackBtnTracked : classes.trackBtnUntracked)}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -181,20 +198,20 @@ const CertNode = ({ data }) => {
           )}
         </div>
         
-        <div className="cert-node__info-body">
-          <p className="cert-node__description">{cert.description}</p>
+        <div className={classes.infoBody}>
+          <p className={classes.description}>{cert.description}</p>
         </div>
         
-        <div className="cert-node__info-footer">
-          <div className="cert-node__actions" style={{ justifyContent: 'space-between', alignItems: 'flex-end', gap: '12px' }}>
+        <div className={classes.infoFooter}>
+          <div className={classes.actions} style={{ justifyContent: 'space-between', alignItems: 'flex-end', gap: '12px' }}>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flex: 1 }}>
               <Badge variant={levelVariant} small>{cert.level}</Badge>
               {/* Prerequisite Tags */}
               {cert.prerequisites?.length > 0 && (
-                cert.prerequisites.map((prereqItem, index) => {
+                cert.prerequisites.map((prereqItem, prereqIdx) => {
                   if (Array.isArray(prereqItem)) {
                     return (
-                      <Badge key={`prereq-group-${index}`} variant="default" small>
+                      <Badge key={`prereq-group-${prereqIdx}`} variant="default" small>
                         <Link size={9} />
                         1 of {prereqItem.length}
                       </Badge>
@@ -211,9 +228,9 @@ const CertNode = ({ data }) => {
                 })
               )}
             </div>
-            <div className="cert-node__status-toggle" style={{ flexShrink: 0 }} onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}>
+            <div className={classes.statusToggle} style={{ flexShrink: 0 }} onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}>
               <button
-                className={`cert-node__toggle-btn ${status === CERT_STATUS.NOT_STARTED ? 'cert-node__toggle-btn--active' : ''}`}
+                className={mergeClasses(classes.toggleBtn, status === CERT_STATUS.NOT_STARTED && classes.toggleBtnActiveNotStarted)}
                 onClick={(e) => handleSetStatus(CERT_STATUS.NOT_STARTED, e)}
                 title="Not Started"
                 aria-label="Set status: Not Started"
@@ -221,7 +238,7 @@ const CertNode = ({ data }) => {
                 <IconMap.Circle size={12} />
               </button>
               <button
-                className={`cert-node__toggle-btn ${status === CERT_STATUS.IN_PROGRESS ? 'cert-node__toggle-btn--active' : ''}`}
+                className={mergeClasses(classes.toggleBtn, status === CERT_STATUS.IN_PROGRESS && classes.toggleBtnActiveInProgress)}
                 onClick={(e) => handleSetStatus(CERT_STATUS.IN_PROGRESS, e)}
                 title="In Progress"
                 aria-label="Set status: In Progress"
@@ -229,7 +246,11 @@ const CertNode = ({ data }) => {
                 <IconMap.Clock size={12} />
               </button>
               <button
-                className={`cert-node__toggle-btn ${(status === CERT_STATUS.COMPLETED || status === CERT_STATUS.NEEDS_RENEWAL) ? 'cert-node__toggle-btn--active' : ''}`}
+                className={mergeClasses(
+                  classes.toggleBtn, 
+                  status === CERT_STATUS.COMPLETED && classes.toggleBtnActivePassed,
+                  status === CERT_STATUS.NEEDS_RENEWAL && classes.toggleBtnActiveRenewal
+                )}
                 onClick={(e) => handleSetStatus(CERT_STATUS.COMPLETED, e)}
                 title={status === CERT_STATUS.NEEDS_RENEWAL ? "Needs Renewal" : "Passed"}
                 aria-label="Set status: Passed"
