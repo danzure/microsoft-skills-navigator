@@ -1,4 +1,5 @@
 import { memo, useMemo } from 'react';
+import { makeStyles, mergeClasses, tokens } from '@fluentui/react-components';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { CERT_STATUS, getCertById } from '../../data/certificationPaths';
@@ -10,7 +11,331 @@ import Badge from '../common/Badge';
 import { getBadgeUrl } from '../../utils/helpers';
 import { AlignedAppliedSkills } from './AlignedAppliedSkills';
 import '../PathMap/CertNode.css';
-import './CareerPathCertCard.css';
+
+const useClasses = makeStyles({
+  /* ─── Sortable Step Wrapper ───────────────────────────────────────────── */
+  stepRoot: {
+    position: 'relative',
+    width: '100%',
+  },
+  stepLayout: {
+    display: 'flex',
+    gap: tokens.spacingHorizontalXL,
+    position: 'relative',
+    zIndex: 1,
+  },
+  /* ─── Timeline Indicator & Node ───────────────────────────────────────── */
+  timelineIndicator: {
+    width: '72px',
+    flexShrink: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    position: 'relative',
+    '@media (max-width: 768px)': {
+      width: '40px',
+    },
+  },
+  timelineNode: {
+    width: '36px',
+    height: '36px',
+    borderRadius: tokens.borderRadiusCircular,
+    backgroundColor: tokens.colorNeutralBackground2,
+    border: `2px solid ${tokens.colorNeutralStroke1}`,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: tokens.colorNeutralForeground2,
+    fontWeight: tokens.fontWeightSemibold,
+    fontSize: tokens.fontSizeBase300,
+    transitionProperty: 'all',
+    transitionDuration: 'var(--duration-fast)',
+    transitionTimingFunction: 'var(--curve-easy-ease)',
+    '@media (max-width: 768px)': {
+      width: '32px',
+      height: '32px',
+    },
+  },
+  timelineNodeCompleted: {
+    backgroundColor: 'var(--status-completed)',
+    borderColor: 'var(--status-completed)',
+    color: '#ffffff',
+    boxShadow: '0 0 10px color-mix(in srgb, var(--status-completed) 40%, transparent)',
+  },
+  timelineNodeInProgress: {
+    backgroundColor: tokens.colorNeutralBackground1,
+    borderColor: 'var(--status-in-progress)',
+    color: 'var(--status-in-progress)',
+    boxShadow: '0 0 10px color-mix(in srgb, var(--status-in-progress) 40%, transparent)',
+  },
+  timelineNodeNeedsRenewal: {
+    backgroundColor: tokens.colorNeutralBackground1,
+    borderColor: 'var(--line-security)',
+    color: 'var(--line-security)',
+    boxShadow: '0 0 10px color-mix(in srgb, var(--line-security) 40%, transparent)',
+  },
+  /* ─── Action Buttons Bar ──────────────────────────────────────────────── */
+  actionsBar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+  },
+  actionBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '32px',
+    height: '32px',
+    borderRadius: tokens.borderRadiusSmall,
+    backgroundColor: 'transparent',
+    border: '1px solid transparent',
+    color: tokens.colorNeutralForeground2,
+    cursor: 'pointer',
+    touchAction: 'manipulation',
+    WebkitTapHighlightColor: 'transparent',
+    transitionProperty: 'all',
+    transitionDuration: 'var(--duration-fast)',
+    transitionTimingFunction: 'var(--curve-easy-ease)',
+    padding: 0,
+    '@media (pointer: coarse)': {
+      width: '38px',
+      height: '38px',
+    },
+  },
+  moveBtn: {
+    ':hover': {
+      backgroundColor: tokens.colorSubtleBackgroundHover,
+      color: tokens.colorNeutralForeground1,
+    },
+    ':active': {
+      transform: 'scale(0.92)',
+    },
+  },
+  removeBtn: {
+    ':hover': {
+      backgroundColor: 'color-mix(in srgb, var(--line-security) 12%, transparent)',
+      color: 'var(--line-security)',
+    },
+    ':active': {
+      transform: 'scale(0.96)',
+    },
+  },
+  dragHandle: {
+    cursor: 'grab',
+    touchAction: 'none',
+    ':hover': {
+      backgroundColor: tokens.colorSubtleBackgroundHover,
+      color: tokens.colorNeutralForeground1,
+    },
+    ':active': {
+      cursor: 'grabbing',
+    },
+  },
+  /* ─── Stage Container (When Aligned Labs Exist) ───────────────────────── */
+  stageCard: {
+    backgroundColor: tokens.colorNeutralBackground2,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderRadius: tokens.borderRadiusXLarge,
+    padding: tokens.spacingVerticalXL,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalM,
+    position: 'relative',
+    overflow: 'hidden',
+    boxShadow: tokens.shadow2,
+    transitionProperty: 'all',
+    transitionDuration: 'var(--duration-normal)',
+    transitionTimingFunction: 'var(--curve-easy-ease)',
+    flex: 1,
+    minWidth: 0,
+    '::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      bottom: 0,
+      width: '4px',
+      backgroundColor: 'var(--cert-node-color, var(--colorBrandForeground1))',
+      borderTopLeftRadius: tokens.borderRadiusXLarge,
+      borderBottomLeftRadius: tokens.borderRadiusXLarge,
+    },
+    ':hover': {
+      borderColor: 'color-mix(in srgb, var(--cert-node-color) 40%, var(--colorNeutralStroke2))',
+      boxShadow: tokens.shadow4,
+    },
+    '@media (max-width: 768px)': {
+      padding: tokens.spacingVerticalL,
+      gap: tokens.spacingVerticalS,
+    },
+  },
+  stageStep: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalS,
+    position: 'relative',
+  },
+  stageStepHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: tokens.spacingHorizontalS,
+    flexWrap: 'wrap',
+  },
+  stageStepBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalXS,
+    fontSize: tokens.fontSizeBase100,
+    fontWeight: tokens.fontWeightBold,
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    padding: '3px 8px',
+    borderRadius: tokens.borderRadiusSmall,
+    lineHeight: 1,
+  },
+  stageStepBadgePrep: {
+    color: 'var(--line-azure)',
+    backgroundColor: 'color-mix(in srgb, var(--line-azure) 12%, transparent)',
+    border: '1px solid color-mix(in srgb, var(--line-azure) 30%, transparent)',
+  },
+  stageStepBadgeExam: {
+    color: 'var(--cert-node-color, var(--colorBrandForeground1))',
+    backgroundColor: 'color-mix(in srgb, var(--cert-node-color, var(--colorBrandForeground1)) 12%, transparent)',
+    border: '1px solid color-mix(in srgb, var(--cert-node-color, var(--colorBrandForeground1)) 30%, transparent)',
+  },
+  stageStepSubtitle: {
+    fontSize: tokens.fontSizeBase200,
+    color: tokens.colorNeutralForeground3,
+    fontWeight: tokens.fontWeightRegular,
+    '@media (max-width: 768px)': {
+      display: 'none',
+    },
+  },
+  stageConnector: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    userSelect: 'none',
+    margin: '-4px 0',
+    zIndex: 2,
+  },
+  stageConnectorStem: {
+    width: '2px',
+    height: '12px',
+    background: 'linear-gradient(180deg, var(--colorNeutralStroke2) 0%, color-mix(in srgb, var(--cert-node-color) 40%, var(--colorNeutralStroke2)) 100%)',
+    transitionProperty: 'all',
+    transitionDuration: 'var(--duration-normal)',
+    transitionTimingFunction: 'var(--curve-easy-ease)',
+  },
+  stageConnectorStemBottom: {
+    background: 'linear-gradient(180deg, color-mix(in srgb, var(--cert-node-color) 40%, var(--colorNeutralStroke2)) 0%, var(--colorNeutralStroke2) 100%)',
+  },
+  stageConnectorStemComplete: {
+    background: 'var(--status-completed)',
+    boxShadow: '0 0 6px color-mix(in srgb, var(--status-completed) 40%, transparent)',
+  },
+  stageConnectorBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalM,
+    padding: '6px 16px',
+    backgroundColor: tokens.colorNeutralBackground1,
+    border: '1px solid color-mix(in srgb, var(--cert-node-color) 30%, var(--colorNeutralStroke2))',
+    borderRadius: tokens.borderRadiusMedium,
+    boxShadow: `${tokens.shadow4}, 0 2px 8px color-mix(in srgb, var(--cert-node-color) 8%, transparent)`,
+    transitionProperty: 'all',
+    transitionDuration: 'var(--duration-fast)',
+    transitionTimingFunction: 'var(--curve-easy-ease)',
+    position: 'relative',
+    ':hover': {
+      transform: 'translateY(-1px)',
+      borderColor: 'var(--cert-node-color)',
+      boxShadow: `${tokens.shadow8}, 0 0 14px color-mix(in srgb, var(--cert-node-color) 20%, transparent)`,
+    },
+  },
+  stageConnectorBadgeReady: {
+    borderColor: 'color-mix(in srgb, var(--status-completed) 50%, var(--colorNeutralStroke2))',
+    boxShadow: `${tokens.shadow4}, 0 0 12px color-mix(in srgb, var(--status-completed) 20%, transparent)`,
+  },
+  stageConnectorIconWrap: {
+    width: '24px',
+    height: '24px',
+    borderRadius: tokens.borderRadiusSmall,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'color-mix(in srgb, var(--cert-node-color) 12%, transparent)',
+    color: 'var(--cert-node-color)',
+    flexShrink: 0,
+  },
+  stageConnectorIconWrapReady: {
+    backgroundColor: 'color-mix(in srgb, var(--status-completed) 15%, transparent)',
+    color: 'var(--status-completed)',
+  },
+  stageConnectorContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1px',
+  },
+  stageConnectorTitle: {
+    fontSize: '10px',
+    fontWeight: tokens.fontWeightBold,
+    textTransform: 'uppercase',
+    letterSpacing: '0.6px',
+    color: tokens.colorNeutralForeground3,
+    lineHeight: 1.2,
+  },
+  stageConnectorFlow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    fontSize: tokens.fontSizeBase200,
+    fontWeight: tokens.fontWeightSemibold,
+    color: tokens.colorNeutralForeground1,
+    lineHeight: 1.3,
+  },
+  stageConnectorStepName: {
+    whiteSpace: 'nowrap',
+  },
+  stageConnectorChevron: {
+    color: 'var(--cert-node-color, var(--colorBrandForeground1))',
+    flexShrink: 0,
+    opacity: 0.8,
+  },
+  stageConnectorStatus: {
+    marginLeft: tokens.spacingHorizontalXS,
+    display: 'flex',
+    alignItems: 'center',
+  },
+  stageConnectorTag: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    fontSize: '10px',
+    fontWeight: tokens.fontWeightBold,
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    padding: '2px 7px',
+    borderRadius: tokens.borderRadiusSmall,
+    whiteSpace: 'nowrap',
+    lineHeight: 1.4,
+    color: tokens.colorNeutralForeground2,
+    backgroundColor: tokens.colorNeutralBackground3,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+  },
+  stageConnectorTagReady: {
+    color: 'var(--status-completed)',
+    backgroundColor: 'color-mix(in srgb, var(--status-completed) 12%, transparent)',
+    border: '1px solid color-mix(in srgb, var(--status-completed) 30%, transparent)',
+  },
+  stageConnectorTagProgress: {
+    color: 'var(--status-in-progress)',
+    backgroundColor: 'color-mix(in srgb, var(--status-in-progress) 12%, transparent)',
+    border: '1px solid color-mix(in srgb, var(--status-in-progress) 30%, transparent)',
+  },
+});
 
 /**
  * SortableCertItem Component
@@ -29,10 +354,7 @@ import './CareerPathCertCard.css';
  * @param {boolean} props.isLast - Whether this item is the last in the playlist.
  * @param {Object} props.certInfo - The certification data object.
  * @param {string} props.status - The current tracking status of the certification.
- * @param {string} props.statusText - The localized text label for the current status.
  * @param {string} props.nodeClass - The CSS class applied to the timeline node based on status.
- * @param {string} props.badgeClass - The CSS class applied to the status badge based on status.
- * @param {React.ElementType} props.StatusIcon - The icon component to display for the current status.
  * @param {Function} props.onNavigate - Callback to navigate to a path or details page.
  * @param {Function} props.onRemove - Callback to remove this item from the custom timeline.
  * @param {Function} [props.onMoveUp] - Callback to move step up.
@@ -47,18 +369,18 @@ export const SortableCertItem = memo(({
   isLast, 
   certInfo, 
   status, 
-  nodeClass, 
   onNavigate, 
   onRemove, 
   onMoveUp, 
   onMoveDown, 
   onSelectSkill 
 }) => {
+  const c = useClasses();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const { setStatus, isCertIgnored, toggleCertIgnored, getAppliedSkillStatus } = useProgressContext();
   const { addToast } = useToast();
 
-  const style = {
+  const dndStyle = {
     transform: CSS.Transform.toString(transform),
     transition,
     zIndex: isDragging ? 10 : 1,
@@ -83,6 +405,13 @@ export const SortableCertItem = memo(({
   }, [hasAlignedSkills, alignedSkills, getAppliedSkillStatus]);
 
   const isPrepComplete = hasAlignedSkills && completedLabsCount === alignedSkills.length;
+
+  const nodeStatusClass = mergeClasses(
+    c.timelineNode,
+    (status === CERT_STATUS.COMPLETED || status === CERT_STATUS.NEEDS_RENEWAL) && c.timelineNodeCompleted,
+    status === CERT_STATUS.IN_PROGRESS && c.timelineNodeInProgress,
+    status === CERT_STATUS.NEEDS_RENEWAL && c.timelineNodeNeedsRenewal,
+  );
 
   const handleSetStatus = (newStatus, e) => {
     if (e) {
@@ -112,11 +441,11 @@ export const SortableCertItem = memo(({
   };
 
   const actionsBar = (
-    <div className="cpb-timeline-card-actions" onClick={(e) => e.stopPropagation()}>
+    <div className={c.actionsBar} onClick={(e) => e.stopPropagation()}>
       {onMoveUp && !isFirst && (
         <button 
           type="button"
-          className="cpb-timeline-action-btn cpb-timeline-move-btn" 
+          className={mergeClasses(c.actionBtn, c.moveBtn)} 
           onClick={(e) => { e.stopPropagation(); onMoveUp(index); }}
           title="Move step up"
           aria-label="Move step up"
@@ -127,7 +456,7 @@ export const SortableCertItem = memo(({
       {onMoveDown && !isLast && (
         <button 
           type="button"
-          className="cpb-timeline-action-btn cpb-timeline-move-btn" 
+          className={mergeClasses(c.actionBtn, c.moveBtn)} 
           onClick={(e) => { e.stopPropagation(); onMoveDown(index); }}
           title="Move step down"
           aria-label="Move step down"
@@ -138,7 +467,7 @@ export const SortableCertItem = memo(({
       {onRemove && (
         <button 
           type="button"
-          className="cpb-timeline-action-btn cpb-timeline-remove-btn" 
+          className={mergeClasses(c.actionBtn, c.removeBtn)} 
           onClick={(e) => { e.stopPropagation(); onRemove(id); }}
           title="Remove from custom list"
           aria-label="Remove certification"
@@ -147,7 +476,7 @@ export const SortableCertItem = memo(({
         </button>
       )}
       <div 
-        className="cpb-timeline-action-btn cpb-timeline-drag-handle" 
+        className={mergeClasses(c.actionBtn, c.dragHandle)} 
         {...attributes} 
         {...listeners}
         title="Drag to reorder"
@@ -162,12 +491,19 @@ export const SortableCertItem = memo(({
 
   const examCard = (
     <div 
-      className={`cert-node__info ${hasAlignedSkills ? 'cpb-stage__exam-info' : ''}`}
+      className="cert-node__info"
       onClick={() => onNavigate(`/path/${certInfo.pathId}`)}
       style={{ 
         '--cert-node-color': certInfo.pathColor || 'var(--colorBrandForeground1)', 
         height: 'auto', 
-        margin: 0
+        margin: 0,
+        flex: 1,
+        minWidth: 0,
+        ...(hasAlignedSkills ? {
+          background: 'var(--colorNeutralBackground1)',
+          border: '1px solid var(--colorNeutralStroke1)',
+          cursor: 'pointer',
+        } : {}),
       }}
     >
       <div className="cert-node__info-header">
@@ -286,101 +622,104 @@ export const SortableCertItem = memo(({
   );
 
   return (
-    <div ref={setNodeRef} style={style} className="cpb-timeline-step cpb-timeline-step--sortable">
-      <div className="cpb-timeline-indicator">
-        <div className={`cpb-timeline-node ${nodeClass}`}>
-          {(status === CERT_STATUS.COMPLETED || status === CERT_STATUS.NEEDS_RENEWAL) ? (
-            <Icons.Check size={20} />
-          ) : (
-            <span>{index + 1}</span>
-          )}
-        </div>
-      </div>
-
-      {!hasAlignedSkills ? (
-        <div style={{ flex: 1, minWidth: 0 }}>
-          {examCard}
-        </div>
-      ) : (
-        <div 
-          className="cpb-stage-card cpb-stage-card--sortable" 
-          style={{ '--cert-node-color': certInfo.pathColor || 'var(--colorBrandForeground1)', flex: 1, minWidth: 0 }}
-        >
-          {/* Stage Step 1: Preparatory Applied Skills Labs */}
-          <div className="cpb-stage__step cpb-stage__step--prep">
-            <div className="cpb-stage__step-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 'var(--space-2)' }}>
-              <div>
-                <span className="cpb-stage__step-badge cpb-stage__step-badge--prep">
-                  <Icons.AppliedSkills size={13} />
-                  Step 1 • Optional Lab Preparation
-                </span>
-                <span className="cpb-stage__step-subtitle">
-                  Optional scenario-based labs recommended before studying for the full certification
-                </span>
-              </div>
-              {actionsBar}
-            </div>
-            
-            <AlignedAppliedSkills 
-              certId={certInfo.id} 
-              certCode={certInfo.examCode} 
-              onSelectSkill={onSelectSkill} 
-            />
+    <div ref={setNodeRef} style={dndStyle} className={c.stepRoot}>
+      <div className={c.stepLayout}>
+        {/* Timeline step indicator */}
+        <div className={c.timelineIndicator}>
+          <div className={nodeStatusClass}>
+            {(status === CERT_STATUS.COMPLETED || status === CERT_STATUS.NEEDS_RENEWAL) ? (
+              <Icons.Check size={20} />
+            ) : (
+              <span>{index + 1}</span>
+            )}
           </div>
+        </div>
 
-          {/* Directional Progression Flow Connector */}
-          <div className="cpb-stage__connector" aria-hidden="true">
-            <div className={`cpb-stage__connector-stem cpb-stage__connector-stem--top ${isPrepComplete ? 'cpb-stage__connector-stem--complete' : ''}`} />
-            <div className={`cpb-stage__connector-badge ${isPrepComplete ? 'cpb-stage__connector-badge--ready' : ''}`}>
-              <div className="cpb-stage__connector-icon-wrap">
-                {isPrepComplete ? (
-                  <Icons.CheckCircle2 size={14} className="cpb-stage__connector-icon" />
-                ) : (
-                  <Icons.ArrowDown size={14} className="cpb-stage__connector-icon" />
-                )}
-              </div>
-              <div className="cpb-stage__connector-content">
-                <span className="cpb-stage__connector-title">
-                  Progression Route
-                </span>
-                <div className="cpb-stage__connector-flow">
-                  <span className="cpb-stage__connector-step-name">Step 1: Optional Labs</span>
-                  <Icons.ChevronRight size={11} className="cpb-stage__connector-chevron" />
-                  <span className="cpb-stage__connector-step-name">Step 2: Proctored Exam</span>
-                </div>
-              </div>
-              <div className="cpb-stage__connector-status">
-                {isPrepComplete ? (
-                  <span className="cpb-stage__connector-tag cpb-stage__connector-tag--ready">
-                    <Icons.Check size={11} />
-                    Exam Ready
-                  </span>
-                ) : completedLabsCount > 0 ? (
-                  <span className="cpb-stage__connector-tag cpb-stage__connector-tag--progress">
-                    {completedLabsCount}/{alignedSkills.length} Labs Earned
-                  </span>
-                ) : (
-                  <span className="cpb-stage__connector-tag">
-                    Recommended Prep
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className={`cpb-stage__connector-stem cpb-stage__connector-stem--bottom ${isPrepComplete ? 'cpb-stage__connector-stem--complete' : ''}`} />
-          </div>
-
-          {/* Stage Step 2: Capstone Proctored Exam */}
-          <div className="cpb-stage__step cpb-stage__step--exam">
-            <div className="cpb-stage__step-header">
-              <span className="cpb-stage__step-badge cpb-stage__step-badge--exam">
-                <Icons.Award size={13} />
-                Step 2 • Proctored Certification Exam
-              </span>
-            </div>
+        {!hasAlignedSkills ? (
+          <div style={{ flex: 1, minWidth: 0 }}>
             {examCard}
           </div>
-        </div>
-      )}
+        ) : (
+          <div 
+            className={c.stageCard}
+            style={{ '--cert-node-color': certInfo.pathColor || 'var(--colorBrandForeground1)' }}
+          >
+            {/* Stage Step 1: Preparatory Applied Skills Labs */}
+            <div className={c.stageStep}>
+              <div className={c.stageStepHeader} style={{ alignItems: 'flex-start' }}>
+                <div>
+                  <span className={mergeClasses(c.stageStepBadge, c.stageStepBadgePrep)}>
+                    <Icons.AppliedSkills size={13} />
+                    Step 1 • Optional Lab Preparation
+                  </span>
+                  <span className={c.stageStepSubtitle}>
+                    Optional scenario-based labs recommended before studying for the full certification
+                  </span>
+                </div>
+                {actionsBar}
+              </div>
+              
+              <AlignedAppliedSkills 
+                certId={certInfo.id} 
+                certCode={certInfo.examCode} 
+                onSelectSkill={onSelectSkill} 
+              />
+            </div>
+
+            {/* Directional Progression Flow Connector */}
+            <div className={c.stageConnector} aria-hidden="true">
+              <div className={mergeClasses(c.stageConnectorStem, isPrepComplete && c.stageConnectorStemComplete)} />
+              <div className={mergeClasses(c.stageConnectorBadge, isPrepComplete && c.stageConnectorBadgeReady)}>
+                <div className={mergeClasses(c.stageConnectorIconWrap, isPrepComplete && c.stageConnectorIconWrapReady)}>
+                  {isPrepComplete ? (
+                    <Icons.CheckCircle2 size={14} />
+                  ) : (
+                    <Icons.ArrowDown size={14} />
+                  )}
+                </div>
+                <div className={c.stageConnectorContent}>
+                  <span className={c.stageConnectorTitle}>
+                    Progression Route
+                  </span>
+                  <div className={c.stageConnectorFlow}>
+                    <span className={c.stageConnectorStepName}>Step 1: Optional Labs</span>
+                    <Icons.ChevronRight size={11} className={c.stageConnectorChevron} />
+                    <span className={c.stageConnectorStepName}>Step 2: Proctored Exam</span>
+                  </div>
+                </div>
+                <div className={c.stageConnectorStatus}>
+                  {isPrepComplete ? (
+                    <span className={mergeClasses(c.stageConnectorTag, c.stageConnectorTagReady)}>
+                      <Icons.Check size={11} />
+                      Exam Ready
+                    </span>
+                  ) : completedLabsCount > 0 ? (
+                    <span className={mergeClasses(c.stageConnectorTag, c.stageConnectorTagProgress)}>
+                      {completedLabsCount}/{alignedSkills.length} Labs Earned
+                    </span>
+                  ) : (
+                    <span className={c.stageConnectorTag}>
+                      Recommended Prep
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className={mergeClasses(c.stageConnectorStem, c.stageConnectorStemBottom, isPrepComplete && c.stageConnectorStemComplete)} />
+            </div>
+
+            {/* Stage Step 2: Capstone Proctored Exam */}
+            <div className={c.stageStep}>
+              <div className={c.stageStepHeader}>
+                <span className={mergeClasses(c.stageStepBadge, c.stageStepBadgeExam)}>
+                  <Icons.Award size={13} />
+                  Step 2 • Proctored Certification Exam
+                </span>
+              </div>
+              {examCard}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 });

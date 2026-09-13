@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { makeStyles, mergeClasses, tokens } from '@fluentui/react-components';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { careerRoles } from '../../data/careerRoles';
 import { certificationPaths, CERT_STATUS, CERT_LEVELS } from '../../data/certificationPaths';
@@ -12,7 +13,550 @@ import { CareerPathCertCard } from './CareerPathCertCard';
 import AppliedSkillDetail from '../AppliedSkills/AppliedSkillDetail';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import './CareerPathBuilder.css';
+
+const useClasses = makeStyles({
+  /* ─── Page Root ────────────────────────────────────────────────────────── */
+  root: {
+    padding: `${tokens.spacingVerticalXXXL} ${tokens.spacingHorizontalXXL}`,
+    maxWidth: '1500px',
+    margin: '0 auto',
+    animationName: {
+      from: { opacity: 0, transform: 'translateY(8px)' },
+      to: { opacity: 1, transform: 'translateY(0)' },
+    },
+    animationDuration: 'var(--duration-normal)',
+    animationTimingFunction: 'var(--curve-easy-ease)',
+    animationFillMode: 'forwards',
+    '@media (max-width: 768px)': {
+      padding: `${tokens.spacingVerticalL} ${tokens.spacingHorizontalL}`,
+      paddingBottom: tokens.spacingVerticalXXXL,
+    },
+  },
+  /* ─── Page Header ──────────────────────────────────────────────────────── */
+  header: {
+    marginBottom: tokens.spacingVerticalXXXL,
+  },
+  title: {
+    fontSize: tokens.fontSizeHero800,
+    fontWeight: tokens.fontWeightBold,
+    color: tokens.colorNeutralForeground1,
+    marginBottom: tokens.spacingVerticalS,
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalM,
+    letterSpacing: '-0.02em',
+    margin: `0 0 ${tokens.spacingVerticalS} 0`,
+  },
+  subtitle: {
+    fontSize: tokens.fontSizeBase400,
+    color: tokens.colorNeutralForeground2,
+    lineHeight: tokens.lineHeightBase400,
+    maxWidth: '820px',
+    margin: 0,
+  },
+  /* ─── Role Cards Grid ──────────────────────────────────────────────────── */
+  rolesGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+    gap: tokens.spacingVerticalL,
+    marginBottom: tokens.spacingVerticalXXXL,
+  },
+  roleCard: {
+    backgroundColor: tokens.colorNeutralBackground1,
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+    borderRadius: tokens.borderRadiusLarge,
+    padding: tokens.spacingVerticalXL,
+    cursor: 'pointer',
+    transitionProperty: 'all',
+    transitionDuration: 'var(--duration-normal)',
+    transitionTimingFunction: 'var(--curve-easy-ease)',
+    position: 'relative',
+    overflow: 'hidden',
+    boxShadow: tokens.shadow2,
+    zIndex: 1,
+    backgroundImage: 'linear-gradient(135deg, color-mix(in srgb, var(--card-color) 8%, transparent) 0%, transparent 100%)',
+    ':hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: `${tokens.shadow8}, 0 0 16px color-mix(in srgb, var(--card-color) 15%, transparent)`,
+      borderColor: 'color-mix(in srgb, var(--card-color) 40%, var(--colorNeutralStroke1))',
+      backgroundImage: 'linear-gradient(135deg, color-mix(in srgb, var(--card-color) 16%, transparent) 0%, transparent 100%)',
+    },
+    ':active': {
+      transform: 'scale(0.98)',
+    },
+  },
+  roleCardActive: {
+    borderColor: 'var(--card-color)',
+    boxShadow: `0 0 0 1px var(--card-color), ${tokens.shadow8}, 0 0 16px color-mix(in srgb, var(--card-color) 25%, transparent)`,
+    transform: 'translateY(-2px)',
+    backgroundImage: 'linear-gradient(135deg, color-mix(in srgb, var(--card-color) 22%, transparent) 0%, transparent 100%)',
+  },
+  roleCardHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalM,
+    marginBottom: tokens.spacingVerticalS,
+    overflow: 'hidden',
+  },
+  roleIcon: {
+    flexShrink: 0,
+    width: '36px',
+    height: '36px',
+    borderRadius: tokens.borderRadiusMedium,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'color-mix(in srgb, var(--card-color) 12%, var(--colorNeutralBackground3))',
+    color: 'var(--card-color)',
+  },
+  roleTitle: {
+    fontSize: tokens.fontSizeBase400,
+    fontWeight: tokens.fontWeightSemibold,
+    color: tokens.colorNeutralForeground1,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  roleDesc: {
+    fontSize: tokens.fontSizeBase200,
+    color: tokens.colorNeutralForeground2,
+    lineHeight: 1.4,
+    display: '-webkit-box',
+    WebkitLineClamp: 2,
+    lineClamp: 2,
+    WebkitBoxOrient: 'vertical',
+    overflow: 'hidden',
+    minHeight: '2.8em',
+  },
+  /* ─── Path Container ───────────────────────────────────────────────────── */
+  pathContainer: {
+    backgroundColor: tokens.colorNeutralBackground1,
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+    borderRadius: tokens.borderRadiusXLarge,
+    padding: tokens.spacingVerticalXXL,
+    position: 'relative',
+    '@media (max-width: 768px)': {
+      padding: tokens.spacingVerticalL,
+    },
+  },
+  pathTitle: {
+    fontSize: tokens.fontSizeBase600,
+    fontWeight: tokens.fontWeightSemibold,
+    color: tokens.colorNeutralForeground1,
+    marginBottom: tokens.spacingVerticalL,
+    paddingBottom: tokens.spacingVerticalM,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    letterSpacing: '-0.01em',
+    margin: `0 0 ${tokens.spacingVerticalL} 0`,
+  },
+  /* ─── Role Banner ──────────────────────────────────────────────────────── */
+  roleBanner: {
+    backgroundColor: tokens.colorNeutralBackground1,
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+    borderRadius: tokens.borderRadiusLarge,
+    padding: tokens.spacingVerticalXXL,
+    marginBottom: tokens.spacingVerticalXL,
+    position: 'relative',
+    overflow: 'hidden',
+    boxShadow: tokens.shadow2,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalXL,
+    '::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      bottom: 0,
+      width: '4px',
+      backgroundColor: 'var(--role-color, var(--colorBrandForeground1))',
+    },
+    '::after': {
+      content: '""',
+      position: 'absolute',
+      inset: 0,
+      background: 'linear-gradient(135deg, color-mix(in srgb, var(--role-color) 8%, transparent) 0%, transparent 100%)',
+      pointerEvents: 'none',
+    },
+    '@media (max-width: 768px)': {
+      padding: tokens.spacingVerticalL,
+    },
+  },
+  roleBannerHeader: {
+    position: 'relative',
+    zIndex: 1,
+  },
+  roleBannerTitleGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalXS,
+  },
+  roleBannerTitle: {
+    fontSize: tokens.fontSizeHero700,
+    fontWeight: tokens.fontWeightBold,
+    color: tokens.colorNeutralForeground1,
+    margin: 0,
+    letterSpacing: '-0.02em',
+    '@media (max-width: 768px)': {
+      fontSize: tokens.fontSizeBase600,
+    },
+  },
+  roleBannerDesc: {
+    fontSize: tokens.fontSizeBase300,
+    color: tokens.colorNeutralForeground2,
+    lineHeight: tokens.lineHeightBase300,
+    margin: 0,
+    maxWidth: '840px',
+  },
+  roleBannerStats: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+    gap: tokens.spacingVerticalL,
+    position: 'relative',
+    zIndex: 1,
+    '@media (max-width: 768px)': {
+      gridTemplateColumns: '1fr',
+    },
+  },
+  roleBannerStatCard: {
+    backgroundColor: tokens.colorNeutralBackground2,
+    border: `1px solid ${tokens.colorNeutralStroke3}`,
+    borderRadius: tokens.borderRadiusMedium,
+    padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalL}`,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalS,
+  },
+  roleBannerStatHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: tokens.spacingHorizontalS,
+  },
+  roleBannerStatLabelGroup: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+  },
+  roleBannerSkillIcon: {
+    color: 'var(--line-azure)',
+  },
+  roleBannerStatLabel: {
+    fontSize: tokens.fontSizeBase200,
+    fontWeight: tokens.fontWeightSemibold,
+    color: tokens.colorNeutralForeground2,
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+  },
+  roleBannerStatCount: {
+    fontSize: tokens.fontSizeBase200,
+    fontWeight: tokens.fontWeightBold,
+    color: tokens.colorNeutralForeground1,
+  },
+  roleBannerStatTrack: {
+    height: '6px',
+    backgroundColor: tokens.colorNeutralBackground4,
+    borderRadius: tokens.borderRadiusCircular,
+    overflow: 'hidden',
+  },
+  roleBannerStatFillCert: {
+    height: '100%',
+    borderRadius: tokens.borderRadiusCircular,
+    background: 'linear-gradient(90deg, var(--colorBrandForeground1), var(--status-completed))',
+    transitionProperty: 'width',
+    transitionDuration: 'var(--duration-gentle)',
+    transitionTimingFunction: 'var(--curve-easy-ease)',
+  },
+  roleBannerStatFillSkill: {
+    height: '100%',
+    borderRadius: tokens.borderRadiusCircular,
+    background: 'linear-gradient(90deg, var(--line-azure), var(--status-completed))',
+    transitionProperty: 'width',
+    transitionDuration: 'var(--duration-gentle)',
+    transitionTimingFunction: 'var(--curve-easy-ease)',
+  },
+  /* ─── Custom Playlist Controls ─────────────────────────────────────────── */
+  customAddSection: {
+    display: 'flex',
+    gap: tokens.spacingHorizontalM,
+    marginBottom: tokens.spacingVerticalXXL,
+    alignItems: 'center',
+    flexWrap: 'wrap',
+  },
+  customSelect: {
+    flex: 1,
+    minWidth: '260px',
+    height: '32px',
+    padding: `0 ${tokens.spacingHorizontalM}`,
+    borderRadius: tokens.borderRadiusMedium,
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+    backgroundColor: tokens.colorNeutralBackground1,
+    color: tokens.colorNeutralForeground1,
+    fontSize: tokens.fontSizeBase300,
+    fontFamily: 'inherit',
+    outline: 'none',
+    transitionProperty: 'border-color',
+    transitionDuration: 'var(--duration-fast)',
+    transitionTimingFunction: 'var(--curve-easy-ease)',
+    ':focus': {
+      borderColor: tokens.colorBrandStroke1,
+    },
+    '@media (max-width: 640px)': {
+      width: '100%',
+      height: '40px',
+    },
+  },
+  customAddBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '32px',
+    padding: `0 ${tokens.spacingHorizontalL}`,
+    borderRadius: tokens.borderRadiusMedium,
+    backgroundColor: tokens.colorBrandBackground,
+    color: tokens.colorNeutralForegroundInverted,
+    fontWeight: tokens.fontWeightSemibold,
+    fontSize: tokens.fontSizeBase300,
+    border: 'none',
+    cursor: 'pointer',
+    transitionProperty: 'all',
+    transitionDuration: 'var(--duration-fast)',
+    transitionTimingFunction: 'var(--curve-easy-ease)',
+    ':hover:not(:disabled)': {
+      backgroundColor: tokens.colorBrandBackgroundHover,
+    },
+    ':active:not(:disabled)': {
+      transform: 'scale(0.96)',
+    },
+    ':disabled': {
+      opacity: 0.4,
+      cursor: 'not-allowed',
+    },
+    '@media (max-width: 640px)': {
+      height: '38px',
+      padding: `0 ${tokens.spacingHorizontalL}`,
+    },
+  },
+  customExportBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    height: '32px',
+    padding: `0 ${tokens.spacingHorizontalM}`,
+    borderRadius: tokens.borderRadiusMedium,
+    backgroundColor: tokens.colorNeutralBackground1,
+    color: tokens.colorNeutralForeground1,
+    fontWeight: tokens.fontWeightSemibold,
+    fontSize: tokens.fontSizeBase300,
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+    cursor: 'pointer',
+    transitionProperty: 'all',
+    transitionDuration: 'var(--duration-fast)',
+    transitionTimingFunction: 'var(--curve-easy-ease)',
+    ':hover:not(:disabled)': {
+      backgroundColor: tokens.colorNeutralBackground1Hover,
+      borderColor: tokens.colorNeutralStrokeAccessible,
+    },
+    ':active:not(:disabled)': {
+      transform: 'scale(0.96)',
+    },
+    ':disabled': {
+      opacity: 0.4,
+      cursor: 'not-allowed',
+    },
+    '@media (max-width: 640px)': {
+      height: '38px',
+    },
+  },
+  /* ─── Timeline ──────────────────────────────────────────────────────────── */
+  timeline: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalXL,
+    position: 'relative',
+    marginTop: tokens.spacingVerticalXL,
+  },
+  timelineCustom: {
+    '::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      left: '35px',
+      width: '2px',
+      backgroundColor: tokens.colorNeutralStroke2,
+      zIndex: 0,
+      '@media (max-width: 768px)': {
+        left: '20px',
+      },
+    },
+  },
+  /* ─── Empty State ──────────────────────────────────────────────────────── */
+  timelineEmpty: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: tokens.spacingVerticalM,
+    padding: `48px ${tokens.spacingVerticalXXL}`,
+    textAlign: 'center',
+    color: tokens.colorNeutralForeground2,
+    backgroundColor: tokens.colorNeutralBackground2,
+    borderRadius: tokens.borderRadiusXLarge,
+    border: `2px dashed ${tokens.colorNeutralStroke2}`,
+    maxWidth: '600px',
+    margin: '0 auto',
+  },
+  emptyIconWrapper: {
+    color: tokens.colorBrandForeground1,
+    backgroundColor: tokens.colorBrandBackground2,
+    width: '64px',
+    height: '64px',
+    borderRadius: tokens.borderRadiusCircular,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: tokens.spacingVerticalS,
+  },
+  emptyTitle: {
+    fontSize: tokens.fontSizeBase600,
+    fontWeight: tokens.fontWeightSemibold,
+    color: tokens.colorNeutralForeground1,
+    margin: 0,
+  },
+  emptyDesc: {
+    fontSize: tokens.fontSizeBase300,
+    lineHeight: tokens.lineHeightBase300,
+    color: tokens.colorNeutralForeground2,
+    margin: 0,
+  },
+  /* ─── Cert List (Role Path View) ────────────────────────────────────────── */
+  certList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalS,
+    marginTop: tokens.spacingVerticalL,
+    position: 'relative',
+  },
+  certListItem: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  /* ─── Milestone Route Connector (Between Cert Cards) ────────────────────── */
+  routeConnector: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    userSelect: 'none',
+    padding: `${tokens.spacingVerticalS} 0`,
+    zIndex: 2,
+  },
+  routeConnectorStem: {
+    width: '2px',
+    height: '16px',
+    background: 'linear-gradient(180deg, var(--colorNeutralStroke2) 0%, color-mix(in srgb, var(--step-accent-color) 45%, var(--colorNeutralStroke2)) 100%)',
+    transitionProperty: 'all',
+    transitionDuration: 'var(--duration-normal)',
+    transitionTimingFunction: 'var(--curve-easy-ease)',
+  },
+  routeConnectorStemBottom: {
+    background: 'linear-gradient(180deg, color-mix(in srgb, var(--step-accent-color) 45%, var(--colorNeutralStroke2)) 0%, var(--colorNeutralStroke2) 100%)',
+  },
+  routeConnectorStemPassed: {
+    background: 'var(--status-completed)',
+    boxShadow: '0 0 6px color-mix(in srgb, var(--status-completed) 40%, transparent)',
+  },
+  routeConnectorBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalM,
+    padding: '6px 16px',
+    backgroundColor: tokens.colorNeutralBackground1,
+    border: '1px solid color-mix(in srgb, var(--step-accent-color) 30%, var(--colorNeutralStroke2))',
+    borderRadius: tokens.borderRadiusMedium,
+    boxShadow: `${tokens.shadow4}, 0 2px 8px color-mix(in srgb, var(--step-accent-color) 8%, transparent)`,
+    transitionProperty: 'all',
+    transitionDuration: 'var(--duration-fast)',
+    transitionTimingFunction: 'var(--curve-easy-ease)',
+    position: 'relative',
+    ':hover': {
+      transform: 'translateY(-1px)',
+      borderColor: 'var(--step-accent-color)',
+      boxShadow: `${tokens.shadow8}, 0 0 14px color-mix(in srgb, var(--step-accent-color) 20%, transparent)`,
+    },
+    '@media (max-width: 768px)': {
+      padding: '5px 12px',
+      gap: tokens.spacingHorizontalS,
+    },
+  },
+  routeConnectorBadgePassed: {
+    borderColor: 'color-mix(in srgb, var(--status-completed) 50%, var(--colorNeutralStroke2))',
+    boxShadow: `${tokens.shadow4}, 0 0 12px color-mix(in srgb, var(--status-completed) 20%, transparent)`,
+  },
+  routeConnectorIconWrap: {
+    width: '24px',
+    height: '24px',
+    borderRadius: tokens.borderRadiusSmall,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'color-mix(in srgb, var(--step-accent-color) 12%, transparent)',
+    color: 'var(--step-accent-color)',
+    flexShrink: 0,
+  },
+  routeConnectorIconWrapPassed: {
+    backgroundColor: 'color-mix(in srgb, var(--status-completed) 15%, transparent)',
+    color: 'var(--status-completed)',
+  },
+  routeConnectorContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1px',
+  },
+  routeConnectorStepBadge: {
+    fontSize: '10px',
+    fontWeight: tokens.fontWeightBold,
+    textTransform: 'uppercase',
+    letterSpacing: '0.6px',
+    color: tokens.colorNeutralForeground3,
+    lineHeight: 1.2,
+  },
+  routeConnectorLabel: {
+    fontSize: tokens.fontSizeBase200,
+    fontWeight: tokens.fontWeightSemibold,
+    color: tokens.colorNeutralForeground1,
+    lineHeight: 1.3,
+  },
+  routeConnectorTarget: {
+    color: 'var(--step-accent-color)',
+    fontWeight: tokens.fontWeightBold,
+    fontFamily: 'var(--font-mono)',
+  },
+  routeConnectorLevelTag: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    fontSize: '10px',
+    fontWeight: tokens.fontWeightBold,
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    padding: '2px 7px',
+    borderRadius: tokens.borderRadiusSmall,
+    color: tokens.colorNeutralForeground2,
+    backgroundColor: tokens.colorNeutralBackground3,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    whiteSpace: 'nowrap',
+    '@media (max-width: 768px)': {
+      display: 'none',
+    },
+  },
+  routeConnectorLevelTagPassed: {
+    color: 'var(--status-completed)',
+    backgroundColor: 'color-mix(in srgb, var(--status-completed) 10%, transparent)',
+    borderColor: 'color-mix(in srgb, var(--status-completed) 30%, transparent)',
+  },
+});
 
 /**
  * CareerPathBuilder Component
@@ -25,6 +569,7 @@ import './CareerPathBuilder.css';
  * @returns {JSX.Element} The CareerPathBuilder UI
  */
 const CareerPathBuilder = () => {
+  const c = useClasses();
   const navigate = useNavigate();
   const location = useLocation();
   const { getStatus, customPlaylist, setCustomPlaylist, getAppliedSkillStatus, setAppliedSkillStatus } = useProgressContext();
@@ -90,9 +635,6 @@ const CareerPathBuilder = () => {
       });
 
       if (pathCerts.length > 0) {
-        // Sort certifications within this path:
-        // 1. By level progression: Fundamentals -> Associate -> Expert -> Specialty
-        // 2. By exam code alphanumeric (e.g. AZ-104 before AZ-700 before AZ-802)
         pathCerts.sort((a, b) => {
           const rankA = LEVEL_RANK[a.level] || 99;
           const rankB = LEVEL_RANK[b.level] || 99;
@@ -252,7 +794,7 @@ const CareerPathBuilder = () => {
     : 'Build, customize, and navigate your Microsoft certification roadmap by career role. Explore curated certification journeys for Cloud Architects, AI Engineers, Security Administrators, Data Engineers, and DevOps Specialists.';
 
   return (
-    <div className="career-path-builder">
+    <div className={c.root}>
       <SEO
         title={seoTitle}
         description={seoDescription}
@@ -260,16 +802,16 @@ const CareerPathBuilder = () => {
         canonical="https://skills.atozazure.com/career-paths"
         schema={breadcrumbSchema}
       />
-      <div className="cpb-header">
-        <h1 className="cpb-title">
-          Microsoft Career Paths & Certification Builder
+      <div className={c.header}>
+        <h1 className={c.title}>
+          Microsoft Career Paths &amp; Certification Builder
         </h1>
-        <p className="cpb-subtitle">
+        <p className={c.subtitle}>
           Navigate specialized certification roadmaps aligned with official Microsoft job roles, or craft a personalized drag-and-drop learning playlist. Tailor your certification milestones to accelerate your career growth as an Architect, AI Engineer, Security Admin, or DevOps Specialist.
         </p>
       </div>
 
-      <div className="cpb-roles-grid">
+      <div className={c.rolesGrid}>
         {sortedRoles.map(role => {
           const isActive = selectedRole?.id === role.id;
           const RoleIcon = Icons[role.icon] || Icons.Briefcase;
@@ -277,69 +819,69 @@ const CareerPathBuilder = () => {
           return (
             <div 
               key={role.id}
-              className={`cpb-role-card ${isActive ? 'cpb-role-card--active' : ''}`}
+              className={mergeClasses(c.roleCard, isActive && c.roleCardActive)}
               style={{ '--card-color': role.color }}
               onClick={() => setSelectedRoleId(isActive ? null : role.id)}
             >
-              <div className="cpb-role-card-header">
-                <div className="cpb-role-icon">
+              <div className={c.roleCardHeader}>
+                <div className={c.roleIcon}>
                   <RoleIcon size={18} />
                 </div>
-                <div className="cpb-role-title">{role.title}</div>
+                <div className={c.roleTitle}>{role.title}</div>
               </div>
-              <div className="cpb-role-desc">{role.description}</div>
+              <div className={c.roleDesc}>{role.description}</div>
             </div>
           );
         })}
       </div>
 
       {selectedRole && (
-        <div className="cpb-path-container">
+        <div className={c.pathContainer}>
           {selectedRole.id === 'custom-playlist' ? (
-            <h2 className="cpb-path-title">Your Custom Career</h2>
+            <h2 className={c.pathTitle}>Your Custom Career</h2>
           ) : (
-            <div className="cpb-role-banner" style={{ '--role-color': selectedRole.color }}>
-              <div className="cpb-role-banner__header">
-                <div className="cpb-role-banner__title-group">
-                  <h2 className="cpb-role-banner__title">
+            <div className={c.roleBanner} style={{ '--role-color': selectedRole.color }}>
+              <div className={c.roleBannerHeader}>
+                <div className={c.roleBannerTitleGroup}>
+                  <h2 className={c.roleBannerTitle}>
                     Roadmap for {selectedRole.title}
                   </h2>
-                  <p className="cpb-role-banner__desc">
+                  <p className={c.roleBannerDesc}>
                     {selectedRole.description}
                   </p>
                 </div>
               </div>
 
-              <div className="cpb-role-banner__stats">
-                <div className="cpb-role-banner__stat-card">
-                  <div className="cpb-role-banner__stat-header">
-                    <span className="cpb-role-banner__stat-label">Certifications</span>
-                    <span className="cpb-role-banner__stat-count">
+              <div className={c.roleBannerStats}>
+                <div className={c.roleBannerStatCard}>
+                  <div className={c.roleBannerStatHeader}>
+                    <span className={c.roleBannerStatLabel}>Certifications</span>
+                    <span className={c.roleBannerStatCount}>
                       {completedCertsCount} of {roleCerts.length} Passed
                     </span>
                   </div>
-                  <div className="cpb-role-banner__stat-track">
+                  <div className={c.roleBannerStatTrack}>
                     <div 
-                      className="cpb-role-banner__stat-fill cpb-role-banner__stat-fill--cert" 
+                      className={c.roleBannerStatFillCert} 
                       style={{ width: `${certPercent}%` }} 
                     />
                   </div>
                 </div>
 
                 {roleSkills.length > 0 && (
-                  <div className="cpb-role-banner__stat-card">
-                    <div className="cpb-role-banner__stat-header">
-                      <div className="cpb-role-banner__stat-label-group">
-                        <Icons.AppliedSkills size={14} className="cpb-role-banner__skill-icon" />
-                        <span className="cpb-role-banner__stat-label">Aligned Applied Skills</span>
+                  <div className={c.roleBannerStatCard}>
+                    <div className={c.roleBannerStatHeader}>
+                      <div className={c.roleBannerStatLabelGroup}>
+                        <Icons.AppliedSkills size={14} className={c.roleBannerSkillIcon} />
+                        <span className={c.roleBannerStatLabel}>Aligned Applied Skills</span>
                       </div>
-                      <span className="cpb-role-banner__stat-count">
+                      <span className={c.roleBannerStatCount}>
                         {completedSkillsCount} of {roleSkills.length} Earned
                       </span>
                     </div>
-                    <div className="cpb-role-banner__stat-track">
+                    <div className={c.roleBannerStatTrack}>
                       <div 
-                        className="cpb-role-banner__stat-fill cpb-role-banner__stat-fill--skill" 
+                        className={c.roleBannerStatFillSkill} 
                         style={{ width: `${skillPercent}%` }} 
                       />
                     </div>
@@ -350,9 +892,9 @@ const CareerPathBuilder = () => {
           )}
           
           {selectedRole.id === 'custom-playlist' && (
-            <div className="cpb-custom-add-section">
+            <div className={c.customAddSection}>
               <select 
-                className="cpb-custom-select"
+                className={c.customSelect}
                 value={certToAdd}
                 onChange={(e) => setCertToAdd(e.target.value)}
                 aria-label="Select a certification to add"
@@ -385,14 +927,14 @@ const CareerPathBuilder = () => {
                 ))}
               </select>
               <button 
-                className="cpb-custom-add-btn" 
+                className={c.customAddBtn} 
                 onClick={handleAddCert}
                 disabled={!certToAdd}
               >
                 Add
               </button>
               <button
-                className="cpb-custom-export-btn"
+                className={c.customExportBtn}
                 onClick={handleExportPlaylist}
                 disabled={customPlaylist.length === 0}
                 title="Export Custom Career as Markdown"
@@ -403,7 +945,7 @@ const CareerPathBuilder = () => {
             </div>
           )}
 
-          <div className={`cpb-timeline ${selectedRole.id === 'custom-playlist' ? 'cpb-timeline--custom' : 'cpb-timeline--role'}`}>
+          <div className={mergeClasses(c.timeline, selectedRole.id === 'custom-playlist' && c.timelineCustom)}>
             {selectedRole.id === 'custom-playlist' ? (
               <DndContext 
                 sensors={sensors}
@@ -415,12 +957,12 @@ const CareerPathBuilder = () => {
                   strategy={verticalListSortingStrategy}
                 >
                   {customPlaylist.length === 0 && (
-                    <div className="cpb-timeline-empty cpb-timeline-empty--enhanced">
-                      <div className="cpb-timeline-empty-icon-wrapper">
+                    <div className={c.timelineEmpty}>
+                      <div className={c.emptyIconWrapper}>
                         <Icons.Compass size={48} />
                       </div>
-                      <h3 className="cpb-timeline-empty-title">Your Path is Empty</h3>
-                      <p className="cpb-timeline-empty-desc">
+                      <h3 className={c.emptyTitle}>Your Path is Empty</h3>
+                      <p className={c.emptyDesc}>
                         Use the dropdown above to select a certification and click <strong>Add</strong> to start building your custom career track. You can drag and drop items here to reorder them once added.
                       </p>
                     </div>
@@ -430,27 +972,22 @@ const CareerPathBuilder = () => {
                     if (!certInfo) return null;
                     const status = getStatus(certId);
                     let nodeClass = '';
-                    let badgeClass;
                     let StatusIcon = Icons.Circle;
                     let statusText;
 
                     if (status === CERT_STATUS.COMPLETED) {
                       nodeClass = 'cpb-timeline-node--completed';
-                      badgeClass = 'cpb-timeline-badge--completed';
                       StatusIcon = Icons.CheckCircle2;
                       statusText = 'Completed';
                     } else if (status === CERT_STATUS.NEEDS_RENEWAL) {
                       nodeClass = 'cpb-timeline-node--needs-renewal';
-                      badgeClass = 'cpb-timeline-badge--needs-renewal';
                       StatusIcon = Icons.AlertTriangle;
                       statusText = 'Needs Renewal';
                     } else if (status === CERT_STATUS.IN_PROGRESS) {
                       nodeClass = 'cpb-timeline-node--in-progress';
-                      badgeClass = 'cpb-timeline-badge--in-progress';
                       StatusIcon = Icons.Clock;
                       statusText = 'In Progress';
                     } else {
-                      badgeClass = 'cpb-timeline-badge--not-started';
                       statusText = 'Not Started';
                     }
 
@@ -465,7 +1002,6 @@ const CareerPathBuilder = () => {
                         status={status}
                         statusText={statusText}
                         nodeClass={nodeClass}
-                        badgeClass={badgeClass}
                         StatusIcon={StatusIcon}
                         onNavigate={navigate}
                         onRemove={handleRemoveCert}
@@ -478,7 +1014,7 @@ const CareerPathBuilder = () => {
                 </SortableContext>
               </DndContext>
             ) : (
-              <div className="cpb-cert-list">
+              <div className={c.certList}>
                 {selectedRole.certs.map((certId, idx) => {
                   const certInfo = allCerts.get(certId);
                   if (!certInfo) return null;
@@ -489,7 +1025,7 @@ const CareerPathBuilder = () => {
                   const isPassed = status === CERT_STATUS.COMPLETED;
 
                   return (
-                    <div key={certId} className="cpb-cert-list-item">
+                    <div key={certId} className={c.certListItem}>
                       <CareerPathCertCard 
                         certInfo={certInfo} 
                         roleTitle={selectedRole.title}
@@ -500,33 +1036,33 @@ const CareerPathBuilder = () => {
                       />
                       {!isLast && nextCertInfo && (
                         <div 
-                          className={`cpb-route-connector ${isPassed ? 'cpb-route-connector--passed' : ''}`}
+                          className={mergeClasses(c.routeConnector)}
                           style={{ '--step-accent-color': certInfo.pathColor || 'var(--colorBrandForeground1)' }}
                           aria-hidden="true"
                         >
-                          <div className="cpb-route-connector__stem cpb-route-connector__stem--top" />
-                          <div className="cpb-route-connector__badge">
-                            <div className="cpb-route-connector__icon-wrap">
+                          <div className={mergeClasses(c.routeConnectorStem, isPassed && c.routeConnectorStemPassed)} />
+                          <div className={mergeClasses(c.routeConnectorBadge, isPassed && c.routeConnectorBadgePassed)}>
+                            <div className={mergeClasses(c.routeConnectorIconWrap, isPassed && c.routeConnectorIconWrapPassed)}>
                               {isPassed ? (
-                                <Icons.CheckCircle2 size={13} className="cpb-route-connector__icon" />
+                                <Icons.CheckCircle2 size={13} />
                               ) : (
-                                <Icons.ArrowDown size={13} className="cpb-route-connector__icon" />
+                                <Icons.ArrowDown size={13} />
                               )}
                             </div>
-                            <div className="cpb-route-connector__content">
-                              <span className="cpb-route-connector__step-badge">
+                            <div className={c.routeConnectorContent}>
+                              <span className={c.routeConnectorStepBadge}>
                                 Step {idx + 1} of {selectedRole.certs.length}
                               </span>
-                              <span className="cpb-route-connector__label">
+                              <span className={c.routeConnectorLabel}>
                                 {isPassed ? 'Milestone Passed • Advance to' : 'Next in Progression Route:'}{' '}
-                                <strong className="cpb-route-connector__target">{nextCertInfo.examCode}</strong>
+                                <strong className={c.routeConnectorTarget}>{nextCertInfo.examCode}</strong>
                               </span>
                             </div>
-                            <span className="cpb-route-connector__level-tag">
+                            <span className={mergeClasses(c.routeConnectorLevelTag, isPassed && c.routeConnectorLevelTagPassed)}>
                               {nextCertInfo.level}
                             </span>
                           </div>
-                          <div className="cpb-route-connector__stem cpb-route-connector__stem--bottom" />
+                          <div className={mergeClasses(c.routeConnectorStem, c.routeConnectorStemBottom, isPassed && c.routeConnectorStemPassed)} />
                         </div>
                       )}
                     </div>
