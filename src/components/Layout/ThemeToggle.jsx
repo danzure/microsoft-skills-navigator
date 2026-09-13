@@ -1,35 +1,253 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useId } from 'react';
+import {
+  makeStyles,
+  shorthands,
+  tokens,
+  mergeClasses,
+} from '@fluentui/react-components';
+import {
+  WeatherSunny16Regular,
+  WeatherMoon16Regular,
+  Desktop16Regular,
+  ChevronDown12Regular,
+  Checkmark16Regular,
+} from '@fluentui/react-icons';
 import { useTheme } from '../../context/ThemeContext';
-import { IconMap as Icons } from '../common/IconMap';
-import './ThemeToggle.css';
+
+/**
+ * Defines the Fluent UI styles for the ThemeToggle dropdown.
+ * Matches the atozazure-portfolio-site design system with dual light/dark theme support.
+ */
+const useStyles = makeStyles({
+  container: {
+    position: 'relative',
+    display: 'inline-block',
+    textAlign: 'left',
+  },
+  triggerBtn: {
+    height: '2rem',
+    ...shorthands.padding('0', tokens.spacingHorizontalS),
+    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalXS,
+    cursor: 'pointer',
+    userSelect: 'none',
+    boxSizing: 'border-box',
+    transitionProperty: 'all',
+    transitionDuration: tokens.durationFast,
+    transitionTimingFunction: tokens.curveEasyEase,
+    ':active': {
+      transform: 'scale(0.97)',
+    },
+    ':focus-visible': {
+      outlineStyle: 'none',
+      boxShadow: `0 0 0 ${tokens.strokeWidthThick} ${tokens.colorBrandBackground}`,
+    },
+  },
+  triggerDark: {
+    backgroundColor: tokens.colorNeutralBackground3,
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke2),
+    color: tokens.colorNeutralForeground1,
+    ':hover': {
+      backgroundColor: tokens.colorNeutralBackground1Hover,
+      ...shorthands.borderColor(tokens.colorBrandStroke1),
+    },
+  },
+  triggerDarkOpen: {
+    backgroundColor: tokens.colorNeutralBackground1Hover,
+    ...shorthands.borderColor(tokens.colorBrandStroke1),
+    color: tokens.colorNeutralForeground1,
+    boxShadow: tokens.shadow2,
+  },
+  triggerLight: {
+    backgroundColor: `color-mix(in srgb, ${tokens.colorNeutralForegroundOnBrand} 15%, transparent)`,
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', `color-mix(in srgb, ${tokens.colorNeutralForegroundOnBrand} 25%, transparent)`),
+    color: tokens.colorNeutralForegroundOnBrand,
+    ':hover': {
+      backgroundColor: `color-mix(in srgb, ${tokens.colorNeutralForegroundOnBrand} 25%, transparent)`,
+      ...shorthands.borderColor(`color-mix(in srgb, ${tokens.colorNeutralForegroundOnBrand} 50%, transparent)`),
+      color: tokens.colorNeutralForegroundOnBrand,
+    },
+  },
+  triggerLightOpen: {
+    backgroundColor: `color-mix(in srgb, ${tokens.colorNeutralForegroundOnBrand} 30%, transparent)`,
+    ...shorthands.borderColor(tokens.colorNeutralForegroundOnBrand),
+    color: tokens.colorNeutralForegroundOnBrand,
+    boxShadow: tokens.shadow2,
+  },
+  triggerIcon: {
+    fontSize: tokens.fontSizeBase300,
+    color: 'inherit',
+    fill: 'currentColor',
+    flexShrink: 0,
+  },
+  triggerLabel: {
+    fontSize: tokens.fontSizeBase200,
+    fontWeight: tokens.fontWeightMedium,
+    letterSpacing: '0.01rem',
+    display: 'none',
+    '@media (min-width: 640px)': {
+      display: 'inline',
+    },
+  },
+  chevronIcon: {
+    fontSize: tokens.fontSizeBase100,
+    transitionProperty: 'transform',
+    transitionDuration: tokens.durationFast,
+    transitionTimingFunction: tokens.curveEasyEase,
+    opacity: 0.8,
+  },
+  chevronRotated: {
+    transform: 'rotate(180deg)',
+    opacity: 1,
+  },
+  menuFlyout: {
+    position: 'absolute',
+    right: 0,
+    top: `calc(100% + ${tokens.spacingVerticalXS})`,
+    width: '14.5rem',
+    backgroundColor: tokens.colorNeutralBackground1,
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke1),
+    boxShadow: tokens.shadow16,
+    ...shorthands.borderRadius(tokens.borderRadiusLarge),
+    ...shorthands.padding(tokens.spacingVerticalXS),
+    zIndex: 200,
+    color: tokens.colorNeutralForeground1,
+    boxSizing: 'border-box',
+  },
+  menuHeader: {
+    ...shorthands.padding(tokens.spacingVerticalXXS, tokens.spacingHorizontalS),
+    fontSize: tokens.fontSizeBase100,
+    lineHeight: tokens.lineHeightBase100,
+    fontWeight: tokens.fontWeightSemibold,
+    color: tokens.colorNeutralForeground3,
+    textTransform: 'uppercase',
+    letterSpacing: '0.05rem',
+  },
+  optionsList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalXXS,
+    marginTop: tokens.spacingVerticalXXS,
+  },
+  menuItem: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    ...shorthands.padding(tokens.spacingVerticalS, tokens.spacingHorizontalS),
+    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    textAlign: 'left',
+    ...shorthands.border('none'),
+    backgroundColor: 'transparent',
+    color: tokens.colorNeutralForeground2,
+    cursor: 'pointer',
+    transitionProperty: 'all',
+    transitionDuration: tokens.durationFast,
+    transitionTimingFunction: tokens.curveEasyEase,
+    userSelect: 'none',
+    boxSizing: 'border-box',
+    ':hover': {
+      backgroundColor: tokens.colorNeutralBackground1Hover,
+      color: tokens.colorNeutralForeground1,
+    },
+  },
+  menuItemFocused: {
+    backgroundColor: tokens.colorNeutralBackground1Hover,
+    color: tokens.colorNeutralForeground1,
+  },
+  menuItemSelected: {
+    backgroundColor: tokens.colorBrandBackground2,
+    color: tokens.colorBrandForeground1,
+    fontWeight: tokens.fontWeightMedium,
+    ':hover': {
+      backgroundColor: tokens.colorBrandBackground2,
+      color: tokens.colorBrandForeground1,
+    },
+  },
+  itemLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    minWidth: 0,
+  },
+  itemIconBox: {
+    width: '1.25rem',
+    height: '1.25rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  sunIcon: {
+    color: tokens.colorPaletteMarigoldForeground1,
+  },
+  moonIcon: {
+    color: tokens.colorBrandForeground1,
+  },
+  monitorIcon: {
+    color: tokens.colorNeutralForeground2,
+  },
+  itemTextCol: {
+    display: 'flex',
+    flexDirection: 'column',
+    minWidth: 0,
+  },
+  itemLabel: {
+    fontSize: tokens.fontSizeBase200,
+    lineHeight: tokens.lineHeightBase200,
+  },
+  itemDesc: {
+    fontSize: tokens.fontSizeBase100,
+    lineHeight: tokens.lineHeightBase100,
+    color: tokens.colorNeutralForeground3,
+  },
+  checkIcon: {
+    color: tokens.colorBrandForeground1,
+    flexShrink: 0,
+    marginLeft: tokens.spacingHorizontalS,
+  },
+});
 
 /**
  * ThemeToggle Component
- * 
+ *
  * A Fluent 2 flyout dropdown allowing users to select Light, Dark,
- * or Sync with System appearance preferences.
- * 
+ * or Sync with System appearance preferences, matching the governance toolkit design.
+ *
  * @param {Object} [props]
  * @param {('system'|'light'|'dark')} [props.themePref] - Optional theme preference override.
  * @param {Function} [props.onSetTheme] - Optional callback to set theme override.
  * @param {boolean} [props.systemPrefersDark] - Optional system preference override.
  * @returns {JSX.Element}
  */
-export default function ThemeToggle({ themePref: propThemePref, onSetTheme, systemPrefersDark: propSystemPrefersDark }) {
+export default function ThemeToggle({
+  themePref: propThemePref,
+  onSetTheme,
+  systemPrefersDark: propSystemPrefersDark,
+}) {
   const contextTheme = useTheme();
+  const styles = useStyles();
+
   const activeThemePref = propThemePref || contextTheme.themePref;
   const setActiveTheme = onSetTheme || contextTheme.setTheme;
-  const isSystemDark = propSystemPrefersDark !== undefined 
-    ? propSystemPrefersDark 
-    : (contextTheme.systemPrefersDark ?? (typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches));
+  const isDark = contextTheme.isDark;
+  const isSystemDark =
+    propSystemPrefersDark !== undefined
+      ? propSystemPrefersDark
+      : (contextTheme.systemPrefersDark ??
+        (typeof window !== 'undefined' &&
+          window.matchMedia?.('(prefers-color-scheme: dark)').matches));
 
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
+
   const containerRef = useRef(null);
   const triggerRef = useRef(null);
-  const menuRef = useRef(null);
+  const menuId = useId();
 
-  // Close on click outside
+  // Close when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
@@ -53,26 +271,26 @@ export default function ThemeToggle({ themePref: propThemePref, onSetTheme, syst
       id: 'light',
       label: 'Light',
       description: 'Always light appearance',
-      icon: Icons.Sun,
-      iconClass: 'theme-toggle__item-icon--sun',
+      icon: WeatherSunny16Regular,
+      iconClass: styles.sunIcon,
     },
     {
       id: 'dark',
       label: 'Dark',
       description: 'Always dark appearance',
-      icon: Icons.Moon,
-      iconClass: 'theme-toggle__item-icon--moon',
+      icon: WeatherMoon16Regular,
+      iconClass: styles.moonIcon,
     },
     {
       id: 'system',
       label: 'Sync with system',
       description: isSystemDark ? 'Matches device (Dark)' : 'Matches device (Light)',
-      icon: Icons.Desktop,
-      iconClass: 'theme-toggle__item-icon--system',
+      icon: Desktop16Regular,
+      iconClass: styles.monitorIcon,
     },
   ];
 
-  // Keyboard navigation
+  // Keyboard navigation within the dropdown
   const handleKeyDown = (e) => {
     if (!isOpen) {
       if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
@@ -114,12 +332,17 @@ export default function ThemeToggle({ themePref: propThemePref, onSetTheme, syst
     }
   };
 
-  const currentOption = options.find((opt) => opt.id === activeThemePref) || options[2];
+  const currentOption =
+    options.find((opt) => opt.id === activeThemePref) || options[2];
   const CurrentIcon = currentOption.icon;
 
   return (
-    <div ref={containerRef} className="theme-toggle" onKeyDown={handleKeyDown}>
-      {/* Toggle Trigger Button */}
+    <div
+      ref={containerRef}
+      className={styles.container}
+      onKeyDown={handleKeyDown}
+    >
+      {/* Trigger Button */}
       <button
         ref={triggerRef}
         type="button"
@@ -129,35 +352,45 @@ export default function ThemeToggle({ themePref: propThemePref, onSetTheme, syst
             setFocusedIndex(options.findIndex((opt) => opt.id === activeThemePref));
           }
         }}
-        className={`theme-toggle__trigger ${isOpen ? 'theme-toggle__trigger--open' : ''}`}
+        className={mergeClasses(
+          styles.triggerBtn,
+          isDark
+            ? isOpen
+              ? styles.triggerDarkOpen
+              : styles.triggerDark
+            : isOpen
+            ? styles.triggerLightOpen
+            : styles.triggerLight
+        )}
         aria-label={`Theme: ${currentOption.label}. Change appearance`}
         aria-expanded={isOpen}
         aria-haspopup="menu"
+        aria-controls={isOpen ? menuId : undefined}
         title={`Theme: ${currentOption.label}`}
       >
-        <CurrentIcon size={16} className="theme-toggle__trigger-icon" />
-        <span className="theme-toggle__trigger-label">
+        <CurrentIcon className={styles.triggerIcon} />
+        <span className={styles.triggerLabel}>
           {activeThemePref === 'system' ? 'System' : currentOption.label}
         </span>
-        <Icons.ChevronDown
-          size={14}
-          className={`theme-toggle__chevron ${isOpen ? 'theme-toggle__chevron--open' : ''}`}
+        <ChevronDown12Regular
+          className={mergeClasses(
+            styles.chevronIcon,
+            isOpen && styles.chevronRotated
+          )}
         />
       </button>
 
       {/* Flyout Popover Menu */}
       {isOpen && (
         <div
-          ref={menuRef}
+          id={menuId}
           role="menu"
           aria-label="Appearance options"
-          className="theme-toggle__flyout"
+          className={styles.menuFlyout}
         >
-          <div className="theme-toggle__header">
-            Theme Preference
-          </div>
+          <div className={styles.menuHeader}>Theme Preference</div>
 
-          <div className="theme-toggle__list">
+          <div className={styles.optionsList}>
             {options.map((option, index) => {
               const IconComponent = option.icon;
               const isSelected = activeThemePref === option.id;
@@ -175,24 +408,26 @@ export default function ThemeToggle({ themePref: propThemePref, onSetTheme, syst
                     triggerRef.current?.focus();
                   }}
                   onMouseEnter={() => setFocusedIndex(index)}
-                  className={`theme-toggle__item ${isSelected ? 'theme-toggle__item--selected' : ''} ${isFocused ? 'theme-toggle__item--focused' : ''}`}
+                  className={mergeClasses(
+                    styles.menuItem,
+                    isSelected && styles.menuItemSelected,
+                    !isSelected && isFocused && styles.menuItemFocused
+                  )}
                 >
-                  <div className="theme-toggle__item-left">
-                    <div className="theme-toggle__item-icon-wrapper">
-                      <IconComponent size={16} className={`theme-toggle__item-icon ${option.iconClass}`} />
+                  <div className={styles.itemLeft}>
+                    <div className={styles.itemIconBox}>
+                      <IconComponent className={option.iconClass} />
                     </div>
-                    <div className="theme-toggle__item-text">
-                      <span className="theme-toggle__item-title">
-                        {option.label}
-                      </span>
-                      <span className="theme-toggle__item-desc">
+                    <div className={styles.itemTextCol}>
+                      <span className={styles.itemLabel}>{option.label}</span>
+                      <span className={styles.itemDesc}>
                         {option.description}
                       </span>
                     </div>
                   </div>
 
                   {isSelected && (
-                    <Icons.Check size={14} className="theme-toggle__item-check" />
+                    <Checkmark16Regular className={styles.checkIcon} />
                   )}
                 </button>
               );

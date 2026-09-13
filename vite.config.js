@@ -34,7 +34,12 @@ export default defineConfig({
             return 'vendor-dnd';
           }
 
-          // Fluent UI and product icons
+          // Fluent UI components
+          if (id.includes('@fluentui/react-components') || id.includes('@griffel')) {
+            return 'vendor-fluent';
+          }
+
+          // Fluent UI icons and product icons
           if (id.includes('@fluentui') || id.includes('@iconify')) {
             return 'vendor-icons';
           }
@@ -43,3 +48,4 @@ export default defineConfig({
     },
   },
 })
+

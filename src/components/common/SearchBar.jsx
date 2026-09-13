@@ -1,18 +1,194 @@
-import { IconMap } from './IconMap';
-const { Search, X } = IconMap;
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { getAllCertifications } from '../../data/certificationPaths';
+import {
+  makeStyles,
+  shorthands,
+  tokens,
+  mergeClasses,
+} from '@fluentui/react-components';
+import {
+  Search16Regular,
+  Dismiss16Regular,
+  ArrowClockwise16Regular,
+} from '@fluentui/react-icons';
 import { useNavigate } from 'react-router-dom';
-import './SearchBar.css';
+import { getAllCertifications } from '../../data/certificationPaths';
+
+const useStyles = makeStyles({
+  container: {
+    position: 'relative',
+    width: '100%',
+  },
+  containerMobile: {
+    width: '100%',
+  },
+  inputWrapper: {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    width: '100%',
+  },
+  input: {
+    width: '100%',
+    height: '32px',
+    ...shorthands.padding('0', tokens.spacingHorizontalS),
+    paddingLeft: '32px',
+    paddingRight: '60px',
+    backgroundColor: tokens.colorNeutralBackground1,
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke1),
+    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    fontSize: tokens.fontSizeBase200,
+    color: tokens.colorNeutralForeground1,
+    boxSizing: 'border-box',
+    outlineStyle: 'none',
+    transitionProperty: 'border-color, box-shadow',
+    transitionDuration: tokens.durationFast,
+    transitionTimingFunction: tokens.curveEasyEase,
+    '::placeholder': {
+      color: tokens.colorNeutralForeground4,
+    },
+    ':focus': {
+      ...shorthands.borderColor(tokens.colorStrokeFocus2),
+      boxShadow: `0 0 0 1px ${tokens.colorStrokeFocus2}`,
+    },
+  },
+  searchIcon: {
+    position: 'absolute',
+    left: tokens.spacingHorizontalS,
+    color: tokens.colorNeutralForeground3,
+    pointerEvents: 'none',
+    fontSize: tokens.fontSizeBase300,
+  },
+  shortcut: {
+    position: 'absolute',
+    right: tokens.spacingHorizontalS,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shorthands.padding('2px', tokens.spacingHorizontalXXS),
+    backgroundColor: tokens.colorNeutralBackground3,
+    color: tokens.colorNeutralForeground3,
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke2),
+    ...shorthands.borderRadius(tokens.borderRadiusSmall),
+    fontFamily: "'Cascadia Code', 'Cascadia Mono', Consolas, monospace",
+    fontSize: tokens.fontSizeBase100,
+    fontWeight: tokens.fontWeightSemibold,
+    lineHeight: tokens.lineHeightBase100,
+    pointerEvents: 'none',
+    userSelect: 'none',
+  },
+  spinner: {
+    position: 'absolute',
+    right: tokens.spacingHorizontalS,
+    color: tokens.colorBrandForeground1,
+  },
+  clearBtn: {
+    position: 'absolute',
+    right: tokens.spacingHorizontalS,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '20px',
+    height: '20px',
+    ...shorthands.padding(0),
+    ...shorthands.border('none'),
+    backgroundColor: 'transparent',
+    color: tokens.colorNeutralForeground3,
+    cursor: 'pointer',
+    ...shorthands.borderRadius(tokens.borderRadiusSmall),
+    ':hover': {
+      backgroundColor: tokens.colorSubtleBackgroundHover,
+      color: tokens.colorNeutralForeground1,
+    },
+  },
+  dropdown: {
+    position: 'absolute',
+    top: `calc(100% + ${tokens.spacingVerticalXXS})`,
+    left: 0,
+    right: 0,
+    backgroundColor: tokens.colorNeutralBackground1,
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke1),
+    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    boxShadow: tokens.shadow8,
+    maxHeight: '320px',
+    overflowY: 'auto',
+    zIndex: 100,
+    ...shorthands.padding(tokens.spacingVerticalXXS, 0),
+    boxSizing: 'border-box',
+  },
+  resultItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    width: '100%',
+    ...shorthands.padding(tokens.spacingVerticalS, tokens.spacingHorizontalM),
+    ...shorthands.border('none'),
+    backgroundColor: 'transparent',
+    color: tokens.colorNeutralForeground1,
+    textAlign: 'left',
+    cursor: 'pointer',
+    boxSizing: 'border-box',
+    transitionProperty: 'background-color',
+    transitionDuration: tokens.durationFast,
+    transitionTimingFunction: tokens.curveEasyEase,
+    ':hover': {
+      backgroundColor: tokens.colorNeutralBackground1Hover,
+    },
+    ':focus-visible': {
+      backgroundColor: tokens.colorNeutralBackground1Hover,
+      outlineStyle: 'none',
+    },
+  },
+  resultDot: {
+    width: '8px',
+    height: '8px',
+    ...shorthands.borderRadius(tokens.borderRadiusCircular),
+    flexShrink: 0,
+  },
+  resultInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    flexGrow: 1,
+    minWidth: 0,
+  },
+  resultName: {
+    fontSize: tokens.fontSizeBase200,
+    fontWeight: tokens.fontWeightMedium,
+    color: tokens.colorNeutralForeground1,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  resultCode: {
+    fontSize: tokens.fontSizeBase100,
+    color: tokens.colorNeutralForeground3,
+    fontFamily: "'Cascadia Code', 'Cascadia Mono', Consolas, monospace",
+  },
+  resultPath: {
+    fontSize: tokens.fontSizeBase100,
+    color: tokens.colorNeutralForeground3,
+    flexShrink: 0,
+    marginLeft: tokens.spacingHorizontalS,
+  },
+  empty: {
+    ...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalM),
+    textAlign: 'center',
+    color: tokens.colorNeutralForeground3,
+    fontSize: tokens.fontSizeBase200,
+  },
+});
 
 /**
  * A search component with autocomplete dropdown that searches across all available certifications.
  * Displays results that match the query in name, code, path name, or description.
- * 
+ * Built with @fluentui/react-components.
+ *
  * @param {Object} props
  * @param {Function} [props.onClose] - Optional callback triggered when a search result is selected
+ * @param {boolean} [props.autoFocus=false] - Whether to autofocus the input
+ * @param {boolean} [props.isMobile=false] - Whether mobile rendering applies
  */
-const SearchBar = ({ onClose, autoFocus = false, isMobile = false }) => {
+export default function SearchBar({ onClose, autoFocus = false, isMobile = false }) {
+  const styles = useStyles();
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -103,13 +279,16 @@ const SearchBar = ({ onClose, autoFocus = false, isMobile = false }) => {
   };
 
   return (
-    <div ref={containerRef} className={`search-bar ${isMobile ? 'search-bar--mobile' : ''}`}>
-      <div className="search-bar__input-wrapper">
-        <Search size={16} className="search-bar__icon" />
+    <div
+      ref={containerRef}
+      className={mergeClasses(styles.container, isMobile && styles.containerMobile)}
+    >
+      <div className={styles.inputWrapper}>
+        <Search16Regular className={styles.searchIcon} />
         <input
           ref={inputRef}
           type="text"
-          className="search-bar__input"
+          className={styles.input}
           placeholder="Search certifications..."
           value={query}
           onChange={handleInputChange}
@@ -117,42 +296,53 @@ const SearchBar = ({ onClose, autoFocus = false, isMobile = false }) => {
           id="search-certifications"
         />
         {!query && !isMobile && (
-          <span className="search-bar__shortcut">Ctrl K</span>
+          <span className={styles.shortcut}>Ctrl K</span>
         )}
         {query && isSearching && (
-          <IconMap.RefreshCw size={14} className="search-bar__spinner" />
+          <ArrowClockwise16Regular className={styles.spinner} />
         )}
         {query && !isSearching && (
-          <button className="search-bar__clear" onClick={() => { setQuery(''); setDebouncedQuery(''); setIsOpen(false); }}>
-            <X size={14} />
+          <button
+            type="button"
+            className={styles.clearBtn}
+            onClick={() => {
+              setQuery('');
+              setDebouncedQuery('');
+              setIsOpen(false);
+            }}
+            aria-label="Clear search"
+          >
+            <Dismiss16Regular />
           </button>
         )}
       </div>
       {isOpen && results.length > 0 && (
-        <div className="search-bar__dropdown">
+        <div className={styles.dropdown} role="listbox">
           {results.map((cert) => (
             <button
               key={`${cert.pathId}-${cert.id}`}
-              className="search-bar__result"
+              type="button"
+              className={styles.resultItem}
               onClick={() => handleSelect(cert)}
             >
-              <span className="search-bar__result-dot" style={{ background: cert.pathColor }} />
-              <div className="search-bar__result-info">
-                <span className="search-bar__result-name">{cert.name}</span>
-                <span className="search-bar__result-code">{cert.examCode}</span>
+              <span
+                className={styles.resultDot}
+                style={{ backgroundColor: cert.pathColor }}
+              />
+              <div className={styles.resultInfo}>
+                <span className={styles.resultName}>{cert.name}</span>
+                <span className={styles.resultCode}>{cert.examCode}</span>
               </div>
-              <span className="search-bar__result-path">{cert.pathName}</span>
+              <span className={styles.resultPath}>{cert.pathName}</span>
             </button>
           ))}
         </div>
       )}
       {isOpen && query && results.length === 0 && (
-        <div className="search-bar__dropdown">
-          <div className="search-bar__empty">No certifications found</div>
+        <div className={styles.dropdown}>
+          <div className={styles.empty}>No certifications found</div>
         </div>
       )}
     </div>
   );
-};
-
-export default SearchBar;
+}

@@ -10,4 +10,5 @@ export * from './ProductIcons';
 export { default as ProgressRing } from './ProgressRing';
 export { default as SEO } from './SEO';
 export { default as SearchBar } from './SearchBar';
+export { default as CommandPalette } from './CommandPalette';
 export { default as Toast } from './Toast';
