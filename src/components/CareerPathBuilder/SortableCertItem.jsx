@@ -560,10 +560,17 @@ export const SortableCertItem = memo(({
                 const targetCert = getCertById(pId)?.cert;
                 return targetCert ? targetCert.examCode : pId.toUpperCase();
               });
+              const isMulti = prereqList.length > 2;
               return (
-                <Badge key={`prereq-${idx}`} variant="default" small outline>
+                <Badge
+                  key={`prereq-${idx}`}
+                  variant="default"
+                  small
+                  outline
+                  title={isMulti ? `Requires 1 of: ${prereqTexts.join(', ')}` : undefined}
+                >
                   <Icons.Link size={10} />
-                  Prereq: {prereqTexts.join(' OR ')}
+                  {isMulti ? `1 of ${prereqList.length}` : `Prereq: ${prereqTexts.join(' OR ')}`}
                 </Badge>
               );
             })
