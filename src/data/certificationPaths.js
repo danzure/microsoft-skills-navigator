@@ -493,7 +493,7 @@ export const certificationPaths = [
         name: 'Cybersecurity Architect Expert',
         level: CERT_LEVELS.EXPERT,
         description: 'Design and evolve the cybersecurity strategy for an organization.',
-        prerequisites: [['sc-200', 'sc-300', 'sc-500']], // Requires ONE OF these
+        prerequisites: [['sc-200', 'sc-300', 'sc-500', 'sc-401']], // Requires ONE OF these
         learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/exams/sc-100/',
         retirementDate: null,
         skillsMeasured: [
@@ -789,7 +789,7 @@ export const certificationPaths = [
         description: 'Design and implement AI-enhanced supply chain management solutions in Dynamics 365.',
         prerequisites: [],
         recommendedPrereqs: ['ab-900'],
-        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/',
+        learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/exams/ab-330/',
         retirementDate: null,
         isBeta: 'Beta from Nov 2026',
         skillsMeasured: [
@@ -912,6 +912,8 @@ export const certificationPaths = [
         description: 'As an AI-first solution architect, you lead the transformation of enterprise operations by envisioning and implementing AI-powered architecture.',
         prerequisites: [
           [
+            'ab-650',
+            'ab-330',
             'mb-330',
             'pl-400',
             'mb-230',
@@ -1237,7 +1239,6 @@ export const certificationPaths = [
         skillsMeasured: [
         'Use GitHub Copilot responsibly (15–20%)',
         'Use GitHub Copilot features (25–30%)',
-        'GitHub Copilot features (25–30%)',
         'Understand GitHub Copilot data and architecture (10–15%)',
         'Apply prompt engineering and context crafting (10–15%)',
         'Improve developer productivity with GitHub Copilot (10–15%)',

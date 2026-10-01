@@ -11,9 +11,8 @@ import SEO from '../common/SEO';
 import { IconMap as Icons } from '../common/IconMap';
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Target16Regular } from '@fluentui/react-icons';
-import { ReactFlow, ReactFlowProvider, useNodesState, useEdgesState, Background, Panel, useReactFlow } from '@xyflow/react';
+import { ReactFlow, ReactFlowProvider, useNodesState, useEdgesState, Background, Panel, useReactFlow, BaseEdge, getSmoothStepPath, Position } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import dagre from 'dagre';
 
 const useClasses = makeStyles({
   root: {
@@ -639,7 +638,45 @@ const useClasses = makeStyles({
 const LEVELS = [CERT_LEVELS.FUNDAMENTALS, CERT_LEVELS.ASSOCIATE, CERT_LEVELS.EXPERT, CERT_LEVELS.SPECIALTY];
 const nodeTypes = { certNode: CertNode };
 
+const MetroEdge = ({
+  id,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition = Position.Bottom,
+  targetPosition = Position.Top,
+  style,
+  markerEnd,
+  data,
+}) => {
+  const [edgePath] = getSmoothStepPath({
+    sourceX,
+    sourceY,
+    sourcePosition,
+    targetX,
+    targetY,
+    targetPosition,
+    borderRadius: 16,
+    centerY: data?.busY,
+  });
+
+  return <BaseEdge id={id} path={edgePath} style={style} markerEnd={markerEnd} />;
+};
+
+const edgeTypes = {
+  metroStep: MetroEdge,
+  smoothstep: MetroEdge,
+};
+
 const layoutPositionsCache = new Map();
+
+const NODE_WIDTH = 400;
+const NODE_HEIGHT = 230;
+const COL_GAP = 70;
+const COL_WIDTH = NODE_WIDTH + COL_GAP; // 470
+const ROW_GAP = 100;
+const ROW_HEIGHT = NODE_HEIGHT + ROW_GAP; // 330
 
 const computePathLayout = (path, branchColumns, trunkFundamentals, trunkBottom, linearGroups, hasBranches) => {
   if (layoutPositionsCache.has(path.id)) {
@@ -649,92 +686,9 @@ const computePathLayout = (path, branchColumns, trunkFundamentals, trunkBottom, 
   const positions = new Map();
   const initialEdges = [];
 
-  if (hasBranches) {
-    const chainedFundamentals = trunkFundamentals.filter(c => !c.isIndependent);
-    for (let i = 1; i < chainedFundamentals.length; i++) {
-      initialEdges.push({
-        id: `e-${chainedFundamentals[i - 1].id}-${chainedFundamentals[i].id}`,
-        source: chainedFundamentals[i - 1].id,
-        target: chainedFundamentals[i].id,
-        type: 'smoothstep',
-      });
-    }
-
-    const lastTrunkFund = chainedFundamentals[chainedFundamentals.length - 1];
-    if (lastTrunkFund) {
-      branchColumns.forEach(branch => {
-        const firstBranchCert = branch.allCerts[0];
-        if (firstBranchCert && !firstBranchCert.isIndependent) {
-          initialEdges.push({
-            id: `e-${lastTrunkFund.id}-${firstBranchCert.id}`,
-            source: lastTrunkFund.id,
-            target: firstBranchCert.id,
-            type: 'smoothstep',
-          });
-        }
-      });
-    }
-
-    branchColumns.forEach(branch => {
-      const chainedBranchCerts = branch.allCerts.filter(c => !c.isIndependent);
-      for (let i = 1; i < chainedBranchCerts.length; i++) {
-        initialEdges.push({
-          id: `e-${chainedBranchCerts[i - 1].id}-${chainedBranchCerts[i].id}`,
-          source: chainedBranchCerts[i - 1].id,
-          target: chainedBranchCerts[i].id,
-          type: 'smoothstep',
-        });
-      }
-    });
-
-    const chainedBottom = trunkBottom.filter(c => !c.isIndependent);
-    if (chainedBottom.length > 0) {
-      const firstBottom = chainedBottom[0];
-      const prereqs = firstBottom.prerequisites ? firstBottom.prerequisites.flat() : [];
-
-      branchColumns.forEach(branch => {
-        const chainedBranchCerts = branch.allCerts.filter(c => !c.isIndependent);
-        const lastBranchCert = chainedBranchCerts[chainedBranchCerts.length - 1];
-        if (lastBranchCert) {
-          let shouldConnect = true;
-          if (prereqs.length > 0) {
-            shouldConnect = chainedBranchCerts.some(c => prereqs.includes(c.id));
-          }
-          if (shouldConnect) {
-            initialEdges.push({
-              id: `e-${lastBranchCert.id}-${firstBottom.id}`,
-              source: lastBranchCert.id,
-              target: firstBottom.id,
-              type: 'smoothstep',
-            });
-          }
-        }
-      });
-    }
-
-    for (let i = 1; i < chainedBottom.length; i++) {
-      initialEdges.push({
-        id: `e-${chainedBottom[i - 1].id}-${chainedBottom[i].id}`,
-        source: chainedBottom[i - 1].id,
-        target: chainedBottom[i].id,
-        type: 'smoothstep',
-      });
-    }
-  } else {
-    const orderedCerts = linearGroups.flatMap(g => g.certs).filter(c => !c.isIndependent);
-    for (let i = 1; i < orderedCerts.length; i++) {
-      initialEdges.push({
-        id: `e-${orderedCerts[i - 1].id}-${orderedCerts[i].id}`,
-        source: orderedCerts[i - 1].id,
-        target: orderedCerts[i].id,
-        type: 'smoothstep',
-      });
-    }
-  }
-
   if (path.id === 'retired-exams') {
-    const colWidth = 440; // 400 node width + 40 gap
-    const rowHeight = 270; // 230 node height + 40 gap
+    const colWidth = 440;
+    const rowHeight = 270;
     const cols = 3;
     const allCerts = branchColumns.flatMap(branch => branch.allCerts);
 
@@ -743,34 +697,204 @@ const computePathLayout = (path, branchColumns, trunkFundamentals, trunkBottom, 
       const row = Math.floor(idx / cols);
       positions.set(cert.id, {
         position: { x: col * colWidth, y: row * rowHeight },
-        sourcePosition: 'bottom',
-        targetPosition: 'top',
+        sourcePosition: Position.Bottom,
+        targetPosition: Position.Top,
       });
     });
+  } else if (hasBranches) {
+    const numBranches = branchColumns.length;
+    // Total span of branch columns: from 0 to (numBranches - 1) * COL_WIDTH
+    const centerX = numBranches > 1 ? ((numBranches - 1) * COL_WIDTH) / 2 : 0;
+
+    const coreFundamentals = trunkFundamentals.filter(c => !c.isIndependent);
+    const independentFundamentals = trunkFundamentals.filter(c => c.isIndependent);
+    const coreBottom = trunkBottom.filter(c => !c.isIndependent);
+    const independentBottom = trunkBottom.filter(c => c.isIndependent);
+
+    // 1. Fundamentals Tier (Top)
+    let startBranchY = 0;
+    if (coreFundamentals.length > 0) {
+      coreFundamentals.forEach((cert, idx) => {
+        positions.set(cert.id, {
+          position: { x: centerX, y: idx * ROW_HEIGHT },
+          sourcePosition: Position.Bottom,
+          targetPosition: Position.Top,
+        });
+
+        if (idx > 0) {
+          initialEdges.push({
+            id: `e-${coreFundamentals[idx - 1].id}-${cert.id}`,
+            source: coreFundamentals[idx - 1].id,
+            target: cert.id,
+            type: 'metroStep',
+          });
+        }
+      });
+
+      // Place independent fundamentals flanking core fundamentals at y = 0
+      independentFundamentals.forEach((cert, idx) => {
+        const side = idx % 2 === 0 ? -1 : 1;
+        const multiplier = Math.floor(idx / 2) + 1;
+        const indepX = centerX + side * multiplier * COL_WIDTH;
+        positions.set(cert.id, {
+          position: { x: indepX, y: 0 },
+          sourcePosition: Position.Bottom,
+          targetPosition: Position.Top,
+        });
+      });
+
+      startBranchY = coreFundamentals.length * ROW_HEIGHT;
+    } else if (independentFundamentals.length > 0) {
+      const startX = centerX - ((independentFundamentals.length - 1) * COL_WIDTH) / 2;
+      independentFundamentals.forEach((cert, idx) => {
+        positions.set(cert.id, {
+          position: { x: startX + idx * COL_WIDTH, y: 0 },
+          sourcePosition: Position.Bottom,
+          targetPosition: Position.Top,
+        });
+      });
+      startBranchY = ROW_HEIGHT;
+    }
+
+    // 2. Branch Columns Tier (Middle)
+    let maxBranchBottomY = startBranchY + NODE_HEIGHT;
+
+    branchColumns.forEach((branch, colIdx) => {
+      const colX = colIdx * COL_WIDTH;
+      branch.allCerts.forEach((cert, rowIdx) => {
+        const certY = startBranchY + rowIdx * ROW_HEIGHT;
+        positions.set(cert.id, {
+          position: { x: colX, y: certY },
+          sourcePosition: Position.Bottom,
+          targetPosition: Position.Top,
+        });
+
+        const cardBottom = certY + NODE_HEIGHT;
+        if (cardBottom > maxBranchBottomY) {
+          maxBranchBottomY = cardBottom;
+        }
+
+        // Connect intra-branch sequential certs
+        if (rowIdx > 0 && !cert.isIndependent && !branch.allCerts[rowIdx - 1].isIndependent) {
+          initialEdges.push({
+            id: `e-${branch.allCerts[rowIdx - 1].id}-${cert.id}`,
+            source: branch.allCerts[rowIdx - 1].id,
+            target: cert.id,
+            type: 'metroStep',
+          });
+        }
+      });
+    });
+
+    // 3. Connect Trunk Top to First Branch Certs (Fan-Out)
+    const lastTrunkFund = coreFundamentals[coreFundamentals.length - 1];
+    if (lastTrunkFund) {
+      const lastFundPos = positions.get(lastTrunkFund.id)?.position;
+      const topBusY = lastFundPos ? lastFundPos.y + NODE_HEIGHT + ROW_GAP / 2 : (startBranchY - ROW_GAP / 2);
+
+      branchColumns.forEach(branch => {
+        const firstBranchCert = branch.allCerts[0];
+        if (firstBranchCert && !firstBranchCert.isIndependent) {
+          initialEdges.push({
+            id: `e-${lastTrunkFund.id}-${firstBranchCert.id}`,
+            source: lastTrunkFund.id,
+            target: firstBranchCert.id,
+            type: 'metroStep',
+            data: { busY: topBusY },
+          });
+        }
+      });
+    }
+
+    // 4. Capstone / Trunk Bottom Tier
+    if (coreBottom.length > 0 || independentBottom.length > 0) {
+      const bottomStartY = maxBranchBottomY + ROW_GAP;
+      const bottomBusY = maxBranchBottomY + ROW_GAP / 2;
+
+      coreBottom.forEach((cert, idx) => {
+        positions.set(cert.id, {
+          position: { x: centerX, y: bottomStartY + idx * ROW_HEIGHT },
+          sourcePosition: Position.Bottom,
+          targetPosition: Position.Top,
+        });
+
+        if (idx > 0) {
+          initialEdges.push({
+            id: `e-${coreBottom[idx - 1].id}-${cert.id}`,
+            source: coreBottom[idx - 1].id,
+            target: cert.id,
+            type: 'metroStep',
+          });
+        }
+      });
+
+      // Place independent bottom certs flanking coreBottom[0]
+      independentBottom.forEach((cert, idx) => {
+        const side = idx % 2 === 0 ? -1 : 1;
+        const multiplier = Math.floor(idx / 2) + 1;
+        const indepX = centerX + side * multiplier * COL_WIDTH;
+        positions.set(cert.id, {
+          position: { x: indepX, y: bottomStartY },
+          sourcePosition: Position.Bottom,
+          targetPosition: Position.Top,
+        });
+      });
+
+      // Connect terminal branch certs to the first bottom cert
+      if (coreBottom.length > 0) {
+        const firstBottom = coreBottom[0];
+        const prereqs = firstBottom.prerequisites ? firstBottom.prerequisites.flat() : [];
+
+        branchColumns.forEach(branch => {
+          const chainedBranchCerts = branch.allCerts.filter(c => !c.isIndependent);
+          const lastBranchCert = chainedBranchCerts[chainedBranchCerts.length - 1];
+          if (lastBranchCert) {
+            let shouldConnect = true;
+            if (prereqs.length > 0) {
+              shouldConnect = chainedBranchCerts.some(c => prereqs.includes(c.id));
+            }
+            if (shouldConnect) {
+              initialEdges.push({
+                id: `e-${lastBranchCert.id}-${firstBottom.id}`,
+                source: lastBranchCert.id,
+                target: firstBottom.id,
+                type: 'metroStep',
+                data: { busY: bottomBusY },
+              });
+            }
+          }
+        });
+      }
+    }
   } else {
-    const dagreGraph = new dagre.graphlib.Graph();
-    dagreGraph.setDefaultEdgeLabel(() => ({}));
-    dagreGraph.setGraph({ rankdir: 'TB', nodesep: 40, ranksep: 80 });
+    // Linear paths without branches (e.g., Azure DevOps)
+    const orderedCerts = linearGroups.flatMap(g => g.certs).filter(c => !c.isIndependent);
+    const centerX = 0;
 
-    path.certifications.forEach((cert) => {
-      dagreGraph.setNode(cert.id, { width: 400, height: 230 });
-    });
-
-    initialEdges.forEach((edge) => {
-      dagreGraph.setEdge(edge.source, edge.target);
-    });
-
-    dagre.layout(dagreGraph);
-
-    path.certifications.forEach((cert) => {
-      const nodeWithPosition = dagreGraph.node(cert.id);
+    orderedCerts.forEach((cert, idx) => {
       positions.set(cert.id, {
-        position: {
-          x: nodeWithPosition.x - 400 / 2,
-          y: nodeWithPosition.y - 230 / 2,
-        },
-        targetPosition: 'top',
-        sourcePosition: 'bottom',
+        position: { x: centerX, y: idx * ROW_HEIGHT },
+        sourcePosition: Position.Bottom,
+        targetPosition: Position.Top,
+      });
+
+      if (idx > 0) {
+        initialEdges.push({
+          id: `e-${orderedCerts[idx - 1].id}-${cert.id}`,
+          source: orderedCerts[idx - 1].id,
+          target: cert.id,
+          type: 'metroStep',
+        });
+      }
+    });
+
+    // Also position any independent certs in linear paths to the right
+    const independentCerts = linearGroups.flatMap(g => g.certs).filter(c => c.isIndependent);
+    independentCerts.forEach((cert, idx) => {
+      positions.set(cert.id, {
+        position: { x: centerX + COL_WIDTH, y: idx * ROW_HEIGHT },
+        sourcePosition: Position.Bottom,
+        targetPosition: Position.Top,
       });
     });
   }
@@ -1063,6 +1187,7 @@ const PathMapFlow = ({
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           fitView={false}
           zoomOnDoubleClick={false}
           minZoom={0.15}
