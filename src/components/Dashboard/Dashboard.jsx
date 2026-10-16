@@ -285,8 +285,9 @@ const useStyles = makeStyles({
   },
   activityItemCode: {
     fontSize: tokens.fontSizeBase100,
+    lineHeight: tokens.lineHeightBase100,
     color: tokens.colorNeutralForeground3,
-    fontFamily: "'Cascadia Code', 'Cascadia Mono', Consolas, monospace",
+    fontFamily: tokens.fontFamilyMonospace,
   },
   sectionWrap: {
     display: 'flex',
@@ -301,12 +302,14 @@ const useStyles = makeStyles({
   sectionTitle: {
     margin: 0,
     fontSize: tokens.fontSizeBase500,
+    lineHeight: tokens.lineHeightBase500,
     fontWeight: tokens.fontWeightBold,
     color: tokens.colorNeutralForeground1,
   },
   sectionDesc: {
     margin: 0,
     fontSize: tokens.fontSizeBase300,
+    lineHeight: tokens.lineHeightBase300,
     color: tokens.colorNeutralForeground2,
   },
   pathsGrid: {
@@ -374,16 +377,16 @@ const useStyles = makeStyles({
     gap: tokens.spacingHorizontalS,
   },
   pathCodeChip: {
-    fontSize: tokens.fontSizeCaption2,
+    fontSize: tokens.fontSizeBase100,
+    lineHeight: tokens.lineHeightBase100,
     fontWeight: tokens.fontWeightSemibold,
-    fontFamily: "'Cascadia Code', 'Cascadia Mono', Consolas, monospace",
+    fontFamily: tokens.fontFamilyMonospace,
     color: tokens.colorNeutralForeground3,
     backgroundColor: tokens.colorNeutralBackground3,
     ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke3),
     ...shorthands.borderRadius(tokens.borderRadiusSmall),
     ...shorthands.padding('1px', '6px'),
     letterSpacing: '0.04em',
-    lineHeight: 1.2,
   },
   pathTrackBtn: {
     display: 'inline-flex',
@@ -395,7 +398,8 @@ const useStyles = makeStyles({
     ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke2),
     backgroundColor: tokens.colorNeutralBackground1,
     color: tokens.colorNeutralForeground2,
-    fontSize: tokens.fontSizeCaption1,
+    fontSize: tokens.fontSizeBase200,
+    lineHeight: tokens.lineHeightBase200,
     fontWeight: tokens.fontWeightSemibold,
     cursor: 'pointer',
     transitionProperty: 'all',
@@ -421,7 +425,8 @@ const useStyles = makeStyles({
     ...shorthands.border(tokens.strokeWidthThin, 'solid', 'color-mix(in srgb, var(--card-accent, var(--colorBrandStroke1)) 35%, transparent)'),
     backgroundColor: 'color-mix(in srgb, var(--card-accent, var(--colorBrandBackground2)) 10%, var(--colorNeutralBackground1))',
     color: tokens.colorNeutralForeground1,
-    fontSize: tokens.fontSizeCaption1,
+    fontSize: tokens.fontSizeBase200,
+    lineHeight: tokens.lineHeightBase200,
     fontWeight: tokens.fontWeightSemibold,
     cursor: 'pointer',
     transitionProperty: 'all',
@@ -473,7 +478,8 @@ const useStyles = makeStyles({
     lineHeight: tokens.lineHeightBase400,
   },
   pathMetaSubtitle: {
-    fontSize: tokens.fontSizeCaption1,
+    fontSize: tokens.fontSizeBase200,
+    lineHeight: tokens.lineHeightBase200,
     color: tokens.colorNeutralForeground3,
   },
   pathCardBody: {
@@ -493,27 +499,6 @@ const useStyles = makeStyles({
     WebkitBoxOrient: 'vertical',
     overflow: 'hidden',
   },
-  branchChipsRow: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '6px',
-    alignItems: 'center',
-    marginTop: tokens.spacingVerticalXS,
-  },
-  branchChip: {
-    fontSize: tokens.fontSizeCaption2,
-    color: tokens.colorNeutralForeground2,
-    backgroundColor: tokens.colorNeutralBackground2,
-    ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke3),
-    ...shorthands.borderRadius(tokens.borderRadiusSmall),
-    ...shorthands.padding('2px', '7px'),
-    whiteSpace: 'nowrap',
-  },
-  branchChipMore: {
-    fontSize: tokens.fontSizeCaption2,
-    color: tokens.colorNeutralForeground4,
-    ...shorthands.padding('2px', '4px'),
-  },
   pathCardFooter: {
     marginTop: 'auto',
     paddingTop: tokens.spacingVerticalM,
@@ -530,7 +515,8 @@ const useStyles = makeStyles({
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    fontSize: tokens.fontSizeCaption1,
+    fontSize: tokens.fontSizeBase200,
+    lineHeight: tokens.lineHeightBase200,
   },
   pathProgressText: {
     fontWeight: tokens.fontWeightSemibold,
@@ -568,7 +554,8 @@ const useStyles = makeStyles({
     alignItems: 'center',
     justifyContent: 'space-between',
     color: tokens.colorBrandForeground1,
-    fontSize: tokens.fontSizeCaption1,
+    fontSize: tokens.fontSizeBase200,
+    lineHeight: tokens.lineHeightBase200,
     fontWeight: tokens.fontWeightSemibold,
   },
   pathExploreLabel: {
@@ -733,8 +720,6 @@ export default function Dashboard() {
     const prog = getPathProgress(path.id);
     const Icon = Icons[path.icon] || Icons.Circle;
     const branches = path.branches || [];
-    const displayedBranches = branches.slice(0, 3);
-    const remainingBranches = branches.length - displayedBranches.length;
 
     return (
       <div
@@ -824,22 +809,6 @@ export default function Dashboard() {
         <div className={styles.pathCardBody}>
           <p className={styles.pathDesc}>{path.description}</p>
         </div>
-
-        {/* Specialization Tags / Branches */}
-        {displayedBranches.length > 0 && path.id !== 'retired-exams' && (
-          <div className={styles.branchChipsRow}>
-            {displayedBranches.map((b) => (
-              <span key={b.id} className={styles.branchChip} title={b.description || b.name}>
-                {b.name}
-              </span>
-            ))}
-            {remainingBranches > 0 && (
-              <span className={styles.branchChipMore}>
-                +{remainingBranches} more
-              </span>
-            )}
-          </div>
-        )}
 
         {/* Card Footer: Progress (Tracked) OR Roadmap link (Untracked) */}
         <div className={styles.pathCardFooter}>
@@ -1184,7 +1153,7 @@ export default function Dashboard() {
               >
                 <h3
                   className={styles.sectionTitle}
-                  style={{ fontSize: '18px', marginBottom: '16px' }}
+                  style={{ marginBottom: 'var(--space-4, 16px)' }}
                 >
                   Individually Tracked Exams
                 </h3>

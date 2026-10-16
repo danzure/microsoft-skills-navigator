@@ -217,8 +217,9 @@ const useStyles = makeStyles({
   },
   countBadge: {
     fontSize: tokens.fontSizeBase100,
+    lineHeight: tokens.lineHeightBase100,
     color: tokens.colorNeutralForeground3,
-    fontFamily: "'Cascadia Code', 'Cascadia Mono', Consolas, monospace",
+    fontFamily: tokens.fontFamilyMonospace,
     marginLeft: tokens.spacingHorizontalS,
     flexShrink: 0,
   },

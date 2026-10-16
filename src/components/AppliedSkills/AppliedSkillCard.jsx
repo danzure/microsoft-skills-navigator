@@ -116,6 +116,7 @@ const useStyles = makeStyles({
     borderTopStyle: 'solid',
     borderTopColor: tokens.colorNeutralStroke3,
     fontSize: tokens.fontSizeBase100,
+    lineHeight: tokens.lineHeightBase100,
     color: tokens.colorNeutralForeground3,
   },
   relatedCerts: {

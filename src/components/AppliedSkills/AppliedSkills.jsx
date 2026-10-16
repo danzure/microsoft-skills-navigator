@@ -69,9 +69,9 @@ const useStyles = makeStyles({
   title: {
     ...shorthands.margin(0),
     fontSize: tokens.fontSizeHero700,
+    lineHeight: tokens.lineHeightHero700,
     fontWeight: tokens.fontWeightBold,
     color: tokens.colorNeutralForeground1,
-    lineHeight: 1.2,
   },
   subtitle: {
     ...shorthands.margin(tokens.spacingVerticalXS, 0, 0, 0),
@@ -96,6 +96,7 @@ const useStyles = makeStyles({
   },
   statLabel: {
     fontSize: tokens.fontSizeBase100,
+    lineHeight: tokens.lineHeightBase100,
     color: tokens.colorNeutralForeground3,
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
@@ -103,6 +104,7 @@ const useStyles = makeStyles({
   },
   statVal: {
     fontSize: tokens.fontSizeBase600,
+    lineHeight: tokens.lineHeightBase600,
     fontWeight: tokens.fontWeightBold,
     color: tokens.colorNeutralForeground1,
   },
@@ -306,6 +308,7 @@ const useStyles = makeStyles({
   posterColumnTitle: {
     ...shorthands.margin(0),
     fontSize: tokens.fontSizeBase500,
+    lineHeight: tokens.lineHeightBase500,
     fontWeight: tokens.fontWeightBold,
     color: tokens.colorNeutralForeground1,
     display: 'flex',
@@ -314,6 +317,7 @@ const useStyles = makeStyles({
   },
   posterColumnCount: {
     fontSize: tokens.fontSizeBase100,
+    lineHeight: tokens.lineHeightBase100,
     fontWeight: tokens.fontWeightSemibold,
     color: tokens.colorNeutralForeground3,
     backgroundColor: tokens.colorNeutralBackground2,
@@ -328,6 +332,7 @@ const useStyles = makeStyles({
   },
   swimlaneHeader: {
     fontSize: tokens.fontSizeBase100,
+    lineHeight: tokens.lineHeightBase100,
     fontWeight: tokens.fontWeightBold,
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
@@ -364,12 +369,14 @@ const useStyles = makeStyles({
   emptyStateTitle: {
     ...shorthands.margin(0, 0, tokens.spacingVerticalS, 0),
     fontSize: tokens.fontSizeBase500,
+    lineHeight: tokens.lineHeightBase500,
     fontWeight: tokens.fontWeightBold,
     color: tokens.colorNeutralForeground1,
   },
   emptyStateText: {
     ...shorthands.margin(0),
     fontSize: tokens.fontSizeBase300,
+    lineHeight: tokens.lineHeightBase300,
     color: tokens.colorNeutralForeground2,
   },
 });

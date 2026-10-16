@@ -44,9 +44,9 @@ const useStyles = makeStyles({
     lineHeight: 1,
   },
   label: {
-    fontSize: '8px',
+    fontSize: tokens.fontSizeBase100,
+    lineHeight: tokens.lineHeightBase100,
     color: tokens.colorNeutralForeground3,
-    lineHeight: 1,
   },
 });
 
@@ -109,7 +109,7 @@ export default function ProgressRing({
         {showPercent && (
           <span
             className={styles.value}
-            style={{ fontSize: Math.max(12, size * 0.25) }}
+            style={{ fontSize: size < 36 ? (percent === 100 ? 9 : 10) : Math.max(12, size * 0.25) }}
           >
             {percent}%
           </span>

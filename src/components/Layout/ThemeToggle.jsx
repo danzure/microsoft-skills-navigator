@@ -84,6 +84,7 @@ const useStyles = makeStyles({
   },
   triggerLabel: {
     fontSize: tokens.fontSizeBase200,
+    lineHeight: tokens.lineHeightBase200,
     fontWeight: tokens.fontWeightMedium,
     letterSpacing: '0.01rem',
     display: 'none',

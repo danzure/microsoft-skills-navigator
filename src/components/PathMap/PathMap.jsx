@@ -18,8 +18,8 @@ const useClasses = makeStyles({
   root: {
     display: 'flex',
     flexDirection: 'column',
-    gap: tokens.spacingVerticalXXL,
-    paddingBottom: tokens.spacingVerticalXXXL,
+    gap: tokens.spacingVerticalS,
+    paddingBottom: tokens.spacingVerticalM,
     height: '100%',
   },
   notFound: {
@@ -48,65 +48,65 @@ const useClasses = makeStyles({
     overflow: 'visible',
     display: 'flex',
     flexDirection: 'column',
-    gap: tokens.spacingVerticalL,
-    padding: `${tokens.spacingVerticalXL} ${tokens.spacingHorizontalXXL}`,
+    gap: '6px',
+    padding: '8px 16px',
     backgroundColor: tokens.colorNeutralBackground1,
     border: `1px solid ${tokens.colorNeutralStroke1}`,
-    borderRadius: tokens.borderRadiusLarge,
-    boxShadow: tokens.shadow4,
-    margin: `${tokens.spacingVerticalL} ${tokens.spacingHorizontalL} 0`,
+    borderRadius: tokens.borderRadiusMedium,
+    boxShadow: tokens.shadow2,
+    margin: `6px ${tokens.spacingHorizontalL} 0`,
     '@media (max-width: 768px)': {
-      margin: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalS} 0`,
-      padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalL}`,
-      gap: tokens.spacingVerticalM,
+      margin: `4px ${tokens.spacingHorizontalS} 0`,
+      padding: '8px 12px',
+      gap: '6px',
     },
     '@media (min-width: 769px) and (max-width: 960px)': {
-      gap: tokens.spacingVerticalM,
-      padding: tokens.spacingVerticalL,
+      gap: '6px',
+      padding: '8px 14px',
     },
   },
   headerGlow: {
     position: 'absolute',
-    top: '-30px',
-    left: '-30px',
-    width: '260px',
-    height: '180px',
-    background: 'radial-gradient(circle, color-mix(in srgb, var(--path-color) 22%, transparent) 0%, transparent 70%)',
+    top: '-15px',
+    left: '-15px',
+    width: '160px',
+    height: '100px',
+    background: 'radial-gradient(circle, color-mix(in srgb, var(--path-color) 20%, transparent) 0%, transparent 70%)',
     pointerEvents: 'none',
     borderRadius: '50%',
-    filter: 'blur(28px)',
+    filter: 'blur(18px)',
     zIndex: 0,
-    opacity: 0.75,
+    opacity: 0.65,
   },
   headerTop: {
     display: 'flex',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    gap: tokens.spacingHorizontalXL,
+    gap: tokens.spacingHorizontalL,
     width: '100%',
     position: 'relative',
     zIndex: 2,
     '@media (max-width: 768px)': {
       flexDirection: 'column',
       alignItems: 'stretch',
-      gap: tokens.spacingVerticalM,
+      gap: tokens.spacingVerticalS,
     },
     '@media (min-width: 769px) and (max-width: 960px)': {
       flexDirection: 'column',
       alignItems: 'stretch',
-      gap: tokens.spacingVerticalM,
+      gap: tokens.spacingVerticalS,
     },
   },
   headerBrand: {
     display: 'flex',
     alignItems: 'center',
-    gap: tokens.spacingHorizontalL,
+    gap: tokens.spacingHorizontalM,
     flex: 1,
     minWidth: 0,
     '@media (max-width: 768px)': {
       width: '100%',
       minWidth: 0,
-      gap: tokens.spacingHorizontalM,
+      gap: tokens.spacingHorizontalS,
     },
   },
   headerIcon: {
@@ -117,14 +117,16 @@ const useClasses = makeStyles({
     border: 'none',
     boxShadow: 'none',
     color: 'var(--path-color)',
-    filter: 'drop-shadow(0 3px 12px color-mix(in srgb, var(--path-color) 35%, transparent))',
+    filter: 'drop-shadow(0 2px 8px color-mix(in srgb, var(--path-color) 35%, transparent))',
     flexShrink: 0,
+    width: '32px',
+    height: '32px',
     '@media (max-width: 768px)': {
-      width: '42px',
-      height: '42px',
+      width: '28px',
+      height: '28px',
       '& svg': {
-        width: '22px',
-        height: '22px',
+        width: '24px',
+        height: '24px',
       },
     },
   },
@@ -133,46 +135,55 @@ const useClasses = makeStyles({
     minWidth: 0,
     display: 'flex',
     flexDirection: 'column',
-    gap: '2px',
+    gap: '1px',
   },
   headerMetaRow: {
     display: 'flex',
     alignItems: 'center',
-    gap: tokens.spacingHorizontalS,
+    gap: tokens.spacingHorizontalXS,
     flexWrap: 'wrap',
+    lineHeight: 1,
   },
   headerPillarChip: {
-    fontSize: '11px',
+    fontSize: tokens.fontSizeBase100,
+    lineHeight: '14px',
     fontWeight: tokens.fontWeightSemibold,
     color: tokens.colorNeutralForeground3,
     backgroundColor: tokens.colorNeutralBackground2,
     border: `1px solid ${tokens.colorNeutralStroke2}`,
-    padding: '1px 7px',
+    padding: '0 5px',
     borderRadius: tokens.borderRadiusSmall,
     letterSpacing: '0.3px',
     textTransform: 'uppercase',
   },
   headerCertCount: {
-    fontSize: '12px',
+    fontSize: tokens.fontSizeBase100,
+    lineHeight: '14px',
     color: tokens.colorNeutralForeground3,
   },
   headerTitle: {
-    fontSize: 'var(--fs-title2)',
+    fontSize: tokens.fontSizeBase500,
+    lineHeight: tokens.lineHeightBase500,
     fontWeight: tokens.fontWeightBold,
     color: tokens.colorNeutralForeground1,
     margin: 0,
-    lineHeight: 'var(--lh-tight)',
-    overflowWrap: 'break-word',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
     '@media (max-width: 768px)': {
-      fontSize: 'var(--fs-subtitle1)',
+      fontSize: tokens.fontSizeBase400,
+      lineHeight: tokens.lineHeightBase400,
     },
   },
   headerDesc: {
-    fontSize: tokens.fontSizeBase300,
+    fontSize: tokens.fontSizeBase200,
+    lineHeight: tokens.lineHeightBase200,
     color: tokens.colorNeutralForeground2,
-    lineHeight: 'var(--lh-normal)',
-    margin: `${tokens.spacingVerticalXS} 0 0`,
-    maxWidth: '800px',
+    margin: 0,
+    maxWidth: '850px',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
     '@media (max-width: 768px)': {
       display: 'none',
     },
@@ -207,14 +218,15 @@ const useClasses = makeStyles({
   viewBtn: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: tokens.spacingHorizontalXS,
-    height: '28px',
-    padding: `0 ${tokens.spacingHorizontalM}`,
+    gap: '4px',
+    height: '24px',
+    padding: `0 ${tokens.spacingHorizontalS}`,
     borderRadius: tokens.borderRadiusSmall,
     border: '1px solid transparent',
     backgroundColor: 'transparent',
     color: tokens.colorNeutralForeground2,
-    fontSize: 'var(--fs-caption1)',
+    fontSize: tokens.fontSizeBase100,
+    lineHeight: tokens.lineHeightBase100,
     fontWeight: tokens.fontWeightSemibold,
     cursor: 'pointer',
     touchAction: 'manipulation',
@@ -235,11 +247,12 @@ const useClasses = makeStyles({
   trackBtn: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: tokens.spacingHorizontalS,
-    height: '32px',
-    padding: `0 ${tokens.spacingHorizontalL}`,
+    gap: '4px',
+    height: '26px',
+    padding: `0 ${tokens.spacingHorizontalM}`,
     borderRadius: tokens.borderRadiusMedium,
-    fontSize: tokens.fontSizeBase300,
+    fontSize: tokens.fontSizeBase200,
+    lineHeight: tokens.lineHeightBase200,
     fontWeight: tokens.fontWeightSemibold,
     fontFamily: 'inherit',
     cursor: 'pointer',
@@ -274,9 +287,9 @@ const useClasses = makeStyles({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: tokens.spacingHorizontalL,
+    gap: tokens.spacingHorizontalM,
     borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
-    paddingTop: tokens.spacingVerticalM,
+    paddingTop: '6px',
     position: 'relative',
     zIndex: 1,
     width: '100%',
@@ -284,13 +297,13 @@ const useClasses = makeStyles({
     '@media (max-width: 768px)': {
       flexDirection: 'column',
       alignItems: 'stretch',
-      gap: tokens.spacingVerticalM,
-      paddingTop: tokens.spacingVerticalS,
+      gap: tokens.spacingVerticalS,
+      paddingTop: tokens.spacingVerticalXS,
     },
     '@media (min-width: 769px) and (max-width: 960px)': {
       flexDirection: 'column',
       alignItems: 'stretch',
-      gap: tokens.spacingVerticalM,
+      gap: tokens.spacingVerticalS,
     },
   },
   branchesBar: {
@@ -302,7 +315,7 @@ const useClasses = makeStyles({
     overflowX: 'auto',
     WebkitOverflowScrolling: 'touch',
     scrollbarWidth: 'none',
-    padding: '2px 0',
+    padding: '1px 0',
     '&::-webkit-scrollbar': {
       display: 'none',
     },
@@ -316,8 +329,9 @@ const useClasses = makeStyles({
   branchesLabel: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '4px',
-    fontSize: '11px',
+    gap: '3px',
+    fontSize: tokens.fontSizeBase100,
+    lineHeight: tokens.lineHeightBase100,
     fontWeight: tokens.fontWeightBold,
     color: tokens.colorNeutralForeground3,
     textTransform: 'uppercase',
@@ -327,16 +341,17 @@ const useClasses = makeStyles({
   branchesChips: {
     display: 'flex',
     alignItems: 'center',
-    gap: tokens.spacingHorizontalS,
+    gap: '6px',
     flexWrap: 'nowrap',
   },
   branchChip: {
     display: 'inline-flex',
     alignItems: 'center',
-    height: '28px',
-    padding: `0 ${tokens.spacingHorizontalM}`,
-    borderRadius: tokens.borderRadiusMedium,
-    fontSize: 'var(--fs-caption1)',
+    height: '24px',
+    padding: `0 ${tokens.spacingHorizontalS}`,
+    borderRadius: tokens.borderRadiusSmall,
+    fontSize: tokens.fontSizeBase100,
+    lineHeight: tokens.lineHeightBase100,
     fontWeight: tokens.fontWeightSemibold,
     backgroundColor: tokens.colorNeutralBackground2,
     border: `1px solid ${tokens.colorNeutralStroke2}`,
@@ -365,7 +380,7 @@ const useClasses = makeStyles({
   headerStats: {
     display: 'flex',
     alignItems: 'center',
-    gap: tokens.spacingHorizontalM,
+    gap: tokens.spacingHorizontalS,
     flexShrink: 0,
     '@media (max-width: 768px)': {
       width: '100%',
@@ -384,7 +399,7 @@ const useClasses = makeStyles({
     display: 'flex',
     alignItems: 'center',
     '@media (max-width: 768px)': {
-      transform: 'scale(0.85)',
+      transform: 'scale(0.9)',
       transformOrigin: 'left center',
       marginLeft: '-2px',
     },
@@ -392,11 +407,11 @@ const useClasses = makeStyles({
   headerCounts: {
     display: 'flex',
     alignItems: 'center',
-    gap: tokens.spacingHorizontalS,
+    gap: '6px',
     '@media (max-width: 768px)': {
       display: 'flex',
       alignItems: 'center',
-      gap: tokens.spacingHorizontalS,
+      gap: '4px',
       flex: 1,
       justifyContent: 'flex-end',
     },
@@ -404,11 +419,12 @@ const useClasses = makeStyles({
   statPill: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '6px',
-    height: '32px',
-    padding: `0 ${tokens.spacingHorizontalM}`,
-    borderRadius: tokens.borderRadiusMedium,
-    fontSize: 'var(--fs-caption1)',
+    gap: '4px',
+    height: '24px',
+    padding: `0 ${tokens.spacingHorizontalS}`,
+    borderRadius: tokens.borderRadiusSmall,
+    fontSize: tokens.fontSizeBase100,
+    lineHeight: tokens.lineHeightBase100,
     fontWeight: tokens.fontWeightMedium,
     backgroundColor: tokens.colorNeutralBackground2,
     border: `1px solid ${tokens.colorNeutralStroke2}`,
@@ -427,9 +443,10 @@ const useClasses = makeStyles({
       transform: 'scale(0.96)',
     },
     '@media (max-width: 768px)': {
-      padding: '0 8px',
-      fontSize: 'var(--fs-caption2)',
-      height: '30px',
+      padding: '0 6px',
+      fontSize: tokens.fontSizeBase100,
+      lineHeight: tokens.lineHeightBase100,
+      height: '24px',
       gap: '4px',
     },
   },
@@ -474,7 +491,7 @@ const useClasses = makeStyles({
   viewport: {
     width: '100%',
     height: '100%',
-    paddingBottom: tokens.spacingVerticalL,
+    paddingBottom: tokens.spacingVerticalS,
     flex: 1,
     minHeight: 0,
   },
@@ -492,7 +509,8 @@ const useClasses = makeStyles({
     backgroundColor: tokens.colorNeutralBackground1,
     border: `1px solid ${tokens.colorNeutralStroke2}`,
     color: tokens.colorNeutralForeground2,
-    fontSize: 'var(--fs-caption2)',
+    fontSize: tokens.fontSizeBase100,
+    lineHeight: tokens.lineHeightBase100,
     fontWeight: tokens.fontWeightMedium,
     boxShadow: tokens.shadow4,
     pointerEvents: 'none',
@@ -1338,7 +1356,7 @@ const PathMap = () => {
         <div className={c.headerTop}>
           <div className={c.headerBrand}>
             <div className={c.headerIcon}>
-              <PathIcon size={52} />
+              <PathIcon size={32} />
             </div>
 
             <div className={c.headerInfo}>
@@ -1363,7 +1381,7 @@ const PathMap = () => {
                 aria-selected={viewMode === 'map'}
                 title="Interactive Map View"
               >
-                <Icons.Map size={15} />
+                <Icons.Map size={13} />
                 <span>Map</span>
               </button>
               <button
@@ -1374,7 +1392,7 @@ const PathMap = () => {
                 aria-selected={viewMode === 'list'}
                 title="Roadmap List View"
               >
-                <Icons.List size={15} />
+                <Icons.List size={13} />
                 <span>List</span>
               </button>
             </div>
@@ -1393,7 +1411,7 @@ const PathMap = () => {
                 }}
                 title={isPathTracked ? "Remove from My Tracked Learning" : "Track this entire path in My Learning"}
               >
-                {isPathTracked ? <Icons.CheckCircle2 size={16} /> : <Icons.Plus size={16} />}
+                {isPathTracked ? <Icons.CheckCircle2 size={14} /> : <Icons.Plus size={14} />}
                 <span>{isPathTracked ? 'Tracked in Learning' : 'Track This Path'}</span>
               </button>
             )}
@@ -1405,7 +1423,7 @@ const PathMap = () => {
           {path.branches && path.branches.length > 0 ? (
             <div className={c.branchesBar}>
               <span className={c.branchesLabel}>
-                <Icons.GitBranch size={13} />
+                <Icons.GitBranch size={12} />
                 Branches:
               </span>
               <div className={c.branchesChips}>
@@ -1435,7 +1453,7 @@ const PathMap = () => {
 
           <div className={c.headerStats}>
             <div className={c.headerProgress}>
-              <ProgressRing percent={pathProgress.percent} size={42} strokeWidth={4} color={path.color} />
+              <ProgressRing percent={pathProgress.percent} size={30} strokeWidth={3} color={path.color} />
             </div>
             <div className={c.headerCounts}>
               <button
@@ -1448,7 +1466,7 @@ const PathMap = () => {
                 onClick={() => setStatusFilter(statusFilter === 'completed' ? 'all' : 'completed')}
                 title="Filter completed certifications"
               >
-                <Icons.CheckCircle2 size={13} />
+                <Icons.CheckCircle2 size={12} />
                 <span><strong>{pathProgress.completed}</strong> Completed</span>
               </button>
               <button
@@ -1461,7 +1479,7 @@ const PathMap = () => {
                 onClick={() => setStatusFilter(statusFilter === 'in_progress' ? 'all' : 'in_progress')}
                 title="Filter active in-progress certifications"
               >
-                <Icons.Clock size={13} />
+                <Icons.Clock size={12} />
                 <span><strong>{pathProgress.inProgress}</strong> Active</span>
               </button>
               <button
@@ -1474,7 +1492,7 @@ const PathMap = () => {
                 onClick={() => setStatusFilter(statusFilter === 'not_started' ? 'all' : 'not_started')}
                 title="Filter remaining certifications"
               >
-                <Icons.Circle size={13} />
+                <Icons.Circle size={12} />
                 <span><strong>{Math.max(0, pathProgress.total - pathProgress.completed - pathProgress.inProgress)}</strong> Remaining</span>
               </button>
             </div>

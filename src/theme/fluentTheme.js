@@ -24,17 +24,21 @@ export const azureBrandRamp = {
 };
 
 /**
- * Custom Light Theme integrating Azure branding with Fluent 2 light neutrals.
+ * Custom Light Theme integrating Azure branding with Fluent 2 light neutrals and typography.
  */
 export const customLightTheme = {
   ...createLightTheme(azureBrandRamp),
   colorNeutralBackgroundCanvas: '#f5f5f5',
+  fontFamilyBase: "'Segoe UI Variable', 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
+  fontFamilyMonospace: "'Cascadia Code', 'Cascadia Mono', Consolas, monospace",
 };
 
 /**
- * Custom Dark Theme integrating Azure branding with Fluent 2 dark neutrals.
+ * Custom Dark Theme integrating Azure branding with Fluent 2 dark neutrals and typography.
  */
 export const customDarkTheme = {
   ...createDarkTheme(azureBrandRamp),
   colorNeutralBackgroundCanvas: '#1f1f1f',
+  fontFamilyBase: "'Segoe UI Variable', 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
+  fontFamilyMonospace: "'Cascadia Code', 'Cascadia Mono', Consolas, monospace",
 };

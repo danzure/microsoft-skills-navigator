@@ -26,6 +26,7 @@ const useStyles = makeStyles({
     height: '20px',
     ...shorthands.padding('0', tokens.spacingHorizontalXXS),
     fontSize: tokens.fontSizeBase100,
+    lineHeight: tokens.lineHeightBase100,
   },
   outline: {
     backgroundColor: 'transparent !important',

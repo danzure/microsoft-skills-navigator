@@ -197,7 +197,7 @@ const useStyles = makeStyles({
     justifyContent: 'center',
     ...shorthands.padding('2px', tokens.spacingHorizontalXXS),
     ...shorthands.borderRadius(tokens.borderRadiusSmall),
-    fontFamily: "'Cascadia Code', 'Cascadia Mono', Consolas, monospace",
+    fontFamily: tokens.fontFamilyMonospace,
     fontSize: tokens.fontSizeBase100,
     fontWeight: tokens.fontWeightSemibold,
     lineHeight: tokens.lineHeightBase100,

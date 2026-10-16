@@ -110,9 +110,10 @@ const useStyles = makeStyles({
   },
   examCode: {
     fontSize: tokens.fontSizeBase300,
+    lineHeight: tokens.lineHeightBase300,
     fontWeight: tokens.fontWeightSemibold,
     color: tokens.colorBrandForeground1,
-    fontFamily: "'Cascadia Code', 'Cascadia Mono', Consolas, monospace",
+    fontFamily: tokens.fontFamilyMonospace,
   },
   badgeIcon: {
     width: '64px',
@@ -269,8 +270,23 @@ const useStyles = makeStyles({
   },
   prereqCode: {
     fontSize: tokens.fontSizeBase100,
-    fontFamily: "'Cascadia Code', 'Cascadia Mono', Consolas, monospace",
+    lineHeight: tokens.lineHeightBase100,
+    fontFamily: tokens.fontFamilyMonospace,
     color: tokens.colorBrandForeground1,
+  },
+  dateLabel: {
+    fontSize: tokens.fontSizeBase200,
+    lineHeight: tokens.lineHeightBase200,
+    fontWeight: tokens.fontWeightSemibold,
+    color: tokens.colorNeutralForeground2,
+    marginBottom: tokens.spacingVerticalXS,
+    display: 'block',
+  },
+  expiryText: {
+    fontSize: tokens.fontSizeBase200,
+    lineHeight: tokens.lineHeightBase200,
+    color: tokens.colorNeutralForeground3,
+    marginTop: tokens.spacingVerticalXS,
   },
   appliedSkillsList: {
     display: 'flex',
@@ -951,10 +967,7 @@ export default function CertDetail({ cert, path, onClose }) {
             {(status === CERT_STATUS.COMPLETED ||
               status === CERT_STATUS.NEEDS_RENEWAL) && (
               <div style={{ marginTop: '8px' }}>
-                <label
-                  className={styles.sectionTitle}
-                  style={{ fontSize: '11px' }}
-                >
+                <label className={styles.dateLabel}>
                   Completion Date
                 </label>
                 <input
@@ -973,13 +986,7 @@ export default function CertDetail({ cert, path, onClose }) {
                   }}
                 />
                 {expiryDate && (
-                  <div
-                    style={{
-                      fontSize: '12px',
-                      color: 'var(--colorNeutralForeground3)',
-                      marginTop: '6px',
-                    }}
-                  >
+                  <div className={styles.expiryText}>
                     Expires:{' '}
                     <strong>{formatDate(expiryDate.toISOString())}</strong>
                   </div>

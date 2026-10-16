@@ -26,6 +26,19 @@
   --fs-hero: 2.5rem;         /* 40px */
   --fs-display: 3rem;        /* 48px */
 
+  /* Fluent 2 Line Height Ramp */
+  --lh-caption2: 0.875rem;   /* 14px (1.4) */
+  --lh-caption1: 1rem;       /* 16px (1.33) */
+  --lh-body1: 1.25rem;       /* 20px (1.43) */
+  --lh-body2: 1.375rem;      /* 22px (1.38) */
+  --lh-subtitle2: 1.5rem;    /* 24px (1.33) */
+  --lh-subtitle1: 1.75rem;   /* 28px (1.4) */
+  --lh-title3: 2rem;         /* 32px (1.33) */
+  --lh-title2: 2.25rem;      /* 36px (1.28) */
+  --lh-title1: 2.5rem;       /* 40px (1.25) */
+  --lh-hero: 3.25rem;        /* 52px (1.3) */
+  --lh-display: 4rem;        /* 64px (1.33) */
+
   /* Aliases for backward compat */
   --fs-xs: var(--fs-caption2);
   --fs-sm: var(--fs-caption1);
@@ -515,6 +528,83 @@ input, textarea, select {
   color: inherit;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* ---------- Fluent 2 Standard Typography Utilities ---------- */
+.f2-caption2 {
+  font-size: var(--fs-caption2);
+  line-height: var(--lh-caption2);
+  font-weight: var(--fw-regular);
+}
+.f2-caption2-strong {
+  font-size: var(--fs-caption2);
+  line-height: var(--lh-caption2);
+  font-weight: var(--fw-semibold);
+}
+.f2-caption1 {
+  font-size: var(--fs-caption1);
+  line-height: var(--lh-caption1);
+  font-weight: var(--fw-regular);
+}
+.f2-caption1-strong {
+  font-size: var(--fs-caption1);
+  line-height: var(--lh-caption1);
+  font-weight: var(--fw-semibold);
+}
+.f2-body1 {
+  font-size: var(--fs-body1);
+  line-height: var(--lh-body1);
+  font-weight: var(--fw-regular);
+}
+.f2-body1-strong {
+  font-size: var(--fs-body1);
+  line-height: var(--lh-body1);
+  font-weight: var(--fw-semibold);
+}
+.f2-body2 {
+  font-size: var(--fs-body2);
+  line-height: var(--lh-body2);
+  font-weight: var(--fw-regular);
+}
+.f2-body2-strong {
+  font-size: var(--fs-body2);
+  line-height: var(--lh-body2);
+  font-weight: var(--fw-semibold);
+}
+.f2-subtitle2 {
+  font-size: var(--fs-subtitle2);
+  line-height: var(--lh-subtitle2);
+  font-weight: var(--fw-semibold);
+}
+.f2-subtitle1 {
+  font-size: var(--fs-subtitle1);
+  line-height: var(--lh-subtitle1);
+  font-weight: var(--fw-semibold);
+}
+.f2-title3 {
+  font-size: var(--fs-title3);
+  line-height: var(--lh-title3);
+  font-weight: var(--fw-semibold);
+}
+.f2-title2 {
+  font-size: var(--fs-title2);
+  line-height: var(--lh-title2);
+  font-weight: var(--fw-semibold);
+}
+.f2-title1 {
+  font-size: var(--fs-title1);
+  line-height: var(--lh-title1);
+  font-weight: var(--fw-bold);
+}
+.f2-hero {
+  font-size: var(--fs-hero);
+  line-height: var(--lh-hero);
+  font-weight: var(--fw-bold);
+}
+.f2-display {
+  font-size: var(--fs-display);
+  line-height: var(--lh-display);
+  font-weight: var(--fw-bold);
 }
 
 /* Touch and mobile device optimizations: hide desktop-only shortcut hints */

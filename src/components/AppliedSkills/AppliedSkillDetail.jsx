@@ -125,6 +125,7 @@ const useStyles = makeStyles({
   sectionTitle: {
     ...shorthands.margin(0),
     fontSize: tokens.fontSizeBase400,
+    lineHeight: tokens.lineHeightBase400,
     fontWeight: tokens.fontWeightBold,
     color: tokens.colorNeutralForeground1,
   },
@@ -150,6 +151,7 @@ const useStyles = makeStyles({
   },
   metaLabel: {
     fontSize: tokens.fontSizeBase100,
+    lineHeight: tokens.lineHeightBase100,
     color: tokens.colorNeutralForeground3,
     textTransform: 'uppercase',
     fontWeight: tokens.fontWeightSemibold,
@@ -157,6 +159,7 @@ const useStyles = makeStyles({
   },
   metaVal: {
     fontSize: tokens.fontSizeBase300,
+    lineHeight: tokens.lineHeightBase300,
     fontWeight: tokens.fontWeightSemibold,
     color: tokens.colorNeutralForeground1,
   },

@@ -69,7 +69,7 @@ const useStyles = makeStyles({
     color: tokens.colorNeutralForeground3,
     ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke2),
     ...shorthands.borderRadius(tokens.borderRadiusSmall),
-    fontFamily: "'Cascadia Code', 'Cascadia Mono', Consolas, monospace",
+    fontFamily: tokens.fontFamilyMonospace,
     fontSize: tokens.fontSizeBase100,
     fontWeight: tokens.fontWeightSemibold,
     lineHeight: tokens.lineHeightBase100,
@@ -160,8 +160,9 @@ const useStyles = makeStyles({
   },
   resultCode: {
     fontSize: tokens.fontSizeBase100,
+    lineHeight: tokens.lineHeightBase100,
     color: tokens.colorNeutralForeground3,
-    fontFamily: "'Cascadia Code', 'Cascadia Mono', Consolas, monospace",
+    fontFamily: tokens.fontFamilyMonospace,
   },
   resultPath: {
     fontSize: tokens.fontSizeBase100,

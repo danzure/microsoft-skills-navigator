@@ -61,6 +61,7 @@ const useStyles = makeStyles({
   title: {
     margin: 0,
     fontSize: tokens.fontSizeBase500,
+    lineHeight: tokens.lineHeightBase500,
     fontWeight: tokens.fontWeightSemibold,
     color: tokens.colorNeutralForeground1,
   },
@@ -80,6 +81,7 @@ const useStyles = makeStyles({
   sectionTitle: {
     margin: 0,
     fontSize: tokens.fontSizeBase300,
+    lineHeight: tokens.lineHeightBase300,
     fontWeight: tokens.fontWeightSemibold,
     color: tokens.colorNeutralForeground1,
   },
@@ -138,11 +140,13 @@ const useStyles = makeStyles({
   },
   currencySymbol: {
     fontSize: tokens.fontSizeBase500,
+    lineHeight: tokens.lineHeightBase500,
     fontWeight: tokens.fontWeightBold,
     marginBottom: tokens.spacingVerticalXXS,
   },
   currencyLabel: {
     fontSize: tokens.fontSizeBase100,
+    lineHeight: tokens.lineHeightBase100,
     fontWeight: tokens.fontWeightMedium,
   },
   dangerSection: {
@@ -162,10 +166,12 @@ const useStyles = makeStyles({
     color: tokens.colorPaletteRedForeground1,
     fontWeight: tokens.fontWeightSemibold,
     fontSize: tokens.fontSizeBase300,
+    lineHeight: tokens.lineHeightBase300,
   },
   dangerDesc: {
     color: tokens.colorPaletteRedForeground1,
     fontSize: tokens.fontSizeBase200,
+    lineHeight: tokens.lineHeightBase200,
     margin: 0,
   },
 });

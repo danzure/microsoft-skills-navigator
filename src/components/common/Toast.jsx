@@ -65,6 +65,7 @@ const useStyles = makeStyles({
     ...shorthands.borderRadius(tokens.borderRadiusMedium),
     ...shorthands.padding(tokens.spacingVerticalXXS, tokens.spacingHorizontalS),
     fontSize: tokens.fontSizeBase200,
+    lineHeight: tokens.lineHeightBase200,
     fontWeight: tokens.fontWeightSemibold,
     cursor: 'pointer',
     flexShrink: 0,

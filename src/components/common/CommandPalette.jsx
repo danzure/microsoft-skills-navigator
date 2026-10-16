@@ -86,7 +86,7 @@ const useStyles = makeStyles({
     fontSize: tokens.fontSizeBase100,
     lineHeight: tokens.lineHeightBase100,
     fontWeight: tokens.fontWeightSemibold,
-    fontFamily: "'Cascadia Code', 'Cascadia Mono', Consolas, monospace",
+    fontFamily: tokens.fontFamilyMonospace,
     flexShrink: 0,
     userSelect: 'none',
     '@media (min-width: 640px)': {
