@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   makeStyles,
   shorthands,
@@ -12,6 +12,7 @@ import {
   Database16Regular,
 } from '@fluentui/react-icons';
 import { useTheme } from '../../context/ThemeContext';
+import { certificationPaths } from '../../data/certificationPaths';
 import ThemeToggle from './ThemeToggle';
 
 const useStyles = makeStyles({
@@ -24,21 +25,25 @@ const useStyles = makeStyles({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    ...shorthands.padding(0, tokens.spacingHorizontalM),
+    ...shorthands.padding(0, '16px'),
     zIndex: 300,
     boxSizing: 'border-box',
-    transitionProperty: 'background-color, border-color',
+    fontFamily:
+      "'Segoe UI Variable Text', 'Segoe UI Variable Display', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+    transitionProperty: 'background, background-color, border-color, box-shadow',
     transitionDuration: tokens.durationNormal,
     transitionTimingFunction: tokens.curveEasyEase,
   },
   headerLight: {
-    backgroundColor: tokens.colorBrandBackground,
-    color: tokens.colorNeutralForegroundOnBrand,
+    backgroundImage: 'linear-gradient(135deg, #0078d4, #005a9e)',
+    backgroundColor: '#0078d4',
+    color: '#ffffff',
     ...shorthands.borderBottom(tokens.strokeWidthThin, 'solid', 'transparent'),
-    boxShadow: tokens.shadow4,
+    boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04)',
   },
   headerDark: {
-    backgroundColor: tokens.colorNeutralBackground5,
+    backgroundImage: 'none',
+    backgroundColor: '#1b1a19',
     color: tokens.colorNeutralForeground1,
     ...shorthands.borderBottom(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke2),
     boxShadow: 'none',
@@ -57,13 +62,12 @@ const useStyles = makeStyles({
     width: '32px',
     height: '32px',
     ...shorthands.padding(0),
-    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    ...shorthands.borderRadius('6px'),
     ...shorthands.border('none'),
     backgroundColor: 'transparent',
-    color: 'inherit',
     cursor: 'pointer',
     flexShrink: 0,
-    transitionProperty: 'background-color',
+    transitionProperty: 'background-color, color',
     transitionDuration: tokens.durationFast,
     transitionTimingFunction: tokens.curveEasyEase,
     '@media (max-width: 1024px)': {
@@ -71,11 +75,13 @@ const useStyles = makeStyles({
     },
   },
   menuBtnLight: {
+    color: '#ffffff',
     ':hover': {
       backgroundColor: 'rgba(255, 255, 255, 0.15)',
     },
   },
   menuBtnDark: {
+    color: tokens.colorNeutralForeground1,
     ':hover': {
       backgroundColor: tokens.colorSubtleBackgroundHover,
     },
@@ -83,41 +89,54 @@ const useStyles = makeStyles({
   brand: {
     display: 'flex',
     alignItems: 'baseline',
-    gap: tokens.spacingHorizontalS,
     minWidth: 0,
     color: 'inherit',
     textDecorationLine: 'none',
   },
   brandPrefix: {
-    fontWeight: tokens.fontWeightSemibold,
-    fontSize: tokens.fontSizeBase500,
-    letterSpacing: '-0.25px',
+    fontWeight: 600,
+    fontSize: '18px',
+    letterSpacing: '-0.45px',
+    fontFamily:
+      "'Segoe UI Variable Text', 'Segoe UI Variable Display', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
     color: 'inherit',
     textDecorationLine: 'none',
     flexShrink: 0,
+    transitionProperty: 'opacity',
+    transitionDuration: '150ms',
+    transitionTimingFunction: 'ease',
     ':hover': {
-      opacity: 0.85,
+      opacity: 0.8,
     },
   },
   brandDivider: {
     display: 'none',
-    fontSize: tokens.fontSizeBase300,
+    fontSize: '14px',
+    fontWeight: 400,
+    margin: '0 8px',
     opacity: 0.4,
-    margin: `0 ${tokens.spacingHorizontalXXS}`,
+    color: 'inherit',
+    userSelect: 'none',
     '@media (min-width: 640px)': {
       display: 'inline',
     },
   },
   brandTitle: {
     display: 'none',
-    fontSize: tokens.fontSizeBase300,
-    opacity: 0.9,
-    letterSpacing: '0.25px',
+    fontSize: '14px',
+    fontWeight: 400,
+    opacity: 0.85,
+    letterSpacing: '0.35px',
+    fontFamily:
+      "'Segoe UI Variable Text', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     textDecorationLine: 'none',
     color: 'inherit',
+    transitionProperty: 'opacity',
+    transitionDuration: '150ms',
+    transitionTimingFunction: 'ease',
     ':hover': {
       opacity: 1,
     },
@@ -131,6 +150,7 @@ const useStyles = makeStyles({
     justifyContent: 'center',
     maxWidth: '440px',
     minWidth: 0,
+    ...shorthands.margin(0, tokens.spacingHorizontalS),
     '@media (max-width: 640px)': {
       display: 'none',
     },
@@ -141,8 +161,8 @@ const useStyles = makeStyles({
     justifyContent: 'space-between',
     width: '100%',
     height: '32px',
-    ...shorthands.padding(0, tokens.spacingHorizontalS),
-    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    ...shorthands.padding(0, '12px'),
+    ...shorthands.borderRadius('4px'),
     cursor: 'pointer',
     userSelect: 'none',
     boxSizing: 'border-box',
@@ -155,23 +175,25 @@ const useStyles = makeStyles({
     ':focus-visible': {
       outlineStyle: 'solid',
       outlineWidth: '2px',
-      outlineColor: tokens.colorStrokeFocus2,
-      outlineOffset: '2px',
+      outlineColor: '#0078d4',
+      outlineOffset: '0px',
     },
   },
   searchTriggerLight: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    ...shorthands.border(tokens.strokeWidthThin, 'solid', 'rgba(255, 255, 255, 0.25)'),
-    color: tokens.colorNeutralForegroundOnBrand,
+    backgroundColor: '#ffffff',
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', 'rgba(255, 255, 255, 0.3)'),
+    color: '#616161',
+    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
     ':hover': {
-      backgroundColor: 'rgba(255, 255, 255, 0.22)',
-      ...shorthands.borderColor('rgba(255, 255, 255, 0.4)'),
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      ...shorthands.borderColor('rgba(255, 255, 255, 0.6)'),
+      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.08)',
     },
   },
   searchTriggerDark: {
     backgroundColor: tokens.colorNeutralBackground3,
     ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke2),
-    color: tokens.colorNeutralForeground1,
+    color: tokens.colorNeutralForeground3,
     ':hover': {
       backgroundColor: tokens.colorNeutralBackground1Hover,
       ...shorthands.borderColor(tokens.colorNeutralStroke1Hover),
@@ -180,13 +202,19 @@ const useStyles = makeStyles({
   searchTriggerLeft: {
     display: 'flex',
     alignItems: 'center',
-    gap: tokens.spacingHorizontalS,
+    gap: '8px',
     minWidth: 0,
     overflow: 'hidden',
   },
+  searchTriggerIcon: {
+    color: 'inherit',
+    flexShrink: 0,
+    fontSize: '16px',
+  },
   searchTriggerPlaceholder: {
-    fontSize: tokens.fontSizeBase300,
-    opacity: 0.8,
+    fontSize: '13px',
+    fontWeight: 400,
+    color: 'inherit',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -195,18 +223,19 @@ const useStyles = makeStyles({
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    ...shorthands.padding('2px', tokens.spacingHorizontalXXS),
-    ...shorthands.borderRadius(tokens.borderRadiusSmall),
+    ...shorthands.padding('2px', '6px'),
+    ...shorthands.borderRadius('3px'),
     fontFamily: tokens.fontFamilyMonospace,
-    fontSize: tokens.fontSizeBase100,
-    fontWeight: tokens.fontWeightSemibold,
-    lineHeight: tokens.lineHeightBase100,
+    fontSize: '10.5px',
+    fontWeight: 600,
+    lineHeight: 1,
     flexShrink: 0,
     userSelect: 'none',
   },
   searchTriggerKbdLight: {
-    backgroundColor: 'rgba(0, 0, 0, 0.15)',
-    color: 'inherit',
+    backgroundColor: '#f0f0f0',
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', '#e0e0e0'),
+    color: '#616161',
   },
   searchTriggerKbdDark: {
     backgroundColor: tokens.colorNeutralBackground2,
@@ -217,7 +246,7 @@ const useStyles = makeStyles({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    gap: tokens.spacingHorizontalS,
+    gap: '8px',
     flexGrow: 1,
     minWidth: 0,
   },
@@ -228,10 +257,9 @@ const useStyles = makeStyles({
     width: '32px',
     height: '32px',
     ...shorthands.padding(0),
-    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    ...shorthands.borderRadius('6px'),
     ...shorthands.border('none'),
     backgroundColor: 'transparent',
-    color: 'inherit',
     cursor: 'pointer',
     flexShrink: 0,
     '@media (max-width: 640px)': {
@@ -239,11 +267,13 @@ const useStyles = makeStyles({
     },
   },
   mobileSearchBtnLight: {
+    color: '#ffffff',
     ':hover': {
       backgroundColor: 'rgba(255, 255, 255, 0.15)',
     },
   },
   mobileSearchBtnDark: {
+    color: tokens.colorNeutralForeground1,
     ':hover': {
       backgroundColor: tokens.colorSubtleBackgroundHover,
     },
@@ -252,13 +282,13 @@ const useStyles = makeStyles({
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: tokens.spacingHorizontalXXS,
+    gap: '6px',
     height: '32px',
-    ...shorthands.padding(0, tokens.spacingHorizontalS),
-    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    ...shorthands.padding(0, '10px'),
+    ...shorthands.borderRadius('6px'),
     cursor: 'pointer',
-    fontSize: tokens.fontSizeBase200,
-    fontWeight: tokens.fontWeightMedium,
+    fontSize: '14px',
+    fontWeight: 500,
     boxSizing: 'border-box',
     transitionProperty: 'all',
     transitionDuration: tokens.durationFast,
@@ -269,11 +299,11 @@ const useStyles = makeStyles({
   },
   dataBtnLight: {
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    ...shorthands.border(tokens.strokeWidthThin, 'solid', 'rgba(255, 255, 255, 0.25)'),
-    color: tokens.colorNeutralForegroundOnBrand,
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', 'rgba(255, 255, 255, 0.2)'),
+    color: '#ffffff',
     ':hover': {
       backgroundColor: 'rgba(255, 255, 255, 0.25)',
-      ...shorthands.borderColor('rgba(255, 255, 255, 0.5)'),
+      ...shorthands.borderColor('rgba(255, 255, 255, 0.3)'),
     },
   },
   dataBtnDark: {
@@ -294,10 +324,25 @@ const useStyles = makeStyles({
 });
 
 /**
+ * Determines the current page title for the header brand area.
+ * Matches app.atozazure.com pattern (e.g. atozazure | Dashboard).
+ */
+const getPageTitle = (pathname) => {
+  if (pathname === '/') return 'Dashboard';
+  if (pathname.startsWith('/career-paths')) return 'Career Paths';
+  if (pathname.startsWith('/applied-skills')) return 'Applied Skills';
+  if (pathname.startsWith('/path/')) {
+    const pathId = pathname.replace('/path/', '').split('/')[0];
+    const foundPath = certificationPaths.find((p) => p.id === pathId);
+    return foundPath ? foundPath.shortName || foundPath.name : 'Path Map';
+  }
+  return 'Skills Navigator';
+};
+
+/**
  * Header Component
  *
- * Displays the top navigation bar containing the sidebar toggle,
- * application brand, search trigger button, data preferences trigger, and theme toggle.
+ * Displays the top navigation bar matching the atozazure governance toolkit design (app.atozazure.com).
  * Built with @fluentui/react-components and makeStyles.
  *
  * @param {Object} props
@@ -312,6 +357,8 @@ export default function Header({
 }) {
   const styles = useStyles();
   const { isDark } = useTheme();
+  const location = useLocation();
+  const pageTitle = getPageTitle(location.pathname);
   const isMac =
     typeof navigator !== 'undefined' &&
     /Mac|iPod|iPhone|iPad/.test(navigator.platform);
@@ -342,12 +389,17 @@ export default function Header({
           <a
             href="https://atozazure.com"
             className={styles.brandPrefix}
+            title="atozazure"
           >
             atozazure
           </a>
           <span className={styles.brandDivider}>|</span>
-          <Link to="/" className={styles.brandTitle}>
-            Skills Navigator
+          <Link
+            to="/"
+            className={styles.brandTitle}
+            title={pageTitle}
+          >
+            {pageTitle}
           </Link>
         </div>
       </div>
@@ -370,7 +422,7 @@ export default function Header({
           id="header-search-trigger"
         >
           <div className={styles.searchTriggerLeft}>
-            <Search16Regular />
+            <Search16Regular className={styles.searchTriggerIcon} />
             <span className={styles.searchTriggerPlaceholder}>
               Search or jump to...
             </span>

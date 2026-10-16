@@ -29,7 +29,7 @@ export const azureBrandRamp = {
 export const customLightTheme = {
   ...createLightTheme(azureBrandRamp),
   colorNeutralBackgroundCanvas: '#f5f5f5',
-  fontFamilyBase: "'Segoe UI Variable', 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
+  fontFamilyBase: "'Segoe UI Variable Text', 'Segoe UI Variable Display', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
   fontFamilyMonospace: "'Cascadia Code', 'Cascadia Mono', Consolas, monospace",
 };
 
@@ -39,6 +39,6 @@ export const customLightTheme = {
 export const customDarkTheme = {
   ...createDarkTheme(azureBrandRamp),
   colorNeutralBackgroundCanvas: '#1f1f1f',
-  fontFamilyBase: "'Segoe UI Variable', 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
+  fontFamilyBase: "'Segoe UI Variable Text', 'Segoe UI Variable Display', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
   fontFamilyMonospace: "'Cascadia Code', 'Cascadia Mono', Consolas, monospace",
 };

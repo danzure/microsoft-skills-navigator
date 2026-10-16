@@ -4,13 +4,27 @@
    Light + Dark Theme Support
    ============================================ */
 
+/* ---------- Typography Font Faces ---------- */
+@font-face {
+  font-family: 'Segoe UI Variable Text';
+  src: local('Segoe UI Variable Text'), local('Segoe UI Variable'), local('Segoe UI');
+  font-weight: 300 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Segoe UI Variable Display';
+  src: local('Segoe UI Variable Display'), local('Segoe UI Variable'), local('Segoe UI Bold');
+  font-weight: 500 700;
+  font-display: swap;
+}
+
 /* ---------- Fluent 2 Design Tokens ---------- */
 
 /* LIGHT THEME (default) */
 :root,
 [data-theme="light"] {
   /* Typography — Segoe UI is Microsoft's brand typeface */
-  --font-primary: 'Segoe UI Variable', 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-primary: 'Segoe UI Variable Text', 'Segoe UI Variable Display', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, system-ui, sans-serif;
   --font-mono: 'Cascadia Code', 'Cascadia Mono', 'Consolas', 'Courier New', monospace;
 
   /* Fluent 2 Type Ramp */
