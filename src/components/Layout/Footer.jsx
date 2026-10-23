@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import {
   makeStyles,
   shorthands,
@@ -8,18 +7,14 @@ import {
 import {
   ArrowUp16Regular,
   Open16Regular,
-  ShieldCheckmark16Regular,
   Certificate16Regular,
-  Sparkle16Regular,
   BookOpen16Regular,
-  Search16Regular,
   CheckmarkCircle16Regular,
   Map16Regular,
 } from '@fluentui/react-icons';
 import { certificationPaths, PILLARS } from '../../data/certificationPaths';
 import { getAllAppliedSkills } from '../../data/appliedSkills';
 import { useProgressContext } from '../../context/ProgressContext';
-import { GitHubIcon, AzureIcon } from '../common/ProductIcons';
 
 const useStyles = makeStyles({
   footer: {
@@ -45,108 +40,11 @@ const useStyles = makeStyles({
     gap: tokens.spacingVerticalL,
     boxSizing: 'border-box',
   },
-  topGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'fit-content(360px) max-content max-content max-content',
-    justifyContent: 'space-between',
-    alignItems: 'start',
-    rowGap: tokens.spacingVerticalL,
-    '@media (max-width: 1100px)': {
-      gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-      columnGap: tokens.spacingHorizontalXL,
-      rowGap: tokens.spacingVerticalXL,
-      justifyContent: 'normal',
-    },
-    '@media (max-width: 640px)': {
-      gridTemplateColumns: '1fr',
-      columnGap: 0,
-      rowGap: tokens.spacingVerticalL,
-      justifyContent: 'normal',
-    },
-  },
-  brandCol: {
+  resourcesSection: {
     display: 'flex',
     flexDirection: 'column',
     gap: tokens.spacingVerticalS,
-    minWidth: 0,
-    maxWidth: '360px',
-  },
-  brandHeader: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: tokens.spacingHorizontalS,
-    textDecorationLine: 'none',
-    color: tokens.colorNeutralForeground1,
-    height: '24px',
-    minWidth: 0,
-  },
-  brandIconWrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '24px',
-    height: '24px',
-    flexShrink: 0,
-  },
-  brandTitle: {
-    fontSize: '15px',
-    fontWeight: tokens.fontWeightBold,
-    letterSpacing: '-0.01em',
-    color: tokens.colorNeutralForeground1,
-    lineHeight: 1.2,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  brandSubtitle: {
-    fontSize: '11px',
-    fontWeight: tokens.fontWeightSemibold,
-    color: tokens.colorBrandForeground1,
-    backgroundColor: tokens.colorBrandBackground2,
-    ...shorthands.padding('2px', '6px'),
-    ...shorthands.borderRadius(tokens.borderRadiusSmall),
-    ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorBrandStroke2),
-    display: 'inline-flex',
-    alignItems: 'center',
-    width: 'fit-content',
-    marginLeft: '6px',
-    flexShrink: 0,
-  },
-  brandDesc: {
-    margin: 0,
-    fontSize: '13px',
-    lineHeight: '1.5',
-    color: tokens.colorNeutralForeground2,
-  },
-  badgesRow: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '6px',
-    marginTop: '4px',
-  },
-  featureChip: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '5px',
-    fontSize: '12px',
-    fontWeight: tokens.fontWeightMedium,
-    color: tokens.colorNeutralForeground2,
-    backgroundColor: tokens.colorNeutralBackground2,
-    ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke2),
-    ...shorthands.borderRadius(tokens.borderRadiusSmall),
-    ...shorthands.padding('3px', '8px'),
-    whiteSpace: 'nowrap',
-  },
-  chipIcon: {
-    color: tokens.colorBrandForeground1,
-    display: 'flex',
-    alignItems: 'center',
-  },
-  sectionCol: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: tokens.spacingVerticalS,
-    minWidth: 0,
+    width: '100%',
   },
   columnHeading: {
     margin: 0,
@@ -160,13 +58,24 @@ const useStyles = makeStyles({
     display: 'flex',
     alignItems: 'center',
   },
-  linkList: {
-    listStyleType: 'none',
-    ...shorthands.margin(0),
-    ...shorthands.padding(0),
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
+  resourcesGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(6, minmax(0, 1fr))',
+    columnGap: tokens.spacingHorizontalXL,
+    rowGap: tokens.spacingVerticalS,
+    alignItems: 'center',
+    width: '100%',
+    '@media (max-width: 1200px)': {
+      gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+      rowGap: tokens.spacingVerticalM,
+    },
+    '@media (max-width: 640px)': {
+      gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+      rowGap: tokens.spacingVerticalS,
+    },
+    '@media (max-width: 420px)': {
+      gridTemplateColumns: '1fr',
+    },
   },
   navLink: {
     fontSize: '13px',
@@ -363,237 +272,67 @@ export default function Footer() {
     }
   };
 
-  const handleTriggerCommandPalette = (e) => {
-    e.preventDefault();
-    window.dispatchEvent(
-      new KeyboardEvent('keydown', {
-        key: 'k',
-        ctrlKey: true,
-        bubbles: true,
-      })
-    );
-  };
-
   return (
     <footer className={styles.footer} role="contentinfo" aria-label="Site footer">
       <div className={styles.container}>
-        {/* Top 4-Column Navigation Grid: 4 Equal Width Columns */}
-        <div className={styles.topGrid}>
-          {/* Column 1: Brand & Value Proposition */}
-          <div className={styles.brandCol}>
-            <Link to="/" className={styles.brandHeader} title="Microsoft Skills Navigator">
-              <div className={styles.brandIconWrapper}>
-                <AzureIcon size={22} />
-              </div>
-              <span className={styles.brandTitle}>Microsoft Skills Navigator</span>
-              <span className={styles.brandSubtitle}>by atozazure</span>
-            </Link>
-
-            <p className={styles.brandDesc}>
-              Interactive visual roadmaps, exam prerequisite trees, and role-based
-              career pathways across the Microsoft Cloud ecosystem.
-            </p>
-
-            <div className={styles.badgesRow}>
-              <span className={styles.featureChip}>
-                <ShieldCheckmark16Regular className={styles.chipIcon} />
-                100% Client-Side
-              </span>
-              <span className={styles.featureChip}>
-                <Sparkle16Regular className={styles.chipIcon} />
-                2026 Catalog
-              </span>
-              <a
-                href="https://github.com/danzure/microsoft-skills-navigator"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.featureChip}
-                style={{ textDecoration: 'none' }}
-                title="GitHub Repository"
-              >
-                <GitHubIcon size={13} className={styles.chipIcon} />
-                Open Source
-              </a>
-            </div>
-          </div>
-
-          {/* Column 2: Certification Paths */}
-          <div className={styles.sectionCol}>
-            <h3 className={styles.columnHeading}>Certification Paths</h3>
-            <ul className={styles.linkList}>
-              <li>
-                <Link to="/path/azure-infrastructure" className={styles.navLink}>
-                  Azure Apps & Infrastructure
-                </Link>
-              </li>
-              <li>
-                <Link to="/path/ai-machine-learning" className={styles.navLink}>
-                  AI & Machine Learning
-                </Link>
-              </li>
-              <li>
-                <Link to="/path/data-engineering" className={styles.navLink}>
-                  Data Engineering & Analytics
-                </Link>
-              </li>
-              <li>
-                <Link to="/path/security" className={styles.navLink}>
-                  Security, Compliance & Identity
-                </Link>
-              </li>
-              <li>
-                <Link to="/path/github" className={styles.navLink}>
-                  GitHub & Azure DevOps
-                </Link>
-              </li>
-              <li>
-                <Link to="/path/agentic-ai" className={styles.navLink}>
-                  Agentic AI & Business Solutions
-                </Link>
-              </li>
-              <li>
-                <Link to="/path/power-platform" className={styles.navLink}>
-                  Power Platform & Automation
-                </Link>
-              </li>
-              <li>
-                <Link to="/path/microsoft-365" className={styles.navLink}>
-                  Microsoft 365 Modern Work
-                </Link>
-              </li>
-              <li>
-                <Link to="/path/dynamics-365" className={styles.navLink}>
-                  Dynamics 365 Business Apps
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 3: Interactive Features */}
-          <div className={styles.sectionCol}>
-            <h3 className={styles.columnHeading}>Tools & Features</h3>
-            <ul className={styles.linkList}>
-              <li>
-                <Link to="/career-paths" className={styles.navLink}>
-                  Career Role Roadmaps
-                </Link>
-              </li>
-              <li>
-                <Link to="/career-paths?role=custom" className={styles.navLink}>
-                  Custom Career Playlist
-                </Link>
-              </li>
-              <li>
-                <Link to="/applied-skills" className={styles.navLink}>
-                  Applied Skills Labs Hub
-                </Link>
-              </li>
-              <li>
-                <Link to="/path/azure-infrastructure" className={styles.navLink}>
-                  Prerequisite Metro Maps
-                </Link>
-              </li>
-              <li>
-                <Link to="/path/retired-certifications" className={styles.navLink}>
-                  Archived & Retiring Exams
-                </Link>
-              </li>
-              <li>
-                <a
-                  href="#search"
-                  onClick={handleTriggerCommandPalette}
-                  className={styles.navLink}
-                  title="Press Ctrl+K or ⌘K"
-                >
-                  <Search16Regular className={styles.extIcon} />
-                  Command Palette (Ctrl+K)
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 4: Official Resources & Ecosystem */}
-          <div className={styles.sectionCol}>
-            <h3 className={styles.columnHeading}>Official Resources</h3>
-            <ul className={styles.linkList}>
-              <li>
-                <a
-                  href="https://learn.microsoft.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.navLink}
-                >
-                  Microsoft Learn Hub
-                  <Open16Regular className={styles.extIcon} />
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://learn.microsoft.com/credentials/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.navLink}
-                >
-                  Credentials Directory
-                  <Open16Regular className={styles.extIcon} />
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://learn.microsoft.com/credentials/browse/?credential_types=applied%20skills"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.navLink}
-                >
-                  Applied Skills Directory
-                  <Open16Regular className={styles.extIcon} />
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://learn.microsoft.com/credentials/renew/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.navLink}
-                >
-                  Annual Exam Renewal
-                  <Open16Regular className={styles.extIcon} />
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://learn.microsoft.com/credentials/certifications/practice-assessments-measure-up"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.navLink}
-                >
-                  Practice Assessments & Sandbox
-                  <Open16Regular className={styles.extIcon} />
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://techcommunity.microsoft.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.navLink}
-                >
-                  Microsoft Tech Community
-                  <Open16Regular className={styles.extIcon} />
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://atozazure.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.navLink}
-                >
-                  atozazure Architecture
-                  <Open16Regular className={styles.extIcon} />
-                </a>
-              </li>
-            </ul>
+        {/* Official Resources: Spread Evenly */}
+        <div className={styles.resourcesSection}>
+          <h3 className={styles.columnHeading}>Official Resources</h3>
+          <div className={styles.resourcesGrid}>
+            <a
+              href="https://learn.microsoft.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.navLink}
+            >
+              <span>Microsoft Learn Hub</span>
+              <Open16Regular className={styles.extIcon} />
+            </a>
+            <a
+              href="https://learn.microsoft.com/credentials/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.navLink}
+            >
+              <span>Credentials Directory</span>
+              <Open16Regular className={styles.extIcon} />
+            </a>
+            <a
+              href="https://learn.microsoft.com/credentials/browse/?credential_types=applied%20skills"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.navLink}
+            >
+              <span>Applied Skills Directory</span>
+              <Open16Regular className={styles.extIcon} />
+            </a>
+            <a
+              href="https://learn.microsoft.com/credentials/certifications/renew-your-microsoft-certification"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.navLink}
+            >
+              <span>Annual Exam Renewal</span>
+              <Open16Regular className={styles.extIcon} />
+            </a>
+            <a
+              href="https://learn.microsoft.com/credentials/certifications/practice-assessments-for-microsoft-certifications"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.navLink}
+            >
+              <span>Practice Assessments</span>
+              <Open16Regular className={styles.extIcon} />
+            </a>
+            <a
+              href="https://techcommunity.microsoft.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.navLink}
+            >
+              <span>Microsoft Tech Community</span>
+              <Open16Regular className={styles.extIcon} />
+            </a>
           </div>
         </div>
 
@@ -693,7 +432,7 @@ export default function Footer() {
 
           <div className={styles.bottomRight}>
             <span>Fluent 2 &bull; React 19</span>
-            <span className={styles.versionTag}>v1.21.0</span>
+            <span className={styles.versionTag}>v1.21.1</span>
           </div>
         </div>
       </div>

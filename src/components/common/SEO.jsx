@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 const DEFAULT_TITLE = 'Microsoft Skills Navigator & Certification Roadmap | atozazure';
 const DEFAULT_DESC = 'Navigate Microsoft certifications and role-based learning pathways with an interactive metro roadmap. Track exam progress, monitor 1-year renewals, explore prerequisites, and access official Microsoft Learn resources across Azure, AI, Security, Power Platform, Microsoft 365, and GitHub.';
 const SITE_URL = 'https://skills.atozazure.com';
+const DEFAULT_IMAGE = `${SITE_URL}/1792790109767.jpg`;
 
 /**
  * Lightweight native React SEO component that dynamically synchronizes
@@ -11,6 +12,7 @@ const SITE_URL = 'https://skills.atozazure.com';
 export default function SEO({
   title,
   description = DEFAULT_DESC,
+  image = DEFAULT_IMAGE,
   keywords,
   canonical,
   ogType = 'website',
@@ -41,7 +43,7 @@ export default function SEO({
       let el = document.querySelector(`link[rel="${rel}"]`);
       if (!el) {
         el = document.createElement('link');
-        el.setAttribute('rel', rel);
+        el.setAttribute(rel, rel);
         document.head.appendChild(el);
       }
       el.setAttribute('href', href);
@@ -62,10 +64,16 @@ export default function SEO({
     setMetaTag('property', 'og:description', description);
     setMetaTag('property', 'og:url', currentUrl);
     setMetaTag('property', 'og:type', ogType);
+    const resolvedImage = image.startsWith('http') ? image : `${SITE_URL}${image.startsWith('/') ? '' : '/'}${image}`;
+    setMetaTag('property', 'og:image', resolvedImage);
+    setMetaTag('property', 'og:image:secure_url', resolvedImage);
+    setMetaTag('property', 'og:image:type', 'image/jpeg');
 
     // 5. Twitter Card Tags
+    setMetaTag('name', 'twitter:card', 'summary_large_image');
     setMetaTag('name', 'twitter:title', fullTitle);
     setMetaTag('name', 'twitter:description', description);
+    setMetaTag('name', 'twitter:image', resolvedImage);
 
     // 6. Dynamic Route Structured Data (JSON-LD)
     let schemaScript = document.getElementById('route-structured-data');
@@ -80,7 +88,7 @@ export default function SEO({
     } else if (schemaScript) {
       schemaScript.remove();
     }
-  }, [title, description, keywords, canonical, ogType, schema]);
+  }, [title, description, image, keywords, canonical, ogType, schema]);
 
   return null;
 }
