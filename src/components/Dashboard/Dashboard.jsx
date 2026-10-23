@@ -23,10 +23,19 @@ import { useProgressContext } from '../../context/ProgressContext';
 import Badge from '../common/Badge';
 import SEO from '../common/SEO';
 import { IconMap as Icons } from '../common/IconMap';
+import Footer from '../Layout/Footer';
 
 const useStyles = makeStyles({
+  page: {
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: '100%',
+    width: '100%',
+    alignItems: 'stretch',
+  },
   dashboard: {
     maxWidth: '1440px',
+    width: '100%',
     margin: '0 auto',
     ...shorthands.padding(tokens.spacingVerticalXXL, tokens.spacingHorizontalXL),
     display: 'flex',
@@ -43,7 +52,7 @@ const useStyles = makeStyles({
     overflow: 'hidden',
     clip: 'rect(0, 0, 0, 0)',
     whiteSpace: 'nowrap',
-    borderWidth: 0,
+    ...shorthands.borderWidth(0),
   },
   hero: {
     display: 'flex',
@@ -314,8 +323,11 @@ const useStyles = makeStyles({
   },
   pathsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
     gap: tokens.spacingHorizontalL,
+    '@media (min-width: 1200px)': {
+      gridTemplateColumns: 'repeat(4, 1fr)',
+    },
   },
   pathCard: {
     backgroundColor: tokens.colorNeutralBackground1,
@@ -855,7 +867,8 @@ export default function Dashboard() {
   };
 
   return (
-    <div className={styles.dashboard} id="dashboard">
+    <div className={styles.page}>
+      <div className={styles.dashboard} id="dashboard">
       <SEO
         title="Microsoft Skills Navigator & Certification Roadmap | atozazure"
         description="Interactive Microsoft Skills Navigator: visualize certification prerequisites on an interactive metro map, plan role-based career pathways, track exam completion dates, and manage annual renewals across 11 technology tracks."
@@ -1228,6 +1241,8 @@ export default function Dashboard() {
           )}
         </div>
       )}
+      </div>
+      <Footer />
     </div>
   );
 }
