@@ -310,6 +310,16 @@ function CommandPaletteContent({ onOpenChange, onOpenDataModal, onToggleSidebar 
         icon: <Icons.AppliedSkills size={18} />,
         actionType: 'route',
         target: '/applied-skills',
+      },
+      {
+        id: 'nav-privacy-policy',
+        category: 'Navigation',
+        title: 'Privacy Policy',
+        subtitle: 'Client-side zero-tracking policy & LocalStorage audit',
+        keywords: 'privacy policy gdpr compliance cookies data localstorage tracking security terms legal',
+        icon: <Icons.ShieldIcon size={18} />,
+        actionType: 'route',
+        target: '/privacy',
       }
     );
 

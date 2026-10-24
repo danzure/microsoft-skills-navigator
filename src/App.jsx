@@ -20,6 +20,7 @@ const Dashboard = lazy(() => import('./components/Dashboard/Dashboard'));
 const PathMap = lazy(() => import('./components/PathMap/PathMap'));
 const CareerPathBuilder = lazy(() => import('./components/CareerPathBuilder/CareerPathBuilder'));
 const AppliedSkills = lazy(() => import('./components/AppliedSkills/AppliedSkills'));
+const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy/PrivacyPolicy'));
 
 const useStyles = makeStyles({
   app: {
@@ -196,6 +197,10 @@ function AppLayout() {
               <Route path="/career-paths" element={<CareerPathBuilder />} />
               <Route path="/applied-skills" element={<AppliedSkills />} />
               <Route path="/path/:pathId" element={<PathMap />} />
+              <Route
+                path="/privacy"
+                element={<PrivacyPolicy onOpenDataModal={() => setDataModalOpen(true)} />}
+              />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>

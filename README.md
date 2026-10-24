@@ -10,7 +10,7 @@
 - **Multi-Currency Exam Pricing** — Real-time fee estimates across GBP (£), USD ($), and EUR (€) to budget certification investments.
 - **Direct Microsoft Learn Integration** — 1-click access to official exam specifications, study guides, free learning paths, and sandbox assessments.
 - **Keyboard Shortcuts & Quick Search** — Global hotkeys (`Ctrl+K` search, `Ctrl+B` sidebar) and keyboard accessibility for rapid navigation.
-- **Data Privacy & Portability** — Client-side `localStorage` persistence with one-click JSON backup export and import.
+- **Data Privacy & Portability** — 100% client-side `localStorage` persistence with zero tracking, no cookies, and one-click JSON backup export/import. See [PRIVACY.md](PRIVACY.md).
 - **Fluent 2 Design System** — Built with Microsoft Fluent 2 tokens, accessible dark/light themes, and responsive layouts.
 
 ## 🛠️ Tech Stack

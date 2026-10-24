@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import {
   makeStyles,
   shorthands,
@@ -14,6 +15,7 @@ import {
   ArrowUpload16Regular,
   Database20Regular,
   Warning16Regular,
+  Shield16Regular,
 } from '@fluentui/react-icons';
 import { useProgressContext } from '../../context/ProgressContext';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -173,6 +175,29 @@ const useStyles = makeStyles({
     fontSize: tokens.fontSizeBase200,
     lineHeight: tokens.lineHeightBase200,
     margin: 0,
+  },
+  privacyNote: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    ...shorthands.padding(tokens.spacingVerticalS, tokens.spacingHorizontalM),
+    backgroundColor: tokens.colorNeutralBackground2,
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke2),
+    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    marginTop: tokens.spacingVerticalXS,
+  },
+  privacyText: {
+    fontSize: tokens.fontSizeBase100,
+    lineHeight: tokens.lineHeightBase100,
+    color: tokens.colorNeutralForeground3,
+  },
+  privacyLink: {
+    color: tokens.colorBrandForeground1,
+    textDecorationLine: 'none',
+    fontWeight: tokens.fontWeightMedium,
+    '&:hover': {
+      textDecorationLine: 'underline',
+    },
   },
 });
 
@@ -347,6 +372,17 @@ export default function DataModal({ isOpen, onClose }) {
                 )}
               </div>
             </div>
+          </div>
+
+          {/* Privacy Notice */}
+          <div className={styles.privacyNote}>
+            <Shield16Regular style={{ color: 'var(--colorBrandForeground1)', flexShrink: 0 }} />
+            <Text className={styles.privacyText}>
+              Your progress is stored 100% locally in your browser. We never track or transmit your data to remote servers.{' '}
+              <Link to="/privacy" onClick={onClose} className={styles.privacyLink}>
+                Learn more in our Privacy Policy
+              </Link>
+            </Text>
           </div>
         </div>
       </DialogSurface>

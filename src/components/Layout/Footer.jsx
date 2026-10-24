@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import {
   makeStyles,
   shorthands,
@@ -428,11 +429,15 @@ export default function Footer() {
             >
               atozazure.com
             </a>
+            <span className={styles.dotDivider}>&bull;</span>
+            <Link to="/privacy" className={styles.bottomLink}>
+              Privacy Policy
+            </Link>
           </div>
 
           <div className={styles.bottomRight}>
             <span>Fluent 2 &bull; React 19</span>
-            <span className={styles.versionTag}>v1.21.1</span>
+            <span className={styles.versionTag}>v1.22.0</span>
           </div>
         </div>
       </div>
