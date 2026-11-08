@@ -751,16 +751,16 @@ export const certificationPaths = [
         name: 'AI Services Administrator Associate',
         level: CERT_LEVELS.ASSOCIATE,
         branch: 'admin',
-        description: 'Manage and secure AI services within Microsoft 365, including Copilot and related data sources.',
+        description: 'Configure, govern, and secure Microsoft 365 tenants and workloads, and manage enterprise AI services and agent security.',
         prerequisites: [],
         recommendedPrereqs: ['ab-900'],
         learnUrl: 'https://learn.microsoft.com/en-us/credentials/certifications/ai-services-administrator-associate/',
         retirementDate: null,
-        isBeta: 'Beta from July 2026',
+        isNew: true,
         skillsMeasured: [
-        'Implement and manage Copilot in Microsoft 365',
-        'Secure AI data and services',
-        'Monitor and troubleshoot AI adoption and performance'
+        'Configure and manage Microsoft 365 tenants and workloads (20–25%)',
+        'Govern and secure Microsoft 365 tenants and workloads (40–45%)',
+        'Manage and secure AI services in Microsoft 365 (35–40%)'
         ],
       },
       {
@@ -1304,7 +1304,7 @@ export const certificationPaths = [
         examCode: 'AZ-800/801',
         name: 'Windows Server Hybrid Admin Associate',
         level: CERT_LEVELS.ASSOCIATE,
-        branch: 'retiring',
+        branch: 'retired',
         description: 'Configure and manage Windows Server on-premises, hybrid, and IaaS workloads.',
         prerequisites: [],
         recommendedPrereqs: ['az-900'],
