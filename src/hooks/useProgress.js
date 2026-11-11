@@ -127,9 +127,11 @@ export const useProgress = () => {
       return next;
     });
 
-    // Auto-track cert when starting or passing
-    if (status === CERT_STATUS.IN_PROGRESS || status === CERT_STATUS.COMPLETED) {
+    // Auto-track cert when starting (pending learning), and remove when passed
+    if (status === CERT_STATUS.IN_PROGRESS) {
       setTrackedCerts((prev) => (prev.includes(certId) ? prev : [...prev, certId]));
+    } else if (status === CERT_STATUS.COMPLETED) {
+      setTrackedCerts((prev) => prev.filter((id) => id !== certId));
     }
 
     if (status === CERT_STATUS.COMPLETED) {
@@ -173,8 +175,8 @@ export const useProgress = () => {
         const certIds = path.certifications.map(c => c.id);
         setTrackedCerts(prevCerts => prevCerts.filter(id => {
           if (certIds.includes(id)) {
-            const hasProgress = progress[id] === CERT_STATUS.COMPLETED || progress[id] === CERT_STATUS.IN_PROGRESS;
-            if (hasProgress) return true;
+            const hasPendingProgress = progress[id] === CERT_STATUS.IN_PROGRESS;
+            if (hasPendingProgress) return true;
 
             const otherTrackedPaths = trackedPaths.filter(pId => pId !== pathId);
             const isShared = otherTrackedPaths.some(pId => {
@@ -211,10 +213,14 @@ export const useProgress = () => {
   }, [trackedPaths]);
 
   const toggleCertIgnored = useCallback((certId) => {
+    // Tracked certifications only apply to those that are marked as pending
+    if (getStatus(certId) === CERT_STATUS.COMPLETED) {
+      return;
+    }
     setTrackedCerts((prev) =>
       prev.includes(certId) ? prev.filter(id => id !== certId) : [...prev, certId]
     );
-  }, []);
+  }, [getStatus]);
 
   const isCertIgnored = useCallback((certId) => {
     return !trackedCerts.includes(certId);

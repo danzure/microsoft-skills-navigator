@@ -886,34 +886,61 @@ const computePathLayout = (path, branchColumns, trunkFundamentals, trunkBottom, 
     }
   } else {
     // Linear paths without branches (e.g., Azure DevOps)
-    const orderedCerts = linearGroups.flatMap(g => g.certs).filter(c => !c.isIndependent);
     const centerX = 0;
+    let prevLevelCerts = [];
 
-    orderedCerts.forEach((cert, idx) => {
-      positions.set(cert.id, {
-        position: { x: centerX, y: idx * ROW_HEIGHT },
-        sourcePosition: Position.Bottom,
-        targetPosition: Position.Top,
-      });
+    linearGroups.forEach((group, levelIdx) => {
+      const coreCerts = group.certs.filter(c => !c.isIndependent);
+      const indepCerts = group.certs.filter(c => c.isIndependent);
+      const y = levelIdx * ROW_HEIGHT;
+      const k = coreCerts.length;
+      const startX = centerX - ((k - 1) * COL_WIDTH) / 2;
 
-      if (idx > 0) {
-        initialEdges.push({
-          id: `e-${orderedCerts[idx - 1].id}-${cert.id}`,
-          source: orderedCerts[idx - 1].id,
-          target: cert.id,
-          type: 'metroStep',
+      coreCerts.forEach((cert, cIdx) => {
+        const x = startX + cIdx * COL_WIDTH;
+        positions.set(cert.id, {
+          position: { x, y },
+          sourcePosition: Position.Bottom,
+          targetPosition: Position.Top,
         });
-      }
-    });
 
-    // Also position any independent certs in linear paths to the right
-    const independentCerts = linearGroups.flatMap(g => g.certs).filter(c => c.isIndependent);
-    independentCerts.forEach((cert, idx) => {
-      positions.set(cert.id, {
-        position: { x: centerX + COL_WIDTH, y: idx * ROW_HEIGHT },
-        sourcePosition: Position.Bottom,
-        targetPosition: Position.Top,
+        // Connect edges
+        const prereqList = cert.prerequisites ? cert.prerequisites.flat() : [];
+        const matchedPrereqs = prereqList.filter(pId => positions.has(pId));
+
+        if (matchedPrereqs.length > 0) {
+          matchedPrereqs.forEach(pId => {
+            initialEdges.push({
+              id: `e-${pId}-${cert.id}`,
+              source: pId,
+              target: cert.id,
+              type: 'metroStep',
+            });
+          });
+        } else if (prevLevelCerts.length > 0) {
+          prevLevelCerts.forEach(prevCert => {
+            initialEdges.push({
+              id: `e-${prevCert.id}-${cert.id}`,
+              source: prevCert.id,
+              target: cert.id,
+              type: 'metroStep',
+            });
+          });
+        }
       });
+
+      indepCerts.forEach((cert, iIdx) => {
+        const indepX = centerX + (Math.ceil(k / 2) + iIdx) * COL_WIDTH;
+        positions.set(cert.id, {
+          position: { x: indepX, y },
+          sourcePosition: Position.Bottom,
+          targetPosition: Position.Top,
+        });
+      });
+
+      if (coreCerts.length > 0) {
+        prevLevelCerts = coreCerts;
+      }
     });
   }
 

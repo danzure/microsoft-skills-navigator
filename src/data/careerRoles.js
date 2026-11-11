@@ -29,7 +29,7 @@ export const careerRoles = [
     description: 'Combine people, process, and technologies to continuously deliver valuable products and services that meet end user needs.',
     icon: 'AzureDevOps',
     color: 'var(--line-azure)',
-    certs: ['az-400', 'gh-actions', 'gh-admin', 'gh-security', 'gh-600']
+    certs: ['az-401', 'az-400', 'gh-actions', 'gh-admin', 'gh-security', 'gh-600']
   },
   {
     id: 'solutions-architect',

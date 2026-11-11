@@ -509,7 +509,7 @@ export default function CertDetail({ cert, path, onClose }) {
 
       if (e.key === 'Escape') {
         onClose();
-      } else if (e.key.toLowerCase() === 'e' && !isRetiredExam) {
+      } else if (e.key.toLowerCase() === 'e' && !isRetiredExam && status !== CERT_STATUS.COMPLETED) {
         toggleCertIgnored(cert.id);
         if (certIgnored) {
           addToast(`${cert.examCode} added to tracked learning`);
@@ -742,26 +742,26 @@ export default function CertDetail({ cert, path, onClose }) {
               <div className={styles.prereqsContainer}>
                 {cert.prerequisites.map((preItem, i) => {
                   if (Array.isArray(preItem)) {
+                    const resolvedGroup = preItem
+                      .map((subId) => getCertById(subId)?.cert)
+                      .filter(Boolean)
+                      .sort((a, b) => (a.examCode || a.id).localeCompare(b.examCode || b.id));
+
                     return (
                       <div key={`group-${i}`} className={styles.prereqGroup}>
                         <div className={styles.prereqGroupLabel}>
                           Requires ONE of the following:
                         </div>
-                        {preItem.map((subId) => {
-                          const preCertData = getCertById(subId);
-                          const preCert = preCertData?.cert;
-                          if (!preCert) return null;
-                          return (
-                            <div key={subId} className={styles.prereqItem}>
-                              <span className={styles.prereqName}>
-                                {preCert.name}
-                              </span>
-                              <span className={styles.prereqCode}>
-                                {preCert.examCode}
-                              </span>
-                            </div>
-                          );
-                        })}
+                        {resolvedGroup.map((preCert) => (
+                          <div key={preCert.id} className={styles.prereqItem}>
+                            <span className={styles.prereqName}>
+                              {preCert.name}
+                            </span>
+                            <span className={styles.prereqCode}>
+                              {preCert.examCode}
+                            </span>
+                          </div>
+                        ))}
                       </div>
                     );
                   }
@@ -786,19 +786,18 @@ export default function CertDetail({ cert, path, onClose }) {
             <div className={styles.section}>
               <h3 className={styles.sectionTitle}>Recommended Before Taking</h3>
               <div className={styles.prereqsContainer}>
-                {cert.recommendedPrereqs.map((preId) => {
-                  const preCertData = getCertById(preId);
-                  const preCert = preCertData?.cert;
-                  if (!preCert) return null;
-                  return (
-                    <div key={preId} className={styles.prereqItem}>
+                {cert.recommendedPrereqs
+                  .map((preId) => getCertById(preId)?.cert)
+                  .filter(Boolean)
+                  .sort((a, b) => (a.examCode || a.id).localeCompare(b.examCode || b.id))
+                  .map((preCert) => (
+                    <div key={preCert.id} className={styles.prereqItem}>
                       <span className={styles.prereqName}>{preCert.name}</span>
                       <span className={styles.prereqCode}>
                         {preCert.examCode}
                       </span>
                     </div>
-                  );
-                })}
+                  ))}
               </div>
             </div>
           )}
@@ -807,14 +806,16 @@ export default function CertDetail({ cert, path, onClose }) {
             <div className={styles.section}>
               <h3 className={styles.sectionTitle}>Prerequisite For</h3>
               <div className={styles.prereqsContainer}>
-                {prerequisiteFor.map((preCert) => (
-                  <div key={preCert.id} className={styles.prereqItem}>
-                    <span className={styles.prereqName}>{preCert.name}</span>
-                    <span className={styles.prereqCode}>
-                      {preCert.examCode}
-                    </span>
-                  </div>
-                ))}
+                {[...prerequisiteFor]
+                  .sort((a, b) => (a.examCode || a.id).localeCompare(b.examCode || b.id))
+                  .map((preCert) => (
+                    <div key={preCert.id} className={styles.prereqItem}>
+                      <span className={styles.prereqName}>{preCert.name}</span>
+                      <span className={styles.prereqCode}>
+                        {preCert.examCode}
+                      </span>
+                    </div>
+                  ))}
               </div>
             </div>
           )}
@@ -855,7 +856,7 @@ export default function CertDetail({ cert, path, onClose }) {
             </div>
           )}
 
-          {!isRetiredExam && (
+          {!isRetiredExam && status !== CERT_STATUS.COMPLETED && (
             <div className={styles.section}>
               <h3 className={styles.sectionTitle}>
                 Tracking <span className={styles.shortcutHint}>(Press E)</span>

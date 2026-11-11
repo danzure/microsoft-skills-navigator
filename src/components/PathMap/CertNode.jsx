@@ -177,7 +177,7 @@ const CertNode = ({ data }) => {
             </div>
           </div>
           
-          {!isRetiredExam && (
+          {!isRetiredExam && status !== CERT_STATUS.COMPLETED && (
             <button
               className={mergeClasses(classes.trackBtn, isTracked ? classes.trackBtnTracked : classes.trackBtnUntracked)}
               onClick={(e) => {

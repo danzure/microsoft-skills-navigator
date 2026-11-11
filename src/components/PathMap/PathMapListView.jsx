@@ -427,7 +427,7 @@ const PathMapListView = ({ path, onSelectCert, selectedBranch = 'all', statusFil
                       </div>
                       <h3 className={c.listCardName}>{cert.name}</h3>
                     </div>
-                    {!isRetiredExam && (
+                    {!isRetiredExam && status !== CERT_STATUS.COMPLETED && (
                       <button
                         type="button"
                         className={mergeClasses(c.listTrackBtn, isTracked && c.listTrackBtnTracked)}

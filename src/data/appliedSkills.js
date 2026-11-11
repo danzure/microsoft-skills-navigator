@@ -121,7 +121,7 @@ export const appliedSkills = [
     roles: ["developer"],
     products: ["github"],
     subjects: ["automation"],
-    relatedCerts: ["gh-actions","az-400"],
+    relatedCerts: ["gh-actions","az-400","az-401"],
   },
   {
     id: 'build-ai-powered-solutions-by-using-microsoft-azure-database-for-postgresql',
@@ -206,7 +206,7 @@ export const appliedSkills = [
     roles: ["developer","devops-engineer"],
     products: ["azure","azure-container-apps","azure-container-registry","azure-pipelines"],
     subjects: ["app-development"],
-    relatedCerts: ["az-204","az-400","ai-200"],
+    relatedCerts: ["az-204","az-400","az-401","ai-200"],
   },
   {
     id: 'build-a-generative-ai-chat-app',
@@ -308,7 +308,7 @@ export const appliedSkills = [
     roles: ["administrator"],
     products: ["azure","azure-devops"],
     subjects: ["devops"],
-    relatedCerts: ["az-400","sc-500","gh-security"],
+    relatedCerts: ["az-400","az-401","sc-500","gh-security"],
   },
   {
     id: 'integrate-model-context-protocol-tools-with-agents-in-microsoft-foundry',

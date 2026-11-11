@@ -557,10 +557,12 @@ export const SortableCertItem = memo(({
           {certInfo.prerequisites?.length > 0 && (
             certInfo.prerequisites.map((prereqGroup, idx) => {
               const prereqList = Array.isArray(prereqGroup) ? prereqGroup : [prereqGroup];
-              const prereqTexts = prereqList.map(pId => {
-                const targetCert = getCertById(pId)?.cert;
-                return targetCert ? targetCert.examCode : pId.toUpperCase();
-              });
+              const prereqTexts = prereqList
+                .map(pId => {
+                  const targetCert = getCertById(pId)?.cert;
+                  return targetCert ? targetCert.examCode : pId.toUpperCase();
+                })
+                .sort((a, b) => a.localeCompare(b));
               const isMulti = prereqList.length > 2;
               return (
                 <Badge
@@ -586,15 +588,17 @@ export const SortableCertItem = memo(({
             <Icons.Microsoft size={12} />
             Microsoft Learn
           </a>
-          <button
-            type="button"
-            className={mergeClasses(certClasses.trackBtn, !isCertIgnored(certInfo.id) ? certClasses.trackBtnTracked : certClasses.trackBtnUntracked)}
-            onClick={handleToggleTracking}
-            title={!isCertIgnored(certInfo.id) ? 'Tracked in learning dashboard (Click to untrack)' : 'Not tracked (Click to track in dashboard)'}
-            aria-label="Toggle dashboard tracking"
-          >
-            {!isCertIgnored(certInfo.id) ? <Icons.Eye size={14} /> : <Icons.EyeOff size={14} />}
-          </button>
+          {status !== CERT_STATUS.COMPLETED && (
+            <button
+              type="button"
+              className={mergeClasses(certClasses.trackBtn, !isCertIgnored(certInfo.id) ? certClasses.trackBtnTracked : certClasses.trackBtnUntracked)}
+              onClick={handleToggleTracking}
+              title={!isCertIgnored(certInfo.id) ? 'Tracked in learning dashboard (Click to untrack)' : 'Not tracked (Click to track in dashboard)'}
+              aria-label="Toggle dashboard tracking"
+            >
+              {!isCertIgnored(certInfo.id) ? <Icons.Eye size={14} /> : <Icons.EyeOff size={14} />}
+            </button>
+          )}
         </div>
         
         <div className={certClasses.statusToggle} style={{ flexShrink: 0 }} onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}>

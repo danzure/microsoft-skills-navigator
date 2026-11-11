@@ -686,15 +686,19 @@ export default function Dashboard() {
 
     certificationPaths.forEach((path) => {
       path.certifications.forEach((cert) => {
-        const isIndividuallyTracked = !isCertIgnored(cert.id);
         const stat = getStatus(cert.id);
-        const hasProgress =
-          stat === CERT_STATUS.COMPLETED ||
-          stat === CERT_STATUS.IN_PROGRESS ||
-          stat === CERT_STATUS.NEEDS_RENEWAL;
+        const isPassed =
+          stat === CERT_STATUS.COMPLETED || stat === CERT_STATUS.NEEDS_RENEWAL;
+
+        // Passed exams must NOT show on the dashboard as individually tracked.
+        // Tracked certifications should only apply to those that are marked as pending.
+        if (isPassed) return;
+
+        const isIndividuallyTracked =
+          !isCertIgnored(cert.id) || stat === CERT_STATUS.IN_PROGRESS;
 
         if (
-          (isIndividuallyTracked || hasProgress) &&
+          isIndividuallyTracked &&
           !certsInTrackedPaths.has(cert.id) &&
           !seen.has(cert.id)
         ) {

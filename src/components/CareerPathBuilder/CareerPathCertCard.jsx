@@ -346,10 +346,12 @@ export const CareerPathCertCard = memo(({ certInfo, customPlaylist, onAdd, onRem
           {certInfo.prerequisites?.length > 0 && (
             certInfo.prerequisites.map((prereqGroup, idx) => {
               const prereqList = Array.isArray(prereqGroup) ? prereqGroup : [prereqGroup];
-              const prereqTexts = prereqList.map(id => {
-                const targetCert = getCertById(id)?.cert;
-                return targetCert ? targetCert.examCode : id.toUpperCase();
-              });
+              const prereqTexts = prereqList
+                .map(id => {
+                  const targetCert = getCertById(id)?.cert;
+                  return targetCert ? targetCert.examCode : id.toUpperCase();
+                })
+                .sort((a, b) => a.localeCompare(b));
               const isMulti = prereqList.length > 2;
               return (
                 <Badge
