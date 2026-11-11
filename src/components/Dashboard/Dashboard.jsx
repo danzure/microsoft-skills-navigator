@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   makeStyles,
@@ -17,9 +17,18 @@ import {
   Add16Regular,
   ArrowTrending24Regular,
   Checkmark16Regular,
+  Dismiss16Regular,
 } from '@fluentui/react-icons';
-import { certificationPaths, CERT_STATUS, PILLARS } from '../../data/certificationPaths';
+import {
+  certificationPaths,
+  CERT_STATUS,
+  PILLARS,
+  getCertificationsRequiring,
+} from '../../data/certificationPaths';
+import { APPLIED_SKILL_STATUS, getAllAppliedSkills } from '../../data/appliedSkills';
 import { useProgressContext } from '../../context/ProgressContext';
+import { useToast } from '../../context/ToastContext';
+import { formatDate, getBadgeUrl } from '../../utils/helpers';
 import Badge from '../common/Badge';
 import SEO from '../common/SEO';
 import { IconMap as Icons } from '../common/IconMap';
@@ -598,6 +607,94 @@ const useStyles = makeStyles({
     flexDirection: 'column',
     gap: tokens.spacingVerticalL,
   },
+  statMiniActive: {
+    backgroundColor: tokens.colorBrandBackground2,
+    ...shorthands.borderColor(tokens.colorBrandStroke1),
+  },
+  quickActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalXS,
+    flexShrink: 0,
+  },
+  quickActionBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: tokens.spacingHorizontalXXS,
+    height: '24px',
+    ...shorthands.padding(0, tokens.spacingHorizontalS),
+    ...shorthands.borderRadius(tokens.borderRadiusSmall),
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke1),
+    backgroundColor: tokens.colorNeutralBackground1,
+    color: tokens.colorNeutralForeground1,
+    fontSize: tokens.fontSizeBase100,
+    fontWeight: tokens.fontWeightSemibold,
+    cursor: 'pointer',
+    transitionProperty: 'all',
+    transitionDuration: tokens.durationFast,
+    transitionTimingFunction: tokens.curveEasyEase,
+    ':hover': {
+      backgroundColor: tokens.colorBrandBackground2,
+      color: tokens.colorBrandForeground1,
+      ...shorthands.borderColor(tokens.colorBrandStroke1),
+    },
+  },
+  quickActionBtnSuccess: {
+    ':hover': {
+      backgroundColor: tokens.colorPaletteGreenBackground1,
+      color: tokens.colorPaletteGreenForeground1,
+      ...shorthands.borderColor(tokens.colorPaletteGreenBorder1),
+    },
+  },
+  quickActionBtnIcon: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '24px',
+    height: '24px',
+    ...shorthands.padding(0),
+    ...shorthands.borderRadius(tokens.borderRadiusSmall),
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', 'transparent'),
+    backgroundColor: 'transparent',
+    color: tokens.colorNeutralForeground3,
+    cursor: 'pointer',
+    transitionProperty: 'all',
+    transitionDuration: tokens.durationFast,
+    transitionTimingFunction: tokens.curveEasyEase,
+    ':hover': {
+      backgroundColor: tokens.colorPaletteRedBackground1,
+      color: tokens.colorPaletteRedForeground1,
+      ...shorthands.borderColor(tokens.colorPaletteRedBorder1),
+    },
+  },
+  earnedPanel: {
+    backgroundColor: tokens.colorNeutralBackground1,
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke1),
+    ...shorthands.borderRadius(tokens.borderRadiusLarge),
+    ...shorthands.padding(tokens.spacingVerticalL),
+    boxShadow: tokens.shadow4,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalM,
+  },
+  earnedHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: tokens.spacingHorizontalM,
+  },
+  earnedGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+    gap: tokens.spacingHorizontalM,
+  },
+  earnedBadgeImg: {
+    width: '28px',
+    height: '28px',
+    objectFit: 'contain',
+    flexShrink: 0,
+  },
 });
 
 /**
@@ -611,28 +708,43 @@ const useStyles = makeStyles({
 export default function Dashboard() {
   const styles = useStyles();
   const navigate = useNavigate();
+  const { addToast } = useToast();
+  const [showEarnedCerts, setShowEarnedCerts] = useState(false);
+
   const {
     getOverallProgress,
     getPathProgress,
+    getCustomPlaylistProgress,
     getStatus,
+    setStatus,
     togglePathIgnored,
     isPathIgnored,
+    toggleCertIgnored,
     isCertIgnored,
     customPlaylist,
+    completionDates,
+    getAppliedSkillStatus,
+    setAppliedSkillStatus,
     getAppliedSkillsProgress,
   } = useProgressContext();
 
   const overall = useMemo(() => getOverallProgress(), [getOverallProgress]);
+  const customProg = useMemo(
+    () => getCustomPlaylistProgress(),
+    [getCustomPlaylistProgress]
+  );
   const appliedSkillsStats = useMemo(
     () => getAppliedSkillsProgress(),
     [getAppliedSkillsProgress]
   );
 
-  const { inProgressCerts, needsRenewalCerts } = useMemo(() => {
+  const { inProgressCerts, needsRenewalCerts, completedCerts } = useMemo(() => {
     const inProgress = [];
     const needsRenewal = [];
+    const completed = [];
     const seenInProgress = new Set();
     const seenRenewal = new Set();
+    const seenCompleted = new Set();
 
     certificationPaths.forEach((path) => {
       path.certifications.forEach((cert) => {
@@ -649,19 +761,49 @@ export default function Dashboard() {
           stat === CERT_STATUS.NEEDS_RENEWAL &&
           !seenRenewal.has(cert.id)
         ) {
-          needsRenewal.push({
+          const item = {
             ...cert,
             pathName: path.shortName,
             pathColor: path.color,
             pathId: path.id,
-          });
+            status: stat,
+          };
+          needsRenewal.push(item);
           seenRenewal.add(cert.id);
+          if (!seenCompleted.has(cert.id)) {
+            completed.push(item);
+            seenCompleted.add(cert.id);
+          }
+        } else if (
+          stat === CERT_STATUS.COMPLETED &&
+          !seenCompleted.has(cert.id)
+        ) {
+          completed.push({
+            ...cert,
+            pathName: path.shortName,
+            pathColor: path.color,
+            pathId: path.id,
+            status: stat,
+          });
+          seenCompleted.add(cert.id);
         }
       });
     });
 
-    return { inProgressCerts: inProgress, needsRenewalCerts: needsRenewal };
+    completed.sort((a, b) => (a.examCode || a.id).localeCompare(b.examCode || b.id));
+
+    return {
+      inProgressCerts: inProgress,
+      needsRenewalCerts: needsRenewal,
+      completedCerts: completed,
+    };
   }, [getStatus]);
+
+  const inProgressSkills = useMemo(() => {
+    return getAllAppliedSkills().filter(
+      (s) => getAppliedSkillStatus(s.id) === APPLIED_SKILL_STATUS.IN_PROGRESS
+    );
+  }, [getAppliedSkillStatus]);
 
   const trackedPaths = useMemo(
     () => certificationPaths.filter((p) => !isPathIgnored(p.id)),
@@ -672,11 +814,12 @@ export default function Dashboard() {
     [isPathIgnored]
   );
 
+  // Planned Individual Exams: strictly unstarted exams explicitly bookmarked outside of tracked paths
+  // (In-progress exams live in Action Center -> Continue Learning; Passed exams live in Earned Certifications)
   const individuallyTrackedCerts = useMemo(() => {
     const certs = [];
     const seen = new Set();
 
-    // Find all cert IDs belonging to a currently tracked path
     const certsInTrackedPaths = new Set();
     certificationPaths.forEach((path) => {
       if (!isPathIgnored(path.id)) {
@@ -687,18 +830,14 @@ export default function Dashboard() {
     certificationPaths.forEach((path) => {
       path.certifications.forEach((cert) => {
         const stat = getStatus(cert.id);
-        const isPassed =
-          stat === CERT_STATUS.COMPLETED || stat === CERT_STATUS.NEEDS_RENEWAL;
 
-        // Passed exams must NOT show on the dashboard as individually tracked.
-        // Tracked certifications should only apply to those that are marked as pending.
-        if (isPassed) return;
+        // Only unstarted (pending/planned) exams appear in Planned Individual Exams
+        if (stat !== CERT_STATUS.NOT_STARTED) return;
 
-        const isIndividuallyTracked =
-          !isCertIgnored(cert.id) || stat === CERT_STATUS.IN_PROGRESS;
+        const isBookmarked = !isCertIgnored(cert.id, path.id);
 
         if (
-          isIndividuallyTracked &&
+          isBookmarked &&
           !certsInTrackedPaths.has(cert.id) &&
           !seen.has(cert.id)
         ) {
@@ -714,6 +853,49 @@ export default function Dashboard() {
     });
     return certs;
   }, [isPathIgnored, isCertIgnored, getStatus]);
+
+  const handleQuickPassCert = (cert, e) => {
+    e.stopPropagation();
+    setStatus(cert.id, CERT_STATUS.COMPLETED);
+
+    const prerequisiteFor = getCertificationsRequiring(cert.id);
+    if (prerequisiteFor?.length > 0) {
+      const nextCert = prerequisiteFor.find(
+        (c) => getStatus(c.id) === CERT_STATUS.NOT_STARTED
+      );
+      if (nextCert) {
+        addToast(`🎉 You've unlocked ${nextCert.examCode}!`, 'success', {
+          action: {
+            label: 'Start it',
+            onClick: () => {
+              setStatus(nextCert.id, CERT_STATUS.IN_PROGRESS);
+              addToast(`${nextCert.examCode} marked as In Progress`, 'info');
+            },
+          },
+        });
+        return;
+      }
+    }
+    addToast(`${cert.examCode} marked as Passed`, 'success');
+  };
+
+  const handleQuickStartCert = (cert, e) => {
+    e.stopPropagation();
+    setStatus(cert.id, CERT_STATUS.IN_PROGRESS);
+    addToast(`${cert.examCode} moved to Continue Learning`, 'info');
+  };
+
+  const handleQuickUntrackCert = (cert, e) => {
+    e.stopPropagation();
+    toggleCertIgnored(cert.id, cert.pathId);
+    addToast(`${cert.examCode} removed from Planned Exams`, 'info');
+  };
+
+  const handleQuickCompleteSkill = (skill, e) => {
+    e.stopPropagation();
+    setAppliedSkillStatus(skill.id, APPLIED_SKILL_STATUS.COMPLETED);
+    addToast(`Applied Skill marked as Completed`, 'success');
+  };
 
   const activeIgnoredPaths = useMemo(
     () =>
@@ -940,7 +1122,28 @@ export default function Dashboard() {
           </div>
 
           <div className={styles.heroStatsRow}>
-            <div className={styles.statMini}>
+            <div
+              className={mergeClasses(
+                styles.statMini,
+                styles.statMiniClickable
+              )}
+              onClick={() =>
+                document
+                  .getElementById('my-tracked-learning')
+                  ?.scrollIntoView({ behavior: 'smooth' })
+              }
+              title="View Tracked Learning"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  document
+                    .getElementById('my-tracked-learning')
+                    ?.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+            >
               <div className={styles.statMiniIcon}>
                 <Certificate20Regular />
               </div>
@@ -950,7 +1153,36 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className={styles.statMini}>
+            <div
+              className={mergeClasses(
+                styles.statMini,
+                completedCerts.length > 0 && styles.statMiniClickable,
+                showEarnedCerts && styles.statMiniActive
+              )}
+              onClick={() => {
+                if (completedCerts.length > 0) {
+                  setShowEarnedCerts((prev) => !prev);
+                }
+              }}
+              title={
+                completedCerts.length > 0
+                  ? showEarnedCerts
+                    ? 'Hide Earned Certifications'
+                    : 'View Earned Certifications'
+                  : 'No completed certifications yet'
+              }
+              role={completedCerts.length > 0 ? 'button' : undefined}
+              tabIndex={completedCerts.length > 0 ? 0 : undefined}
+              onKeyDown={(e) => {
+                if (
+                  completedCerts.length > 0 &&
+                  (e.key === 'Enter' || e.key === ' ')
+                ) {
+                  e.preventDefault();
+                  setShowEarnedCerts((prev) => !prev);
+                }
+              }}
+            >
               <div className={styles.statMiniIcon}>
                 <CheckmarkCircle20Regular />
               </div>
@@ -958,15 +1190,63 @@ export default function Dashboard() {
                 <span className={styles.statMiniValue}>{overall.completed}</span>
                 <span className={styles.statMiniLabel}>Completed</span>
               </div>
+              {completedCerts.length > 0 && (
+                <ChevronRight16Regular
+                  style={{
+                    color: tokens.colorNeutralForeground3,
+                    transform: showEarnedCerts ? 'rotate(90deg)' : 'none',
+                    transition: 'transform 150ms ease',
+                  }}
+                />
+              )}
             </div>
 
-            <div className={styles.statMini}>
+            <div
+              className={mergeClasses(
+                styles.statMini,
+                (overall.inProgress > 0 || inProgressSkills.length > 0) &&
+                  styles.statMiniClickable
+              )}
+              onClick={() => {
+                if (overall.inProgress > 0 || inProgressSkills.length > 0) {
+                  document
+                    .getElementById('action-center')
+                    ?.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+              title={
+                overall.inProgress > 0 || inProgressSkills.length > 0
+                  ? 'Jump to Continue Learning'
+                  : 'No exams or labs currently in progress'
+              }
+              role={
+                overall.inProgress > 0 || inProgressSkills.length > 0
+                  ? 'button'
+                  : undefined
+              }
+              tabIndex={
+                overall.inProgress > 0 || inProgressSkills.length > 0
+                  ? 0
+                  : undefined
+              }
+              onKeyDown={(e) => {
+                if (
+                  (overall.inProgress > 0 || inProgressSkills.length > 0) &&
+                  (e.key === 'Enter' || e.key === ' ')
+                ) {
+                  e.preventDefault();
+                  document
+                    .getElementById('action-center')
+                    ?.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+            >
               <div className={styles.statMiniIcon}>
                 <Clock20Regular />
               </div>
               <div className={styles.statMiniInfo}>
                 <span className={styles.statMiniValue}>
-                  {overall.inProgress}
+                  {overall.inProgress + inProgressSkills.length}
                 </span>
                 <span className={styles.statMiniLabel}>In Progress</span>
               </div>
@@ -1003,9 +1283,74 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Collapsible Earned Certifications Shelf */}
+      {showEarnedCerts && completedCerts.length > 0 && (
+        <div className={styles.earnedPanel}>
+          <div className={styles.earnedHeader}>
+            <h2 className={styles.activityTitle} style={{ margin: 0 }}>
+              <CheckmarkCircle20Regular
+                style={{ color: tokens.colorPaletteGreenForeground1 }}
+              />
+              My Earned Certifications
+              <span className={styles.activityCount}>
+                {completedCerts.length}
+              </span>
+            </h2>
+            <button
+              type="button"
+              className={styles.quickActionBtn}
+              onClick={() => setShowEarnedCerts(false)}
+            >
+              Hide
+            </button>
+          </div>
+          <div className={styles.earnedGrid}>
+            {completedCerts.map((cert) => {
+              const badgeUrl = getBadgeUrl(cert.level, cert.id);
+              const completedDate = completionDates[cert.id];
+              return (
+                <div
+                  key={cert.id}
+                  className={styles.activityItem}
+                  onClick={() => navigate(`/path/${cert.pathId}?cert=${cert.id}`)}
+                >
+                  {badgeUrl ? (
+                    <img
+                      src={badgeUrl}
+                      alt={`${cert.examCode} badge`}
+                      className={styles.earnedBadgeImg}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className={styles.activityItemIcon}>
+                      <Certificate20Regular />
+                    </div>
+                  )}
+                  <div className={styles.activityItemContent}>
+                    <span className={styles.activityItemName}>
+                      {cert.name}
+                    </span>
+                    <span className={styles.activityItemCode}>
+                      {cert.examCode}
+                      {completedDate ? ` • Passed ${formatDate(completedDate)}` : ''}
+                    </span>
+                  </div>
+                  <Badge color={cert.pathColor} small>
+                    {cert.pathName}
+                  </Badge>
+                  <ChevronRight16Regular />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Action Center */}
-      {(inProgressCerts.length > 0 || needsRenewalCerts.length > 0) && (
-        <div className={styles.actionCenter}>
+      {(inProgressCerts.length > 0 ||
+        inProgressSkills.length > 0 ||
+        needsRenewalCerts.length > 0) && (
+        <div className={styles.actionCenter} id="action-center">
           {needsRenewalCerts.length > 0 && (
             <div
               className={mergeClasses(
@@ -1041,6 +1386,20 @@ export default function Dashboard() {
                     <Badge color={cert.pathColor} small>
                       {cert.pathName}
                     </Badge>
+                    <div className={styles.quickActions}>
+                      <button
+                        type="button"
+                        className={mergeClasses(
+                          styles.quickActionBtn,
+                          styles.quickActionBtnSuccess
+                        )}
+                        onClick={(e) => handleQuickPassCert(cert, e)}
+                        title={`Mark ${cert.examCode} as Renewed`}
+                      >
+                        <Checkmark16Regular />
+                        <span>Renew</span>
+                      </button>
+                    </div>
                     <ChevronRight16Regular />
                   </div>
                 ))}
@@ -1048,13 +1407,13 @@ export default function Dashboard() {
             </div>
           )}
 
-          {inProgressCerts.length > 0 && (
+          {(inProgressCerts.length > 0 || inProgressSkills.length > 0) && (
             <div className={styles.activityPanel}>
               <h2 className={styles.activityTitle}>
                 <Clock20Regular />
                 Continue Learning
                 <span className={styles.activityCount}>
-                  {inProgressCerts.length}
+                  {inProgressCerts.length + inProgressSkills.length}
                 </span>
               </h2>
               <div className={styles.activityList}>
@@ -1078,6 +1437,57 @@ export default function Dashboard() {
                     <Badge color={cert.pathColor} small>
                       {cert.pathName}
                     </Badge>
+                    <div className={styles.quickActions}>
+                      <button
+                        type="button"
+                        className={mergeClasses(
+                          styles.quickActionBtn,
+                          styles.quickActionBtnSuccess
+                        )}
+                        onClick={(e) => handleQuickPassCert(cert, e)}
+                        title={`Mark ${cert.examCode} as Passed`}
+                      >
+                        <Checkmark16Regular />
+                        <span>Passed</span>
+                      </button>
+                    </div>
+                    <ChevronRight16Regular />
+                  </div>
+                ))}
+                {inProgressSkills.map((skill) => (
+                  <div
+                    key={skill.id}
+                    className={styles.activityItem}
+                    onClick={() => navigate('/applied-skills')}
+                  >
+                    <div className={styles.activityItemIcon}>
+                      <Sparkle20Regular />
+                    </div>
+                    <div className={styles.activityItemContent}>
+                      <span className={styles.activityItemName}>
+                        {skill.title}
+                      </span>
+                      <span className={styles.activityItemCode}>
+                        Applied Skill • {skill.duration}
+                      </span>
+                    </div>
+                    <Badge variant="technical" small>
+                      {skill.pillar}
+                    </Badge>
+                    <div className={styles.quickActions}>
+                      <button
+                        type="button"
+                        className={mergeClasses(
+                          styles.quickActionBtn,
+                          styles.quickActionBtnSuccess
+                        )}
+                        onClick={(e) => handleQuickCompleteSkill(skill, e)}
+                        title="Mark Applied Skill as Completed"
+                      >
+                        <Checkmark16Regular />
+                        <span>Done</span>
+                      </button>
+                    </div>
                     <ChevronRight16Regular />
                   </div>
                 ))}
@@ -1088,7 +1498,7 @@ export default function Dashboard() {
       )}
 
       {/* My Tracked Learning */}
-      <div className={styles.sectionWrap}>
+      <div className={styles.sectionWrap} id="my-tracked-learning">
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>My Tracked Learning</h2>
         </div>
@@ -1147,9 +1557,39 @@ export default function Dashboard() {
                     </div>
 
                     <div className={styles.pathCardFooter}>
-                      <div className={styles.pathExploreAffordance}>
-                        <span className={styles.pathExploreLabel}>Open Career Playlist</span>
-                        <ChevronRight16Regular className={styles.pathExploreChevron} />
+                      <div className={styles.pathProgressSection}>
+                        <div className={styles.pathProgressStats}>
+                          <span className={styles.pathProgressText}>
+                            {customProg.percent}% complete
+                          </span>
+                          <div className={styles.pathProgressCounts}>
+                            {customProg.completed > 0 && (
+                              <span
+                                className={styles.pathProgCompleted}
+                                title="Completed"
+                              >
+                                ✓ {customProg.completed}
+                              </span>
+                            )}
+                            {customProg.inProgress > 0 && (
+                              <span
+                                className={styles.pathProgInProgress}
+                                title="In Progress"
+                              >
+                                ◐ {customProg.inProgress}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className={styles.pathProgressContainer}>
+                          <div
+                            className={styles.pathProgressFill}
+                            style={{
+                              width: `${customProg.percent}%`,
+                              backgroundColor: 'var(--colorBrandForeground1)',
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1172,7 +1612,7 @@ export default function Dashboard() {
                   className={styles.sectionTitle}
                   style={{ marginBottom: 'var(--space-4, 16px)' }}
                 >
-                  Individually Tracked Exams
+                  Planned Individual Exams
                 </h3>
                 <div className={styles.activityList}>
                   {individuallyTrackedCerts.map((cert) => (
@@ -1195,6 +1635,26 @@ export default function Dashboard() {
                       <Badge color={cert.pathColor} small>
                         {cert.pathName}
                       </Badge>
+                      <div className={styles.quickActions}>
+                        <button
+                          type="button"
+                          className={styles.quickActionBtn}
+                          onClick={(e) => handleQuickStartCert(cert, e)}
+                          title={`Start studying ${cert.examCode}`}
+                        >
+                          <Clock20Regular style={{ width: '14px', height: '14px' }} />
+                          <span>Start</span>
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.quickActionBtnIcon}
+                          onClick={(e) => handleQuickUntrackCert(cert, e)}
+                          title={`Remove ${cert.examCode} from Planned Exams`}
+                          aria-label={`Remove ${cert.examCode} from Planned Exams`}
+                        >
+                          <Dismiss16Regular />
+                        </button>
+                      </div>
                       <ChevronRight16Regular />
                     </div>
                   ))}

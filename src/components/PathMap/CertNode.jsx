@@ -21,15 +21,15 @@ const { AlertTriangle, Link, ArchiveX, Eye, EyeOff } = IconMap;
  */
 const CertNode = ({ data }) => {
   const classes = useCertNodeStyles();
-  const { cert, pathColor, onSelect, index, isUnlocked, isPathIgnored } = data;
+  const { cert, pathId, pathColor, onSelect, index, isUnlocked, isPathIgnored } = data;
   const { getStatus, setStatus, isCertIgnored, toggleCertIgnored } = useProgressContext();
   const { addToast } = useToast();
   const status = getStatus(cert.id);
   const retiring = isRetiring(cert);
   const retired = isRetired(cert);
   const isRetiredExam = retiring || retired;
-  const isTracked = !isCertIgnored(cert.id);
-  const isExplicitlyExcluded = !isRetiredExam && !isPathIgnored && !isTracked;
+  const isTracked = !isCertIgnored(cert.id, pathId);
+  const isExplicitlyExcluded = !isRetiredExam && !isPathIgnored && status === CERT_STATUS.NOT_STARTED && !isTracked;
 
   const levelVariant = {
     Fundamentals: 'fundamentals',
@@ -75,9 +75,9 @@ const CertNode = ({ data }) => {
 
   const getTrackTooltip = () => {
     if (!isPathIgnored) {
-      return isTracked ? "Tracked with path • Click to exclude" : "Excluded from path • Click to track";
+      return isTracked ? "Included in tracked path • Click to exclude" : "Excluded from path • Click to include";
     }
-    return isTracked ? "Tracked individually • Click to untrack" : "Track individual exam in My Learning";
+    return isTracked ? "Planned in Dashboard • Click to remove" : "Plan individual exam in Dashboard";
   };
 
   const badgeUrl = getBadgeUrl(cert.level, cert.id);
@@ -177,17 +177,25 @@ const CertNode = ({ data }) => {
             </div>
           </div>
           
-          {!isRetiredExam && status !== CERT_STATUS.COMPLETED && (
+          {!isRetiredExam && status === CERT_STATUS.NOT_STARTED && (
             <button
               className={mergeClasses(classes.trackBtn, isTracked ? classes.trackBtnTracked : classes.trackBtnUntracked)}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                toggleCertIgnored(cert.id);
-                if (!isTracked) {
-                  addToast(`${cert.examCode} added to tracked learning`, 'success');
+                toggleCertIgnored(cert.id, pathId);
+                if (!isPathIgnored) {
+                  if (!isTracked) {
+                    addToast(`${cert.examCode} included in tracked path`, 'success');
+                  } else {
+                    addToast(`${cert.examCode} excluded from tracked path`, 'info');
+                  }
                 } else {
-                  addToast(`${cert.examCode} removed from tracked learning`, 'info');
+                  if (!isTracked) {
+                    addToast(`${cert.examCode} added to Planned Exams`, 'success');
+                  } else {
+                    addToast(`${cert.examCode} removed from Planned Exams`, 'info');
+                  }
                 }
               }}
               title={getTrackTooltip()}

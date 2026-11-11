@@ -588,12 +588,12 @@ export const SortableCertItem = memo(({
             <Icons.Microsoft size={12} />
             Microsoft Learn
           </a>
-          {status !== CERT_STATUS.COMPLETED && (
+          {status === CERT_STATUS.NOT_STARTED && (
             <button
               type="button"
               className={mergeClasses(certClasses.trackBtn, !isCertIgnored(certInfo.id) ? certClasses.trackBtnTracked : certClasses.trackBtnUntracked)}
               onClick={handleToggleTracking}
-              title={!isCertIgnored(certInfo.id) ? 'Tracked in learning dashboard (Click to untrack)' : 'Not tracked (Click to track in dashboard)'}
+              title={!isCertIgnored(certInfo.id) ? 'Planned in learning dashboard (Click to remove)' : 'Plan exam in learning dashboard'}
               aria-label="Toggle dashboard tracking"
             >
               {!isCertIgnored(certInfo.id) ? <Icons.Eye size={14} /> : <Icons.EyeOff size={14} />}

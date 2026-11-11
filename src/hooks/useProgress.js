@@ -127,11 +127,12 @@ export const useProgress = () => {
       return next;
     });
 
-    // Auto-track cert when starting (pending learning), and remove when passed
+    // Clean up individual plan/exclusion flags when status advances
     if (status === CERT_STATUS.IN_PROGRESS) {
-      setTrackedCerts((prev) => (prev.includes(certId) ? prev : [...prev, certId]));
+      setDismissedCerts((prev) => prev.filter((id) => id !== certId));
     } else if (status === CERT_STATUS.COMPLETED) {
       setTrackedCerts((prev) => prev.filter((id) => id !== certId));
+      setDismissedCerts((prev) => prev.filter((id) => id !== certId));
     }
 
     if (status === CERT_STATUS.COMPLETED) {
@@ -163,68 +164,99 @@ export const useProgress = () => {
     [getStatus, setStatus]
   );
 
+  const isCertInAnyTrackedPath = useCallback(
+    (certId, explicitPathId = null) => {
+      if (explicitPathId) {
+        return trackedPaths.includes(explicitPathId);
+      }
+      return trackedPaths.some((pId) => {
+        const p = getPathById(pId);
+        return p?.certifications.some((c) => c.id === certId);
+      });
+    },
+    [trackedPaths]
+  );
+
   const togglePathIgnored = useCallback((pathId) => {
     const isCurrentlyTracked = trackedPaths.includes(pathId);
-    
-    if (isCurrentlyTracked) {
-      setTrackedPaths((prev) => prev.filter(id => id !== pathId));
-      
-      // Untrack all certs within this path, unless they belong to another currently tracked path or have progress
-      const path = getPathById(pathId);
-      if (path) {
-        const certIds = path.certifications.map(c => c.id);
-        setTrackedCerts(prevCerts => prevCerts.filter(id => {
-          if (certIds.includes(id)) {
-            const hasPendingProgress = progress[id] === CERT_STATUS.IN_PROGRESS;
-            if (hasPendingProgress) return true;
+    const path = getPathById(pathId);
+    const certIds = path ? path.certifications.map((c) => c.id) : [];
 
-            const otherTrackedPaths = trackedPaths.filter(pId => pId !== pathId);
-            const isShared = otherTrackedPaths.some(pId => {
-              const otherPath = getPathById(pId);
-              return otherPath?.certifications.some(c => c.id === id);
-            });
-            return isShared;
-          }
-          return true;
-        }));
+    if (isCurrentlyTracked) {
+      setTrackedPaths((prev) => prev.filter((id) => id !== pathId));
+
+      if (certIds.length > 0) {
+        setTrackedCerts((prevCerts) =>
+          prevCerts.filter((id) => !certIds.includes(id))
+        );
       }
     } else {
       setTrackedPaths((prev) => [...prev, pathId]);
-      
-      // Automatically track all certs within this path
-      const path = getPathById(pathId);
-      if (path) {
-        const certIds = path.certifications.map(c => c.id);
-        setTrackedCerts(prevCerts => {
-          const nextCerts = [...prevCerts];
-          certIds.forEach(id => {
-            if (!nextCerts.includes(id)) {
-              nextCerts.push(id);
-            }
-          });
-          return nextCerts;
-        });
+
+      if (certIds.length > 0) {
+        // Clear individual bookmark entries and stale exclusions when tracking the full path
+        setTrackedCerts((prevCerts) =>
+          prevCerts.filter((id) => !certIds.includes(id))
+        );
+        setDismissedCerts((prevDismissed) =>
+          prevDismissed.filter((id) => !certIds.includes(id))
+        );
       }
     }
-  }, [trackedPaths, progress]);
+  }, [trackedPaths]);
 
   const isPathIgnored = useCallback((pathId) => {
     return !trackedPaths.includes(pathId);
   }, [trackedPaths]);
 
-  const toggleCertIgnored = useCallback((certId) => {
-    // Tracked certifications only apply to those that are marked as pending
-    if (getStatus(certId) === CERT_STATUS.COMPLETED) {
-      return;
-    }
-    setTrackedCerts((prev) =>
-      prev.includes(certId) ? prev.filter(id => id !== certId) : [...prev, certId]
-    );
-  }, [getStatus]);
+  const toggleCertIgnored = useCallback(
+    (certId, explicitPathId = null) => {
+      const stat = getStatus(certId);
+      if (stat === CERT_STATUS.COMPLETED || stat === CERT_STATUS.NEEDS_RENEWAL) {
+        return;
+      }
 
-  const isCertIgnored = useCallback((certId) => {
-    return !trackedCerts.includes(certId);
-  }, [trackedCerts]);
+      if (isCertInAnyTrackedPath(certId, explicitPathId)) {
+        // Inside a tracked path: toggle exclusion in dismissedCerts
+        setDismissedCerts((prev) =>
+          prev.includes(certId)
+            ? prev.filter((id) => id !== certId)
+            : [...prev, certId]
+        );
+      } else {
+        // Outside a tracked path: toggle individual plan/bookmark in trackedCerts
+        setTrackedCerts((prev) =>
+          prev.includes(certId)
+            ? prev.filter((id) => id !== certId)
+            : [...prev, certId]
+        );
+      }
+    },
+    [getStatus, isCertInAnyTrackedPath]
+  );
+
+  const isCertIgnored = useCallback(
+    (certId, explicitPathId = null) => {
+      const stat = getStatus(certId);
+      const hasProgress =
+        stat === CERT_STATUS.COMPLETED ||
+        stat === CERT_STATUS.NEEDS_RENEWAL ||
+        stat === CERT_STATUS.IN_PROGRESS;
+
+      if (isCertInAnyTrackedPath(certId, explicitPathId)) {
+        // Inside a tracked path: included by default unless explicitly dismissed (and unstarted)
+        if (hasProgress) return false;
+        return dismissedCerts.includes(certId);
+      }
+
+      // Outside a tracked path: only tracked if explicitly planned in trackedCerts (and pending)
+      if (stat === CERT_STATUS.COMPLETED || stat === CERT_STATUS.NEEDS_RENEWAL) {
+        return true;
+      }
+      return !trackedCerts.includes(certId);
+    },
+    [isCertInAnyTrackedPath, getStatus, dismissedCerts, trackedCerts]
+  );
 
   const toggleCertDismissed = useCallback((certId) => {
     setDismissedCerts((prev) =>
@@ -239,6 +271,7 @@ export const useProgress = () => {
   const pathProgressMap = useMemo(() => {
     const map = new Map();
     const trackedPathsSet = new Set(trackedPaths);
+    const dismissedCertsSet = new Set(dismissedCerts);
 
     certificationPaths.forEach((path) => {
       const isTracked = trackedPathsSet.has(path.id);
@@ -254,6 +287,11 @@ export const useProgress = () => {
           stat === CERT_STATUS.IN_PROGRESS;
 
         if ((isRetiring(c) || isRetired(c)) && !hasProgress) {
+          return;
+        }
+
+        // Respect explicit exclusions inside a tracked path
+        if (isTracked && dismissedCertsSet.has(c.id) && !hasProgress) {
           return;
         }
 
@@ -275,7 +313,7 @@ export const useProgress = () => {
     });
 
     return map;
-  }, [trackedPaths, getStatus]);
+  }, [trackedPaths, dismissedCerts, getStatus]);
 
   const getPathProgress = useCallback(
     (pathId) => {
@@ -292,6 +330,28 @@ export const useProgress = () => {
     [pathProgressMap]
   );
 
+  const getCustomPlaylistProgress = useCallback(() => {
+    const total = customPlaylist.length;
+    let completed = 0;
+    let inProgress = 0;
+
+    customPlaylist.forEach((certId) => {
+      const stat = getStatus(certId);
+      if (stat === CERT_STATUS.COMPLETED || stat === CERT_STATUS.NEEDS_RENEWAL) {
+        completed++;
+      } else if (stat === CERT_STATUS.IN_PROGRESS) {
+        inProgress++;
+      }
+    });
+
+    return {
+      total,
+      completed,
+      inProgress,
+      percent: total > 0 ? Math.round((completed / total) * 100) : 0,
+    };
+  }, [customPlaylist, getStatus]);
+
   const getOverallProgress = useCallback(() => {
     let total = 0;
     let completed = 0;
@@ -299,6 +359,8 @@ export const useProgress = () => {
     const processedCerts = new Set();
     const trackedPathsSet = new Set(trackedPaths);
     const trackedCertsSet = new Set(trackedCerts);
+    const dismissedCertsSet = new Set(dismissedCerts);
+    const customPlaylistSet = new Set(customPlaylist);
 
     certificationPaths.forEach((path) => {
       const isPathTracked = trackedPathsSet.has(path.id);
@@ -312,14 +374,18 @@ export const useProgress = () => {
           stat === CERT_STATUS.NEEDS_RENEWAL ||
           stat === CERT_STATUS.IN_PROGRESS;
         const isIndividuallyTracked = trackedCertsSet.has(cert.id);
+        const isExplicitlyDismissed = dismissedCertsSet.has(cert.id);
+        const isInCustomPlaylist = customPlaylistSet.has(cert.id);
 
         const shouldInclude =
-          (isPathTracked && isIndividuallyTracked) ||
-          (!isPathTracked && (isIndividuallyTracked || hasProgress));
+          hasProgress ||
+          isInCustomPlaylist ||
+          (isPathTracked && !isExplicitlyDismissed) ||
+          (!isPathTracked && isIndividuallyTracked);
 
         if (!shouldInclude) return;
 
-        if ((isRetiring(cert) || isRetired(cert)) && !hasProgress) {
+        if ((isRetiring(cert) || isRetired(cert)) && !hasProgress && !isInCustomPlaylist) {
           return;
         }
 
@@ -341,7 +407,7 @@ export const useProgress = () => {
       trackedPathsCount: trackedPaths.length,
       trackedCertsCount: processedCerts.size,
     };
-  }, [trackedPaths, trackedCerts, getStatus]);
+  }, [trackedPaths, trackedCerts, dismissedCerts, customPlaylist, getStatus]);
 
   const getAppliedSkillStatus = useCallback(
     (skillId) => appliedSkillsProgress[skillId] || APPLIED_SKILL_STATUS.NOT_STARTED,
@@ -477,6 +543,7 @@ export const useProgress = () => {
       setStatus,
       cycleStatus,
       getPathProgress,
+      getCustomPlaylistProgress,
       getOverallProgress,
       togglePathIgnored,
       isPathIgnored,
@@ -506,6 +573,7 @@ export const useProgress = () => {
       setStatus,
       cycleStatus,
       getPathProgress,
+      getCustomPlaylistProgress,
       getOverallProgress,
       togglePathIgnored,
       isPathIgnored,

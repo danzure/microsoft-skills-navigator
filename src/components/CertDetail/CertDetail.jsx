@@ -476,7 +476,7 @@ export default function CertDetail({ cert, path, onClose }) {
   const retiring = isRetiring(cert);
   const isRetiredExam = retiring || isRetired(cert);
   const isPathExcluded = isPathIgnored(path.id);
-  const certIgnored = !isRetiredExam && isCertIgnored(cert.id);
+  const certIgnored = !isRetiredExam && isCertIgnored(cert.id, path.id);
 
   const completionDateStr = completionDates?.[cert.id];
   const expires = doesCertExpire(cert.level);
@@ -509,12 +509,21 @@ export default function CertDetail({ cert, path, onClose }) {
 
       if (e.key === 'Escape') {
         onClose();
-      } else if (e.key.toLowerCase() === 'e' && !isRetiredExam && status !== CERT_STATUS.COMPLETED) {
-        toggleCertIgnored(cert.id);
-        if (certIgnored) {
-          addToast(`${cert.examCode} added to tracked learning`);
+      } else if (e.key.toLowerCase() === 'e' && !isRetiredExam && status === CERT_STATUS.NOT_STARTED) {
+        const wasTracked = !isCertIgnored(cert.id, path.id);
+        toggleCertIgnored(cert.id, path.id);
+        if (!isPathExcluded) {
+          addToast(
+            !wasTracked
+              ? `${cert.examCode} included in ${path.shortName}`
+              : `${cert.examCode} excluded from ${path.shortName}`
+          );
         } else {
-          addToast(`${cert.examCode} removed from tracked learning`);
+          addToast(
+            !wasTracked
+              ? `${cert.examCode} added to Planned Exams`
+              : `${cert.examCode} removed from Planned Exams`
+          );
         }
       } else if (e.key.toLowerCase() === 's') {
         const statuses = [
@@ -546,6 +555,9 @@ export default function CertDetail({ cert, path, onClose }) {
     certIgnored,
     isPathExcluded,
     isRetiredExam,
+    path.id,
+    path.shortName,
+    isCertIgnored,
     toggleCertIgnored,
     setStatus,
     addToast,
@@ -856,7 +868,7 @@ export default function CertDetail({ cert, path, onClose }) {
             </div>
           )}
 
-          {!isRetiredExam && status !== CERT_STATUS.COMPLETED && (
+          {!isRetiredExam && status === CERT_STATUS.NOT_STARTED && (
             <div className={styles.section}>
               <h3 className={styles.sectionTitle}>
                 Tracking <span className={styles.shortcutHint}>(Press E)</span>
@@ -866,42 +878,50 @@ export default function CertDetail({ cert, path, onClose }) {
                   type="button"
                   className={mergeClasses(
                     styles.trackBtn,
-                    !isCertIgnored(cert.id) && styles.trackBtnTracked
+                    !isCertIgnored(cert.id, path.id) && styles.trackBtnTracked
                   )}
                   onClick={() => {
-                    const wasTracked = !isCertIgnored(cert.id);
-                    toggleCertIgnored(cert.id);
-                    if (!wasTracked) {
-                      addToast(`${cert.examCode} added to tracked learning`, 'success');
+                    const wasTracked = !isCertIgnored(cert.id, path.id);
+                    toggleCertIgnored(cert.id, path.id);
+                    if (!isPathExcluded) {
+                      if (!wasTracked) {
+                        addToast(`${cert.examCode} included in ${path.shortName}`, 'success');
+                      } else {
+                        addToast(`${cert.examCode} excluded from ${path.shortName}`, 'info');
+                      }
                     } else {
-                      addToast(`${cert.examCode} removed from tracked learning`, 'info');
+                      if (!wasTracked) {
+                        addToast(`${cert.examCode} added to Planned Exams`, 'success');
+                      } else {
+                        addToast(`${cert.examCode} removed from Planned Exams`, 'info');
+                      }
                     }
                   }}
                 >
-                  {!isCertIgnored(cert.id) ? (
+                  {!isCertIgnored(cert.id, path.id) ? (
                     <Eye20Regular />
                   ) : (
                     <EyeOff20Regular />
                   )}
                   <span>
                     {!isPathExcluded
-                      ? !isCertIgnored(cert.id)
-                        ? 'Tracked with Path'
+                      ? !isCertIgnored(cert.id, path.id)
+                        ? 'Included in Path'
                         : 'Excluded from Path'
-                      : !isCertIgnored(cert.id)
-                      ? 'Tracked Individually'
-                      : 'Not Tracked'}
+                      : !isCertIgnored(cert.id, path.id)
+                      ? 'Planned in Dashboard'
+                      : 'Plan in Dashboard'}
                   </span>
                 </button>
               </div>
               <p className={styles.ignoreHint}>
                 {!isPathExcluded
-                  ? !isCertIgnored(cert.id)
-                    ? `Included in your learning journey as part of ${path.shortName}. Click to exclude.`
-                    : `Excluded from your learning journey. Click to include.`
-                  : !isCertIgnored(cert.id)
-                  ? `Tracked individually in your learning dashboard. Click to untrack.`
-                  : `Not currently tracked. Click to track individually in your learning dashboard, or set status below.`}
+                  ? !isCertIgnored(cert.id, path.id)
+                    ? `Included in your learning journey as part of ${path.shortName}. Click to exclude from path totals.`
+                    : `Excluded from ${path.shortName} progress totals. Click to include.`
+                  : !isCertIgnored(cert.id, path.id)
+                  ? `Saved to your Planned Individual Exams on the Dashboard. Click to remove.`
+                  : `Bookmark this exam to your Planned Individual Exams on the Dashboard, or set its status below.`}
               </p>
             </div>
           )}

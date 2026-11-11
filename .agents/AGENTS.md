@@ -402,15 +402,15 @@ export const CERT_STATUS = {
   - `name`: Full certification credential title (e.g. `'Azure Administrator Associate'`).
   - `level`: One of `CERT_LEVELS` (`'Fundamentals'`, `'Associate'`, `'Expert'`, `'Specialty'`).
   - `description`: Comprehensive summary of the certification scope and target persona.
-  - `prerequisites`: Evaluation requirements:
+  - `prerequisites`: Evaluation requirements (must be ordered alphabetically by exam ID/code):
     - **Single/All Required**: Array of cert IDs e.g. `['az-104']` (all must be completed).
-    - **Choice Groups ("1 of N")**: Nested arrays e.g. `[['az-104', 'az-204']]` or `[['sc-200', 'sc-300', 'sc-500']]` (satisfying any one unlocks the prerequisite).
+    - **Choice Groups ("1 of N")**: Nested arrays e.g. `[['az-104', 'az-204']]` or `[['sc-200', 'sc-300', 'sc-500']]` (satisfying any one unlocks the prerequisite). Choice group arrays must be sorted alphabetically, and UI lists (`Prerequisites`, `Recommended Before Taking`, `Prerequisite For`, and card prerequisite badges) must sort resolved exams alphabetically via `localeCompare`.
     - **None**: Empty array `[]`.
   - `learnUrl`: Verified, active Microsoft Learn exam page URL.
   - `retirementDate`: `'YYYY-MM-DD'` string if announced, otherwise `null`.
   - `skillsMeasured`: Array of strings detailing objective domains and percentage weightings.
 - **Optional Fields**:
-  - `recommendedPrereqs`: Array of cert IDs (e.g. `['az-900']`) recommended for foundational learning but not strictly required.
+  - `recommendedPrereqs`: Array of cert IDs (e.g. `['az-900']`) recommended for foundational learning but not strictly required (ordered alphabetically).
   - `branch`: Lowercase string matching one of the parent path's `branches[].id` values.
   - `isBeta`: `true` or `'Beta from <Month> <Year>'` (e.g. `'Beta from July 2026'`).
   - `isNew`: `true` (renders `<Badge variant="new">New</Badge>`). Governed by Rule of Recency.
@@ -559,8 +559,8 @@ graph TD
 State is persisted to `localStorage` with safe `try/catch` fallbacks across `useProgress.js`, `ThemeContext.jsx`, and `CurrencyContext.jsx`:
 1. `ms-cert-tracker-progress`: Object mapping `{ [certId]: CERT_STATUS }`.
 2. `ms-cert-tracker-tracked-paths`: Array of active path IDs. (Migrates automatically from legacy `ms-cert-tracker-ignored`).
-3. `ms-cert-tracker-tracked-certs`: Array of active cert IDs.
-4. `ms-cert-tracker-dismissed-certs`: Array of dismissed cert IDs.
+3. `ms-cert-tracker-tracked-certs`: Array of opt-in planned/pending individual cert IDs (used for bookmarking unstarted exams from untracked paths).
+4. `ms-cert-tracker-dismissed-certs`: Array of opt-out cert IDs explicitly excluded from tracked paths.
 5. `ms-cert-tracker-dates`: Object mapping `{ [certId]: ISOString }` completion timestamps.
 6. `ms-cert-tracker-custom-playlist`: Array of ordered cert IDs representing the custom career timeline.
 7. `ms-cert-tracker-applied-skills`: Object mapping `{ [skillId]: APPLIED_SKILL_STATUS }`.
@@ -588,7 +588,15 @@ Any new persistent property added to state **must** be wired into:
 3. `resetAll()` — completely cleared from state and `localStorage`.
 
 ### 4.3 Auto-Tracking & Prerequisite Unlock Celebrations
-- **Auto-Tracking**: Marking a certification as `in_progress` or `completed` automatically appends its ID to `trackedCerts`.
+- **Separated Opt-In Planning (`trackedCerts`) vs Opt-Out Path Exclusion (`dismissedCerts`)**:
+  - **Inside a Tracked Path**: All non-retired exams belong to the path by default unless their ID is in `dismissedCerts`. Excluding an unstarted (`NOT_STARTED`) exam inside a tracked path adds it to `dismissedCerts` and dynamically reduces the path's denominator (`pathProgressMap`) and overall progress denominator (`getOverallProgress`).
+  - **Outside a Tracked Path**: Individual `NOT_STARTED` exams can be bookmarked via `trackedCerts` to appear under **Planned Individual Exams** on the Dashboard.
+  - **Status Transition Rules (`setStatus`)**:
+    - Marking an exam as `IN_PROGRESS` automatically appends its ID to `trackedCerts` (if not already present) and removes it from `dismissedCerts`, surfacing it in the **Action Center → Continue Learning** queue.
+    - Marking an exam as `COMPLETED` automatically removes its ID from both `trackedCerts` and `dismissedCerts`. Passed exams must **never** appear under **Planned Individual Exams**; instead, they remain counted in path/overall completion totals and are accessible via the collapsible **My Earned Certifications** shelf on the Dashboard.
+- **Overall & Custom Career Progress (`getOverallProgress` & `getCustomPlaylistProgress`)**:
+  - `getOverallProgress()` aggregates active exams across tracked paths (excluding unstarted exams in `dismissedCerts`), planned individual exams (`trackedCerts`), `customPlaylist` exams, and any exam with active progress (`IN_PROGRESS`, `COMPLETED`, `NEEDS_RENEWAL`).
+  - `getCustomPlaylistProgress()` computes `{ total, completed, inProgress, percent }` for the user's `customPlaylist`.
 - **Prerequisite Unlock Celebrations**: Marking an exam as `COMPLETED` evaluates `getCertificationsRequiring(cert.id)`. If dependent certifications are unstarted, a celebration toast triggers with an interactive action button to mark the unlocked credential as `in_progress`.
 
 ### 4.4 Multi-Currency Pricing Engine (`pricing.js`)
@@ -603,9 +611,18 @@ Any new persistent property added to state **must** be wired into:
 ## 5. Interactive Experiences & Engine Implementations
 
 ### 5.1 Dashboard Overview & Action Center (`Dashboard.jsx`)
-- **Hero Overview Panel**: Global stats (Completed, In Progress, Needs Renewal, Applied Skills count, Total Paths) with SVG Progress Ring.
-- **Action Center**: Focused queues for In Progress exams and certs requiring annual renewal.
-- **Tracked Learning vs Explore Catalog**: Separate panels for tracked paths, individually tracked certifications from untracked paths, and catalog exploration for untracked paths.
+- **Hero Overview Panel**: Interactive global stat cards with overall progress bar:
+  - **Total Exams**: Scrolls smoothly to `#my-tracked-learning`.
+  - **Completed**: Toggles the collapsible **My Earned Certifications** shelf displaying earned exam badges, exam codes, completion dates, and path tags.
+  - **In Progress**: Aggregates active `IN_PROGRESS` exams and `IN_PROGRESS` Applied Skills labs, scrolling smoothly to `#action-center`.
+  - **Applied Skills**: Displays `completed/total` Applied Skills and navigates to `/applied-skills`.
+- **Action Center**:
+  - **Needs Renewal**: Queues `NEEDS_RENEWAL` certifications with an inline **Renew** quick-action button.
+  - **Continue Learning**: Unified active learning queue for both `IN_PROGRESS` certifications (with inline **Passed** quick-action button and prerequisite unlock celebration) and `IN_PROGRESS` Applied Skills labs (with inline **Done** quick-action button).
+- **My Tracked Learning vs Explore Catalog**:
+  - **Tracked Paths & Custom Career**: Renders tracked paths alongside the **Your Custom Career** card (which displays a live completion progress bar and `✓ Completed` / `◐ In Progress` counters via `getCustomPlaylistProgress()`).
+  - **Planned Individual Exams**: Exclusively lists `NOT_STARTED` exams bookmarked from untracked paths (deduplicated from *Continue Learning* and *Earned Certifications*), featuring inline **Start** (moves to `IN_PROGRESS`) and **Remove (`×`)** quick-action buttons.
+  - **Explore Catalog**: Displays untracked active paths and archived/retiring exam tracks.
 
 ### 5.2 Path Map: React Flow + Dagre Graph Engine (`PathMap.jsx` & `CertNode.jsx`)
 - **Standard Active Tracks (Dagre Engine)**:
@@ -658,10 +675,10 @@ Any new persistent property added to state **must** be wired into:
   - `Ctrl+B` / `Cmd+B`: Toggle sidebar navigation.
 - **Deep Linking Query Params**: `?cert=<certId>` on `/path/:pathId` and `?role=<roleId>` on `/career-paths`.
 - **Keyboard Shortcut Guard**: Always check `if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.isContentEditable) return;` before processing single-key shortcuts.
-- **In `CertDetail`**:
+- **In `CertDetail` & Card Tracking Controls**:
   - `Escape`: Close drawer/modal.
   - `S`: Cycle status (`not_started` $\rightarrow$ `in_progress` $\rightarrow$ `completed`).
-  - `E`: Toggle tracking / exclusion.
+  - `E`: Toggle path inclusion/exclusion (`dismissedCerts`) or individual Dashboard planning (`trackedCerts`). The individual Plan / Exclude toggle (`E` shortcut and eye icon button across `CertDetail.jsx`, `CertNode.jsx`, `PathMapListView.jsx`, and `SortableCertItem.jsx`) is **only** rendered for active (non-retired) exams in the `NOT_STARTED` state.
   - `Enter`: Open Microsoft Learn link.
 - **Routes**:
   - `/`: Dashboard (`Dashboard.jsx`)

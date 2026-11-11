@@ -390,7 +390,7 @@ const PathMapListView = ({ path, onSelectCert, selectedBranch = 'all', statusFil
               const retiring = isRetiring(cert);
               const retired = isRetired(cert);
               const isRetiredExam = retiring || retired;
-              const isTracked = !isCertIgnored(cert.id);
+              const isTracked = !isCertIgnored(cert.id, path.id);
               const badgeUrl = getBadgeUrl(cert.level, cert.id);
 
               return (
@@ -427,13 +427,13 @@ const PathMapListView = ({ path, onSelectCert, selectedBranch = 'all', statusFil
                       </div>
                       <h3 className={c.listCardName}>{cert.name}</h3>
                     </div>
-                    {!isRetiredExam && status !== CERT_STATUS.COMPLETED && (
+                    {!isRetiredExam && status === CERT_STATUS.NOT_STARTED && (
                       <button
                         type="button"
                         className={mergeClasses(c.listTrackBtn, isTracked && c.listTrackBtnTracked)}
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleCertIgnored(cert.id);
+                          toggleCertIgnored(cert.id, path.id);
                           if (!isTracked) {
                             addToast(`${cert.examCode} added to tracked learning`, 'success');
                           } else {
@@ -441,7 +441,7 @@ const PathMapListView = ({ path, onSelectCert, selectedBranch = 'all', statusFil
                           }
                         }}
                         aria-label={isTracked ? "Untrack exam" : "Track exam"}
-                        title={isTracked ? "Tracked in learning" : "Untracked"}
+                        title={isTracked ? "Tracked in learning (Click to exclude/remove)" : "Untracked (Click to include/plan)"}
                       >
                         {isTracked ? <Icons.Eye size={18} /> : <Icons.EyeOff size={18} />}
                       </button>

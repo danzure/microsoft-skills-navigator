@@ -1142,6 +1142,7 @@ const PathMapFlow = ({
         type: 'certNode',
         data: {
           cert,
+          pathId: path.id,
           pathColor: path.color,
           onSelect: setSelectedCert,
           index: idx,
